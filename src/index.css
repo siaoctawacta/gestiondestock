@@ -1,0 +1,75 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Palette MM Cosmétiques — vert profond #184620, vert sauge #B2CD8A */
+    --background: 90 20% 97.5%;
+    --foreground: 130 30% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 130 30% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 130 30% 10%;
+    --primary: 130 49% 18%;              /* #184620 */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 90 20% 94%;
+    --secondary-foreground: 130 30% 12%;
+    --muted: 90 18% 95%;
+    --muted-foreground: 130 8% 40%;
+    --accent: 84 42% 91%;                /* sauge clair */
+    --accent-foreground: 130 49% 18%;
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --success: 142 55% 32%;
+    --warning: 35 92% 45%;
+    --border: 90 16% 88%;
+    --input: 90 12% 84%;
+    --ring: 130 49% 18%;
+    --radius: 0.75rem;
+    --sidebar: 130 49% 18%;              /* #184620 */
+    --sidebar-foreground: 84 30% 96%;
+    --sidebar-muted: 84 22% 76%;
+    --sage: 84 40% 67%;                  /* #B2CD8A */
+  }
+  .dark {
+    --background: 135 28% 6%;
+    --foreground: 84 20% 94%;
+    --card: 135 24% 9%;
+    --card-foreground: 84 20% 94%;
+    --popover: 135 24% 10%;
+    --popover-foreground: 84 20% 94%;
+    --primary: 84 40% 67%;               /* sauge sur fond sombre */
+    --primary-foreground: 130 49% 12%;
+    --secondary: 135 20% 14%;
+    --secondary-foreground: 84 20% 94%;
+    --muted: 135 18% 13%;
+    --muted-foreground: 90 10% 64%;
+    --accent: 130 30% 16%;
+    --accent-foreground: 84 45% 80%;
+    --destructive: 0 70% 55%;
+    --border: 135 16% 17%;
+    --input: 135 16% 21%;
+    --ring: 84 40% 67%;
+    --sidebar: 135 40% 8%;
+    --sidebar-foreground: 84 20% 94%;
+    --sidebar-muted: 90 12% 62%;
+    --sage: 84 40% 67%;
+  }
+  * { @apply border-border; }
+  html { -webkit-tap-highlight-color: transparent; }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'cv11', 'ss01';
+  }
+  ::selection { @apply bg-primary/15; }
+}
+
+@layer utilities {
+  .tabular { font-variant-numeric: tabular-nums; }
+  .scrollbar-thin { scrollbar-width: thin; }
+}
+
+@media print {
+  body { background: white; }
+}
