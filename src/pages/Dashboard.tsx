@@ -261,7 +261,7 @@ function ExecutiveDashboard() {
               {ranking.map((r, i) => (
                 <TR key={r.store.id}>
                   <TD className="w-10">
-                    <span className={i === 0 ? 'grid size-6 place-items-center rounded-full bg-primary text-[11px] font-bold text-white' : 'pl-2 text-muted-foreground'}>
+                    <span className={i === 0 ? 'grid size-6 place-items-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground' : 'pl-2 text-muted-foreground'}>
                       {i + 1}
                     </span>
                   </TD>
@@ -367,12 +367,12 @@ function CashierDashboard() {
   return (
     <div className="space-y-6">
       <Card className="overflow-hidden">
-        <div className="flex flex-col items-start justify-between gap-4 bg-gradient-to-r from-primary to-rose-700 p-6 text-white sm:flex-row sm:items-center">
+        <div className="flex flex-col items-start justify-between gap-4 bg-gradient-to-r from-brand to-[#2c6b36] p-6 text-white sm:flex-row sm:items-center">
           <div>
             <p className="text-sm text-white/80">Prêt à encaisser ?</p>
             <p className="mt-1 text-xl font-semibold">Ouvrez le terminal de caisse</p>
           </div>
-          <Button asChild size="lg" variant="secondary" className="bg-white text-primary hover:bg-white/90">
+          <Button asChild size="lg" variant="secondary" className="bg-white text-brand hover:bg-white/90">
             <Link to="/pos">
               <ShoppingCart /> Caisse POS
             </Link>

@@ -7,20 +7,16 @@ import { can } from '@/lib/permissions'
 import { cn } from '@/lib/utils'
 import { useNotifications } from '@/hooks/queries'
 
-export function Logo({ compact }: { compact?: boolean }) {
+/** Logo MM Cosmétiques. `variant="light"` pour fonds sombres (sidebar). */
+export function Logo({ compact, variant = 'light', className }: { compact?: boolean; variant?: 'light' | 'dark'; className?: string }) {
+  const suffix = variant === 'light' ? '-white' : ''
+  if (compact) return <img src={`/logo-mark${suffix}.png`} alt="MM Cosmétiques" className={cn('h-8 w-auto', className)} />
   return (
-    <div className="flex items-center gap-2.5">
-      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-white shadow-sm">
-        <svg viewBox="0 0 32 32" className="size-5" fill="none">
-          <path d="M7 23V9l4.5 7L16 9l4.5 7L25 9v14" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
+    <div className={cn('flex flex-col', className)}>
+      <img src={`/logo${suffix}.png`} alt="MM Cosmétiques" className="h-9 w-auto self-start" />
+      <span className={cn('mt-1 text-[9px] font-medium uppercase tracking-[0.28em]', variant === 'light' ? 'text-sage' : 'text-muted-foreground')}>
+        Stock Pro · ERP
       </span>
-      {!compact && (
-        <div className="leading-tight">
-          <p className="text-sm font-semibold tracking-tight">MMCG Stock Pro</p>
-          <p className="text-[10px] uppercase tracking-[0.14em] opacity-60">Cosmétique ERP</p>
-        </div>
-      )}
     </div>
   )
 }
@@ -61,13 +57,13 @@ export function SidebarNav({ compact, onNavigate }: { compact?: boolean; onNavig
                   >
                     {({ isActive }) => (
                       <>
-                        {isActive && <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-r bg-primary" />}
-                        <item.icon className={cn('size-[18px] shrink-0', isActive && 'text-rose-300')} />
+                        {isActive && <span className="absolute inset-y-1.5 left-0 w-[3px] rounded-r bg-sage" />}
+                        <item.icon className={cn('size-[18px] shrink-0', isActive && 'text-sage')} />
                         {!compact && <span className="truncate">{item.label}</span>}
                         {item.to === '/notifications' && unread > 0 && (
                           <span
                             className={cn(
-                              'ml-auto rounded-full bg-primary px-1.5 text-[10px] font-semibold text-white tabular',
+                              'ml-auto rounded-full bg-sage px-1.5 text-[10px] font-semibold text-brand tabular',
                               compact && 'absolute right-1.5 top-1 ml-0',
                             )}
                           >
@@ -96,7 +92,7 @@ export function Sidebar() {
         collapsed ? 'w-[72px]' : 'w-64',
       )}
     >
-      <div className={cn('flex h-16 items-center border-b border-white/5 px-5', collapsed && 'justify-center px-0')}>
+      <div className={cn('flex h-[72px] items-center border-b border-white/10 px-5', collapsed && 'justify-center px-0')}>
         <Logo compact={collapsed} />
       </div>
       <SidebarNav compact={collapsed} />

@@ -6,9 +6,9 @@ export function AuthShell({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[1.05fr_1fr]">
       <div className="relative hidden overflow-hidden bg-sidebar p-12 text-sidebar-foreground lg:flex lg:flex-col">
-        <div className="pointer-events-none absolute -right-32 -top-32 size-[28rem] rounded-full bg-primary/30 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-40 -left-20 size-[26rem] rounded-full bg-rose-400/10 blur-3xl" />
-        <Logo />
+        <div className="pointer-events-none absolute -right-32 -top-32 size-[28rem] rounded-full bg-sage/25 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-40 -left-20 size-[26rem] rounded-full bg-sage/10 blur-3xl" />
+        <Logo className="relative [&_img]:h-12" />
         <div className="relative mt-auto max-w-md">
           <h2 className="text-3xl font-semibold leading-tight tracking-tight">
             Le stock, la caisse et la performance de vos boutiques beauté, réunis.
@@ -26,7 +26,7 @@ export function AuthShell({ children }: { children: ReactNode }) {
               const I = Icon as typeof Zap
               return (
                 <li key={text as string} className="flex items-center gap-3">
-                  <span className="grid size-8 place-items-center rounded-lg bg-white/5 text-rose-300">
+                  <span className="grid size-8 place-items-center rounded-lg bg-white/10 text-sage">
                     <I className="size-4" />
                   </span>
                   {text as string}
@@ -35,12 +35,12 @@ export function AuthShell({ children }: { children: ReactNode }) {
             })}
           </ul>
         </div>
-        <p className="relative mt-12 text-xs text-sidebar-muted/60">© {new Date().getFullYear()} MMCG — Tous droits réservés</p>
+        <p className="relative mt-12 text-xs text-sidebar-muted/60">© {new Date().getFullYear()} MM Cosmétiques — Tous droits réservés</p>
       </div>
       <div className="flex items-center justify-center p-6 sm:p-12">
         <div className="w-full max-w-sm">
           <div className="mb-8 lg:hidden">
-            <Logo />
+            <Logo variant="dark" />
           </div>
           {children}
         </div>

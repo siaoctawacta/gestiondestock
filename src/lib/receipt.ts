@@ -1,13 +1,14 @@
 import type { Profile, Sale, Store } from '@/types'
 import { formatMoney, formatDateTime } from './utils'
 import { PAYMENT_LABELS, PROVIDER_LABELS } from '@/components/common/badges'
+import { loadImage } from './brand'
 
 /** Ticket de caisse au format thermique 80 mm (PDF). */
 export async function generateReceiptPdf(sale: Sale, store: Store | undefined, cashier: Profile | undefined, open = true) {
   const { jsPDF } = await import('jspdf')
   const width = 80
   const lineH = 4.2
-  const height = 120 + sale.items.length * 9 + sale.payments.length * 8
+  const height = 128 + sale.items.length * 9 + sale.payments.length * 8
   const doc = new jsPDF({ unit: 'mm', format: [width, height] })
   const m = 5
   let y = 8
@@ -29,12 +30,16 @@ export async function generateReceiptPdf(sale: Sale, store: Store | undefined, c
   }
   const money = (v: number) => formatMoney(v)
 
-  // Logo MMCG
-  doc.setFillColor(159, 18, 57).roundedRect(width / 2 - 6, y - 4, 12, 12, 2, 2, 'F')
-  doc.setTextColor(255).setFont('helvetica', 'bold').setFontSize(9).text('M', width / 2, y + 3.6, { align: 'center' })
-  doc.setTextColor(0)
-  y += 13
-  center('MMCG COSMÉTIQUES', 11, true)
+  // Logo MM Cosmétiques
+  try {
+    const logo = await loadImage('/logo.png')
+    const w = 46
+    const h = w / logo.ratio
+    doc.addImage(logo.data, 'PNG', (width - w) / 2, y - 4, w, h)
+    y += h + 2
+  } catch {
+    center('MM COSMÉTIQUES', 11, true)
+  }
   center(store?.name ?? '', 8, true)
   if (store?.address) center(store.address, 7)
   if (store?.phone) center(`Tél. ${store.phone}`, 7)
@@ -73,7 +78,7 @@ export async function generateReceiptPdf(sale: Sale, store: Store | undefined, c
   center('Merci de votre visite !', 8, true)
   center('Les produits cosmétiques ouverts ne sont', 6.5)
   center('ni repris ni échangés.', 6.5)
-  center(store?.email ?? 'www.mmcg.ci', 6.5)
+  center(store?.email ?? 'MM Cosmétiques', 6.5)
 
   const blob = doc.output('blob')
   const url = URL.createObjectURL(blob)

@@ -2,10 +2,10 @@ import { cn } from '@/lib/utils'
 import type { Product } from '@/types'
 
 const TONES = [
-  'from-rose-100 to-rose-200 text-rose-700',
+  'from-lime-50 to-lime-100 text-green-800',
   'from-amber-50 to-amber-200 text-amber-700',
   'from-slate-100 to-slate-200 text-slate-600',
-  'from-pink-50 to-fuchsia-100 text-fuchsia-700',
+  'from-stone-50 to-stone-200 text-stone-600',
   'from-orange-50 to-orange-100 text-orange-700',
   'from-emerald-50 to-teal-100 text-teal-700',
 ]

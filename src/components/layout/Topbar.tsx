@@ -99,7 +99,7 @@ function NotificationsMenu() {
         <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
           <Bell />
           {unread.length > 0 && (
-            <span className="absolute right-1.5 top-1.5 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] font-bold leading-4 text-white">
+            <span className="absolute right-1.5 top-1.5 grid min-w-4 place-items-center rounded-full bg-primary px-1 text-[9px] font-bold leading-4 text-primary-foreground">
               {unread.length > 9 ? '9+' : unread.length}
             </span>
           )}

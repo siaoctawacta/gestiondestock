@@ -1,4 +1,4 @@
-# MMCG Stock Pro
+# MM Cosmétiques — Stock Pro
 
 ERP SaaS de gestion de stock, caisse POS multi-boutiques et business intelligence pour chaînes de cosmétiques.
 

@@ -53,7 +53,7 @@ export default function LoginPage() {
   return (
     <AuthShell>
       <h1 className="text-2xl font-semibold tracking-tight">Connexion</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Accédez à votre espace MMCG Stock Pro.</p>
+      <p className="mt-1 text-sm text-muted-foreground">Accédez à votre espace MM Cosmétiques Stock Pro.</p>
 
       <form onSubmit={submit} className="mt-8 space-y-4" noValidate>
         <Field label="Adresse email">

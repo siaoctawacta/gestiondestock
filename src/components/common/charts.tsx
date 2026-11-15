@@ -17,17 +17,17 @@ import { formatCompact, formatMoney } from '@/lib/utils'
 
 /** Palette catégorielle validée (CVD) — ordre fixe, jamais recyclée. */
 export const SERIES = {
-  light: ['#be123c', '#2a78d6', '#1baf7a'],
-  dark: ['#f43f5e', '#3987e5', '#199e70'],
+  light: ['#2f7a3a', '#2a78d6', '#eda100'],
+  dark: ['#199e70', '#3987e5', '#c98500'],
 }
 
 function useChartTheme() {
   const dark = useUi((s) => s.theme === 'dark')
   return {
     series: dark ? SERIES.dark : SERIES.light,
-    grid: dark ? '#1e293b' : '#eef2f6',
-    axis: dark ? '#94a3b8' : '#64748b',
-    surface: dark ? '#0f172a' : '#ffffff',
+    grid: dark ? '#1c2a1f' : '#edf1ea',
+    axis: dark ? '#9aa797' : '#64705f',
+    surface: dark ? '#111a13' : '#ffffff',
   }
 }
 

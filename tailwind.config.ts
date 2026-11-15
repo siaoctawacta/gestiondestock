@@ -22,6 +22,8 @@ export default {
         card: { DEFAULT: 'hsl(var(--card))', foreground: 'hsl(var(--card-foreground))' },
         popover: { DEFAULT: 'hsl(var(--popover))', foreground: 'hsl(var(--popover-foreground))' },
         sidebar: { DEFAULT: 'hsl(var(--sidebar))', foreground: 'hsl(var(--sidebar-foreground))', muted: 'hsl(var(--sidebar-muted))' },
+        sage: 'hsl(var(--sage))',
+        brand: { DEFAULT: '#184620', sage: '#B2CD8A' },
         success: 'hsl(var(--success))',
         warning: 'hsl(var(--warning))',
       },

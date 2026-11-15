@@ -395,7 +395,7 @@ function ProductDetail({ product: p, onClose, onEdit }: { product: Product; onCl
             </dl>
           </div>
           <div className="flex flex-col items-center rounded-xl border p-4">
-            <QRCodeSVG value={qrValue} size={140} level="M" fgColor="#1E293B" />
+            <QRCodeSVG value={qrValue} size={140} level="M" fgColor="#184620" />
             <p className="mt-2 flex items-center gap-1 text-[11px] text-muted-foreground">
               <QrCode className="size-3" /> Inventaire mobile
             </p>

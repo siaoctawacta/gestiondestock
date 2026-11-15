@@ -195,7 +195,7 @@ function PosTerminal({ storeId, user }: { storeId: string; user: Profile }) {
                 onClick={() => setCategory(c.id)}
                 className={cn(
                   'shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors',
-                  category === c.id ? 'border-primary bg-primary text-white' : 'bg-card hover:bg-muted',
+                  category === c.id ? 'border-primary bg-primary text-primary-foreground' : 'bg-card hover:bg-muted',
                 )}
               >
                 {c.name}
@@ -219,7 +219,7 @@ function PosTerminal({ storeId, user }: { storeId: string; user: Profile }) {
                   )}
                 >
                   {inCart > 0 && (
-                    <span className="absolute right-2 top-2 grid size-6 place-items-center rounded-full bg-primary text-[11px] font-bold text-white">
+                    <span className="absolute right-2 top-2 grid size-6 place-items-center rounded-full bg-primary text-[11px] font-bold text-primary-foreground">
                       {inCart}
                     </span>
                   )}
