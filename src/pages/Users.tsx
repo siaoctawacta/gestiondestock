@@ -79,7 +79,7 @@ export default function Users() {
                 const ids = [...new Set([u.store_id, ...u.store_ids].filter(Boolean) as string[])]
                 return (
                   <span className="text-xs text-muted-foreground">
-                    {u.role === 'super_admin' || u.role === 'stock_manager' ? 'Réseau entier' : ids.map((id) => L.store.get(id)?.name.replace('MMCG ', '')).join(', ') || '—'}
+                    {u.role === 'super_admin' || u.role === 'stock_manager' ? 'Réseau entier' : ids.map((id) => L.store.get(id)?.name.replace('MM Cosmétiques ', '')).join(', ') || '—'}
                   </span>
                 )
               },

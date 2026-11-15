@@ -245,7 +245,7 @@ export default function Reports() {
                 <CardTitle>Par boutique</CardTitle>
               </CardHeader>
               <CardContent>
-                <SimpleBarChart data={ranking.map((r) => ({ name: r.store.name.replace('MMCG ', ''), revenue: Math.round(r.revenue) }))} xKey="name" dataKey="revenue" name="CA TTC" />
+                <SimpleBarChart data={ranking.map((r) => ({ name: r.store.name.replace('MM Cosmétiques ', ''), revenue: Math.round(r.revenue) }))} xKey="name" dataKey="revenue" name="CA TTC" />
               </CardContent>
             </Card>
           </div>

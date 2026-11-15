@@ -1,5 +1,5 @@
 -- =====================================================================
--- MMCG Stock Pro — Fonctions métier, triggers et RPC
+-- MM Cosmétiques Stock Pro — Fonctions métier, triggers et RPC
 -- Toutes les opérations de stock passent par des fonctions
 -- SECURITY DEFINER qui vérifient elles-mêmes les habilitations :
 -- le client n'écrit jamais directement dans inventory / stock_movements.

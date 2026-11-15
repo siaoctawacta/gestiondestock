@@ -1,5 +1,5 @@
 -- =====================================================================
--- MMCG Stock Pro — Row Level Security (Zero Trust)
+-- MM Cosmétiques Stock Pro — Row Level Security (Zero Trust)
 -- RLS activée sur TOUTES les tables. Les écritures de stock, ventes,
 -- transferts et déclarations passent exclusivement par les RPC
 -- SECURITY DEFINER (aucune police INSERT/UPDATE directe).

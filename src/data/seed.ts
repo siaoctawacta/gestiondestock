@@ -32,7 +32,7 @@ export interface DemoDb {
 }
 
 export const DEMO_PASSWORD = 'demo1234'
-export const DB_VERSION = 3
+export const DB_VERSION = 4
 
 function rng(seed: number) {
   return () => {
@@ -61,11 +61,11 @@ export function buildSeed(): DemoDb {
 
   /* ---------- Boutiques ---------- */
   const storeDefs = [
-    ['PLT', 'MMCG Plateau', 'Av. Chardy, Plateau, Abidjan', 'Abidjan Sud'],
-    ['COC', 'MMCG Cocody Riviera', 'Bd Mitterrand, Riviera 2, Abidjan', 'Abidjan Nord'],
-    ['YOP', 'MMCG Yopougon', 'Carrefour Siporex, Yopougon', 'Abidjan Nord'],
-    ['MAR', 'MMCG Marcory Zone 4', 'Rue du Canal, Zone 4, Marcory', 'Abidjan Sud'],
-    ['BKE', 'MMCG Bouaké Centre', 'Av. de la Paix, Bouaké', 'Intérieur'],
+    ['PLT', 'MM Cosmétiques Plateau', 'Av. Chardy, Plateau, Abidjan', 'Abidjan Sud'],
+    ['COC', 'MM Cosmétiques Cocody Riviera', 'Bd Mitterrand, Riviera 2, Abidjan', 'Abidjan Nord'],
+    ['YOP', 'MM Cosmétiques Yopougon', 'Carrefour Siporex, Yopougon', 'Abidjan Nord'],
+    ['MAR', 'MM Cosmétiques Marcory Zone 4', 'Rue du Canal, Zone 4, Marcory', 'Abidjan Sud'],
+    ['BKE', 'MM Cosmétiques Bouaké Centre', 'Av. de la Paix, Bouaké', 'Intérieur'],
   ]
   const stores: Store[] = storeDefs.map(([code, name, address, region], i) => ({
     id: id('5707e', i + 1),
@@ -195,7 +195,7 @@ export function buildSeed(): DemoDb {
     ['Gel Douche Hibiscus', 'Lumière', 5, 'Flacon 500 ml', 2100, 4500],
     ['Pinceaux Maquillage (x8)', 'Glamour', 6, 'Kit 8 pièces', 6200, 13900],
     ['Éponge Blender Teint', 'Glamour', 6, 'Unité', 1100, 2500],
-    ['Trousse Beauté Wax', 'MMCG', 6, 'Unité', 3500, 7500],
+    ['Trousse Beauté Wax', 'MM Cosmétiques', 6, 'Unité', 3500, 7500],
   ]
   const products: Product[] = productDefs.map(([name, brand, ci, pack, pa, pv], i) => {
     const cat = categories[ci]
@@ -492,11 +492,11 @@ export function buildSeed(): DemoDb {
 
   const audit_logs: AuditLog[] = [
     { id: id('a0d1', 1), user_id: users[0].id, action: 'UPDATE', entity: 'products', entity_id: products[12].id, details: 'Prix de vente : 37 500 → 39 000', created_at: iso(daysAgo(3, 11)) },
-    { id: id('a0d1', 2), user_id: users[0].id, action: 'INSERT', entity: 'stores', entity_id: S[4], details: 'Création de la boutique MMCG Bouaké Centre', created_at: iso(daysAgo(120, 9)) },
+    { id: id('a0d1', 2), user_id: users[0].id, action: 'INSERT', entity: 'stores', entity_id: S[4], details: 'Création de la boutique MM Cosmétiques Bouaké Centre', created_at: iso(daysAgo(120, 9)) },
     { id: id('a0d1', 3), user_id: users[2].id, action: 'ADJUST', entity: 'inventory', entity_id: null, details: 'Inventaire tournant — 6 références ajustées', created_at: iso(daysAgo(1, 18)) },
     { id: id('a0d1', 4), user_id: users[0].id, action: 'VALIDATE', entity: 'daily_reports', entity_id: daily_reports[0].id, details: 'Déclaration validée', created_at: iso(daysAgo(5, 9)) },
     { id: id('a0d1', 5), user_id: users[0].id, action: 'REJECT', entity: 'daily_reports', entity_id: null, details: 'Justificatif de transport manquant.', created_at: iso(daysAgo(1, 9)) },
-    { id: id('a0d1', 6), user_id: users[1].id, action: 'UPDATE', entity: 'users', entity_id: users[9].id, details: 'Réaffectation à MMCG Marcory Zone 4', created_at: iso(daysAgo(10, 15)) },
+    { id: id('a0d1', 6), user_id: users[1].id, action: 'UPDATE', entity: 'users', entity_id: users[9].id, details: 'Réaffectation à MM Cosmétiques Marcory Zone 4', created_at: iso(daysAgo(10, 15)) },
   ]
 
   return {

@@ -1,4 +1,4 @@
--- Données de référence MMCG Stock Pro (générées depuis src/data/seed.ts)
+-- Données de référence MM Cosmétiques Stock Pro (générées depuis src/data/seed.ts)
 -- Les comptes utilisateurs se créent via Supabase Auth (voir README).
 
 insert into public.categories (id, name, code) values
@@ -17,11 +17,11 @@ insert into public.suppliers (id, name, contact_name, phone, email, address) val
   ('50991000-0000-4000-8000-000000000004', 'Distrib Cosmétiques CI', 'Rokia Camara', '+225 27 22 43 53 60', 'contact@distribcosmt.ci', 'Zone industrielle, Abidjan');
 
 insert into public.stores (id, code, name, address, phone, email, region) values
-  ('5707e000-0000-4000-8000-000000000001', 'BTQ-PLT', 'MMCG Plateau', 'Av. Chardy, Plateau, Abidjan', '+225 07 01 20 40 10', 'plt@mmcg.ci', 'Abidjan Sud'),
-  ('5707e000-0000-4000-8000-000000000002', 'BTQ-COC', 'MMCG Cocody Riviera', 'Bd Mitterrand, Riviera 2, Abidjan', '+225 07 02 21 41 11', 'coc@mmcg.ci', 'Abidjan Nord'),
-  ('5707e000-0000-4000-8000-000000000003', 'BTQ-YOP', 'MMCG Yopougon', 'Carrefour Siporex, Yopougon', '+225 07 03 22 42 12', 'yop@mmcg.ci', 'Abidjan Nord'),
-  ('5707e000-0000-4000-8000-000000000004', 'BTQ-MAR', 'MMCG Marcory Zone 4', 'Rue du Canal, Zone 4, Marcory', '+225 07 04 23 43 13', 'mar@mmcg.ci', 'Abidjan Sud'),
-  ('5707e000-0000-4000-8000-000000000005', 'BTQ-BKE', 'MMCG Bouaké Centre', 'Av. de la Paix, Bouaké', '+225 07 05 24 44 14', 'bke@mmcg.ci', 'Intérieur');
+  ('5707e000-0000-4000-8000-000000000001', 'BTQ-PLT', 'MM Cosmétiques Plateau', 'Av. Chardy, Plateau, Abidjan', '+225 07 01 20 40 10', 'plt@mmcg.ci', 'Abidjan Sud'),
+  ('5707e000-0000-4000-8000-000000000002', 'BTQ-COC', 'MM Cosmétiques Cocody Riviera', 'Bd Mitterrand, Riviera 2, Abidjan', '+225 07 02 21 41 11', 'coc@mmcg.ci', 'Abidjan Nord'),
+  ('5707e000-0000-4000-8000-000000000003', 'BTQ-YOP', 'MM Cosmétiques Yopougon', 'Carrefour Siporex, Yopougon', '+225 07 03 22 42 12', 'yop@mmcg.ci', 'Abidjan Nord'),
+  ('5707e000-0000-4000-8000-000000000004', 'BTQ-MAR', 'MM Cosmétiques Marcory Zone 4', 'Rue du Canal, Zone 4, Marcory', '+225 07 04 23 43 13', 'mar@mmcg.ci', 'Abidjan Sud'),
+  ('5707e000-0000-4000-8000-000000000005', 'BTQ-BKE', 'MM Cosmétiques Bouaké Centre', 'Av. de la Paix, Bouaké', '+225 07 05 24 44 14', 'bke@mmcg.ci', 'Intérieur');
 
 insert into public.products (id, sku, barcode, name, brand, description, packaging, category_id, supplier_id, purchase_price, selling_price, vat_rate, min_stock_level) values
   ('9d0c0000-0000-4000-8000-000000000001', 'COSM-SOI-0001', '0619001000003', 'Sérum Éclat Vitamine C', 'Lumière', 'Sérum Éclat Vitamine C — Lumière. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Flacon 30 ml', 'ca7e0000-0000-4000-8000-000000000001', '50991000-0000-4000-8000-000000000001', 7800, 15500, 18, 6),
@@ -53,7 +53,7 @@ insert into public.products (id, sku, barcode, name, brand, description, packagi
   ('9d0c0000-0000-4000-8000-000000000027', 'COSM-HYG-0027', '0619001009624', 'Gel Douche Hibiscus', 'Lumière', 'Gel Douche Hibiscus — Lumière. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Flacon 500 ml', 'ca7e0000-0000-4000-8000-000000000006', '50991000-0000-4000-8000-000000000003', 2100, 4500, 18, 6),
   ('9d0c0000-0000-4000-8000-000000000028', 'COSM-ACC-0028', '0619001009990', 'Pinceaux Maquillage (x8)', 'Glamour', 'Pinceaux Maquillage (x8) — Glamour. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Kit 8 pièces', 'ca7e0000-0000-4000-8000-000000000007', '50991000-0000-4000-8000-000000000004', 6200, 13900, 18, 6),
   ('9d0c0000-0000-4000-8000-000000000029', 'COSM-ACC-0029', '0619001010361', 'Éponge Blender Teint', 'Glamour', 'Éponge Blender Teint — Glamour. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Unité', 'ca7e0000-0000-4000-8000-000000000007', '50991000-0000-4000-8000-000000000001', 1100, 2500, 18, 6),
-  ('9d0c0000-0000-4000-8000-000000000030', 'COSM-ACC-0030', '0619001010736', 'Trousse Beauté Wax', 'MMCG', 'Trousse Beauté Wax — MMCG. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Unité', 'ca7e0000-0000-4000-8000-000000000007', '50991000-0000-4000-8000-000000000002', 3500, 7500, 18, 6);
+  ('9d0c0000-0000-4000-8000-000000000030', 'COSM-ACC-0030', '0619001010736', 'Trousse Beauté Wax', 'MM Cosmétiques', 'Trousse Beauté Wax — MM Cosmétiques. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Unité', 'ca7e0000-0000-4000-8000-000000000007', '50991000-0000-4000-8000-000000000002', 3500, 7500, 18, 6);
 
 -- Stock initial : 50 unités par produit et par boutique
 update public.inventory set quantity = 50;

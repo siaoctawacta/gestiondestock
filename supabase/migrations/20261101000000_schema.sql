@@ -1,5 +1,5 @@
 -- =====================================================================
--- MMCG Stock Pro — Schéma relationnel PostgreSQL (Supabase)
+-- MM Cosmétiques Stock Pro — Schéma relationnel PostgreSQL (Supabase)
 -- 15 tables métier du cahier des charges + 3 tables de support
 -- (user_stores, stock_transfers, transfer_items).
 -- =====================================================================

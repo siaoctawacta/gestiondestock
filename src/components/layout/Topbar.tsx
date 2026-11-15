@@ -72,7 +72,7 @@ function StoreSwitcher() {
       <Select
         value={activeStoreId ?? ''}
         onChange={(e) => setActiveStore(e.target.value || null)}
-        className="h-9 w-56 pl-8 text-xs font-medium"
+        className="h-9 w-64 pl-8 text-xs font-medium"
         aria-label="Boutique active"
       >
         {scope === null && <option value="">Toutes les boutiques</option>}
