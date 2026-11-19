@@ -4,12 +4,24 @@ ERP SaaS de gestion de stock, caisse POS multi-boutiques et business intelligenc
 
 **Stack** : React 18 · TypeScript strict · Tailwind CSS · composants Shadcn UI (Radix) · Zustand · TanStack Query · Supabase (PostgreSQL, Auth, RLS, Storage, Realtime).
 
+## Organisation du dépôt
+
+| Dossier | Contenu | Détails |
+|---|---|---|
+| [`frontend/`](frontend/) | Application React (interface, mode démo, exports) | [frontend/README.md](frontend/README.md) |
+| [`backend/`](backend/) | Supabase : schéma PostgreSQL, RPC, RLS, Edge Functions, tests | [backend/README.md](backend/README.md) |
+
+Les deux parties sont indépendantes : le frontend parle au backend uniquement via l'API Supabase (`frontend/src/data/supabaseApi.ts`).
+
 ## Démarrage rapide (mode démo)
 
 ```bash
+cd frontend
 npm install
 npm run dev
 ```
+
+(Depuis la racine, `npm run setup` puis `npm run dev` font la même chose.)
 
 Sans variables Supabase, l'application démarre en **mode démo** : les données (5 boutiques, 30 produits, 60 jours de ventes) sont générées localement dans le navigateur et les règles RLS sont émulées côté client. L'écran de connexion propose un accès rapide pour chacun des 6 rôles (mot de passe commun `demo1234`).
 
@@ -28,12 +40,14 @@ Les données démo se réinitialisent depuis **Paramètres → Données de démo
 
 1. Créer un projet Supabase, puis appliquer le schéma :
    ```bash
+   cd backend
    supabase link --project-ref <ref>
-   supabase db push           # applique supabase/migrations/*
+   supabase db push           # applique backend/supabase/migrations/*
    psql "$DATABASE_URL" -f supabase/seed.sql   # catégories, fournisseurs, boutiques, produits
    ```
 2. Déployer les Edge Functions (création de comptes et validation superviseur, qui exigent la clé `service_role` côté serveur) :
    ```bash
+   cd backend
    supabase functions deploy admin-users
    supabase functions deploy verify-supervisor
    ```
@@ -42,24 +56,24 @@ Les données démo se réinitialisent depuis **Paramètres → Données de démo
    update public.users set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom' where email = 'vous@domaine.ci';
    ```
    Les autres comptes se créent ensuite depuis l'écran **Utilisateurs**.
-4. Copier `.env.example` en `.env` et renseigner `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`.
+4. Copier `frontend/.env.example` en `frontend/.env` et renseigner `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`.
 5. Dans *Authentication → URL Configuration*, ajouter `https://<votre-domaine>/reset-password` aux URL de redirection.
 
 ### Déploiement Vercel
 
-Importer le dépôt dans Vercel (preset Vite), définir les deux variables d'environnement. `vercel.json` gère la réécriture SPA et les en-têtes de sécurité. Chaque branche obtient une URL de prévisualisation.
+Importer le dépôt dans Vercel avec **Root Directory = `frontend`** (preset Vite), puis définir les deux variables d'environnement. `frontend/vercel.json` gère la réécriture SPA et les en-têtes de sécurité. Chaque branche obtient une URL de prévisualisation.
 
 ## Architecture
 
 ```
-src/
+frontend/src/
   data/          api.ts (contrat) · supabaseApi.ts (prod) · demoApi.ts (démo) · logic.ts (calculs métier) · seed.ts
   lib/           permissions (RBAC) · analytics (KPI) · export (PDF/Excel) · receipt (ticket 80 mm)
   store/         Zustand : session, panier POS, préférences UI
   hooks/         TanStack Query + invalidation temps réel
   components/    ui/ (Shadcn) · layout/ · common/
   pages/         un fichier par module
-supabase/
+backend/supabase/
   migrations/    schéma · fonctions/RPC/triggers · polices RLS
   functions/     Edge Functions admin-users, verify-supervisor
   tests/         tests pgTAP de sécurité RLS
@@ -89,15 +103,13 @@ supabase/
 | 8 | Alertes (stock faible, rupture, déclaration, écart > 2 %) | cloche + `/notifications` |
 | 9 | Tableaux de bord par rôle | `/` |
 | 10 | Rapports ventes / stock / marges / employés, export PDF & Excel | `/reports` |
-| 11–12 | Schéma DDL, RLS, triggers | `supabase/` |
+| 11–12 | Schéma DDL, RLS, triggers | `backend/supabase/` |
 
 ## Qualité
 
 ```bash
-npm run typecheck   # TypeScript strict
-npm test            # Vitest : calculs métier + étanchéité multi-boutiques
-npm run build
-supabase test db    # pgTAP : tests de sécurité RLS sur la base
+cd frontend && npm run typecheck && npm test && npm run build   # TypeScript strict, Vitest, build
+cd backend && supabase test db                                   # pgTAP : tests de sécurité RLS
 ```
 
-La CI GitHub Actions (`.github/workflows/ci.yml`) exécute ces étapes à chaque push et pull request.
+La CI GitHub Actions (`.github/workflows/ci.yml`) exécute ces étapes à chaque push et pull request, avec un job `frontend` et un job `backend`.
