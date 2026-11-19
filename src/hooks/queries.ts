@@ -52,7 +52,7 @@ export function useUsers() {
   return useQuery({
     queryKey: [...qk.users, user?.id],
     queryFn: api.listUsers,
-    enabled: can(user?.role, 'users.manage'),
+    enabled: can(user?.role, 'users.view'),
   })
 }
 

@@ -94,3 +94,68 @@ describe('Étanchéité multi-boutiques (RLS émulée)', () => {
     expect(list.find((x) => x.id === r.id)?.status).toBe('rejected')
   })
 })
+
+describe('Gestion boutiques & utilisateurs réservée au Super Admin', () => {
+  beforeEach(() => {
+    localStorage.clear()
+    resetDemoData()
+  })
+
+  it('un Admin Boutique ne peut ni créer, ni modifier, ni supprimer boutique ou utilisateur', async () => {
+    await login('admin.sud@mmcg.ci')
+    const stores = await demoApi.listStores()
+    const users = await demoApi.listUsers() // lecture autorisée (noms dans l'historique)
+    const cashier = users.find((u) => u.role === 'cashier')!
+    await expect(demoApi.saveStore({ name: 'X', code: 'BTQ-X' })).rejects.toThrow(/non autorisée/)
+    await expect(demoApi.saveStore({ ...stores[0], name: 'Renommée' })).rejects.toThrow(/non autorisée/)
+    await expect(demoApi.deleteStore(stores[0].id)).rejects.toThrow(/non autorisée/)
+    await expect(demoApi.saveUser({ ...cashier, role: 'store_manager' })).rejects.toThrow(/non autorisée/)
+    await expect(demoApi.saveUser({ first_name: 'A', last_name: 'B', email: 'x@y.ci', role: 'cashier', password: 'motdepasse' })).rejects.toThrow(/non autorisée/)
+    await expect(demoApi.deleteUser(cashier.id)).rejects.toThrow(/non autorisée/)
+    await expect(demoApi.setUserActive(cashier.id, false)).rejects.toThrow(/non autorisée/)
+  })
+
+  it('le Super Admin supprime un utilisateur : connexion bloquée, historique conservé, email réutilisable', async () => {
+    await login('admin@mmcg.ci')
+    const users = await demoApi.listUsers()
+    const target = users.find((u) => u.email === 'caisse.plateau@mmcg.ci')!
+    await demoApi.deleteUser(target.id)
+    const after = (await demoApi.listUsers()).find((u) => u.id === target.id)!
+    expect(after.deleted_at).toBeTruthy()
+    expect(after.is_active).toBe(false)
+    const sales = await demoApi.listSales()
+    expect(sales.some((s) => s.cashier_id === target.id)).toBe(true)
+    await expect(login('caisse.plateau@mmcg.ci')).rejects.toThrow()
+    await login('admin@mmcg.ci')
+    const fresh = await demoApi.saveUser({ first_name: 'Nouvelle', last_name: 'Caissière', email: 'caisse.plateau@mmcg.ci', role: 'cashier', store_id: target.store_id, password: 'motdepasse' })
+    expect(fresh.id).not.toBe(target.id)
+  })
+
+  it('protège le dernier Super Admin et son propre compte', async () => {
+    const me = await login('admin@mmcg.ci')
+    await expect(demoApi.deleteUser(me.id)).rejects.toThrow(/propre compte/)
+    await expect(demoApi.saveUser({ id: me.id, role: 'cashier' })).rejects.toThrow(/dernier Super Admin/)
+  })
+
+  it('la suppression d’une boutique exige qu’elle soit vide et la masque sans perdre ses ventes', async () => {
+    await login('admin@mmcg.ci')
+    const stores = await demoApi.listStores()
+    const bke = stores.find((s) => s.code === 'BTQ-BKE')!
+    // transfert en transit TRF-000001 vers Bouaké + caissière affectée
+    await expect(demoApi.deleteStore(bke.id)).rejects.toThrow(/transit/)
+    const transfers = await demoApi.listTransfers()
+    for (const t of transfers.filter((t) => t.status === 'in_transit' && (t.dest_store_id === bke.id || t.source_store_id === bke.id)))
+      await demoApi.cancelTransfer(t.id)
+    await expect(demoApi.deleteStore(bke.id)).rejects.toThrow(/réaffectez/)
+    const users = await demoApi.listUsers()
+    for (const u of users.filter((u) => u.store_id === bke.id)) await demoApi.deleteUser(u.id)
+    await demoApi.deleteStore(bke.id)
+    const after = (await demoApi.listStores()).find((s) => s.id === bke.id)!
+    expect(after.deleted_at).toBeTruthy()
+    expect(after.is_active).toBe(false)
+    expect((await demoApi.listSales()).some((s) => s.store_id === bke.id)).toBe(true)
+    // le code redevient disponible
+    const recreated = await demoApi.saveStore({ name: 'MM Cosmétiques Bouaké II', code: 'BTQ-BKE' })
+    expect(recreated.id).not.toBe(bke.id)
+  })
+})

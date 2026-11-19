@@ -20,6 +20,8 @@ export interface Profile {
   is_active: boolean
   last_login_at: string | null
   created_at: string
+  /** Suppression logique : l'historique reste rattaché. */
+  deleted_at?: string | null
 }
 
 export interface Store {
@@ -33,6 +35,8 @@ export interface Store {
   manager_id: string | null
   is_active: boolean
   created_at: string
+  /** Suppression logique : ventes et mouvements conservés. */
+  deleted_at?: string | null
 }
 
 export interface Category {

@@ -72,14 +72,16 @@ supabase/
 - **Totaux de vente recalculés côté serveur** depuis le catalogue. Le client n'envoie que produits et quantités.
 - Mouvements de stock verrouillés ligne par ligne (`FOR UPDATE`), transferts atomiques, `stock_movements` et `audit_logs` inaltérables (trigger).
 - Triggers d'audit sur produits, boutiques, utilisateurs, transferts et déclarations.
+- Seul le Super Admin ajoute, modifie ou supprime boutiques et utilisateurs et attribue les rôles (police RLS, RPC `delete_store` et Edge Function `admin-users`).
+- Suppression **logique** (`deleted_at`) : l'élément disparaît des listes et un compte supprimé ne peut plus se connecter, mais ventes, mouvements et déclarations restent rattachés. Une boutique ne peut être supprimée qu'une fois ses transferts en transit traités et ses utilisateurs réaffectés.
 
 ### Modules
 
 | # | Module | Écran |
 |---|---|---|
 | 1 | Authentification, sessions, mot de passe oublié, garde de routes | `/login`, `/forgot-password`, `/reset-password` |
-| 2 | Gestion des utilisateurs (création, rôles, désactivation, dernière connexion) | `/users` |
-| 3 | Réseau de boutiques | `/stores` |
+| 2 | Gestion des utilisateurs (création, rôles, désactivation, suppression, dernière connexion) — **Super Admin uniquement** | `/users` |
+| 3 | Réseau de boutiques (ajout, modification, suppression) — **Super Admin uniquement** | `/stores` |
 | 4 | Catalogue (SKU auto, EAN13, QR code, marge, images) | `/products`, `/catalog-settings` |
 | 5 | Stocks, lots & péremption, ajustements, transferts en 2 étapes, journal | `/inventory`, `/transfers`, `/movements` |
 | 6 | Caisse POS (scan, remises avec validation superviseur > 15 %, espèces/Mobile Money/carte, ticket PDF) | `/pos`, `/sales` |
