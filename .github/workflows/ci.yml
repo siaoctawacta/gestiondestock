@@ -30,8 +30,10 @@ jobs:
         working-directory: backend
     steps:
       - uses: actions/checkout@v4
+      # Version figée : « latest » interroge l'API GitHub sans authentification
+      # et échoue dès que la limite de requêtes est atteinte.
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.2.0
       - run: supabase db start
       - run: supabase test db
