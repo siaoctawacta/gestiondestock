@@ -39,7 +39,10 @@ export function AppLayout() {
         {api.mode === 'demo' && (
           <div className="flex h-[29px] items-center justify-center gap-2 truncate border-b bg-amber-50 px-4 py-1.5 text-[11px] text-amber-800 dark:bg-amber-500/10 dark:text-amber-300">
             <FlaskConical className="size-3.5" />
-            Mode démo — données locales simulées. Configurez Supabase dans <code className="font-mono">.env</code> pour la production.
+            <span className="sm:hidden">Mode démo — données locales</span>
+            <span className="hidden sm:inline">
+              Mode démo — données locales simulées. Configurez Supabase dans <code className="font-mono">.env</code> pour la production.
+            </span>
           </div>
         )}
         <main className="mx-auto w-full max-w-[1500px] flex-1 p-4 sm:p-6 lg:p-8">

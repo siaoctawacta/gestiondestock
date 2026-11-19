@@ -32,7 +32,7 @@ export interface DemoDb {
 }
 
 export const DEMO_PASSWORD = 'demo1234'
-export const DB_VERSION = 4
+export const DB_VERSION = 5
 
 function rng(seed: number) {
   return () => {
@@ -485,7 +485,7 @@ export function buildSeed(): DemoDb {
     notif('low_stock', 'warning', 'Stock faible', `${products[12].name} : 2 unités restantes à ${stores[0].name}.`, S[0], stockRoles, 6),
     notif('low_stock', 'warning', 'Stock faible', `${products[0].name} : 4 unités restantes à ${stores[1].name}.`, S[1], stockRoles, 9),
     notif('daily_report', 'info', 'Nouvelle déclaration', `Fatou Diallo a soumis la déclaration de ${stores[1].name}.`, S[1], ['super_admin', 'store_admin'], 14),
-    notif('cash_variance', 'critical', 'Écart de caisse', `Écart de −9 500 F détecté sur la déclaration de ${stores[1].name}.`, S[1], ['super_admin', 'store_admin'], 14),
+    notif('cash_variance', 'critical', 'Écart de caisse', `Écart de −9 500 XOF détecté sur la déclaration de ${stores[1].name}.`, S[1], ['super_admin', 'store_admin'], 14),
     notif('transfer', 'info', 'Transfert en transit', `TRF-000002 : ${stores[3].name} → ${stores[1].name}.`, S[1], ['super_admin', 'store_admin', 'store_manager', 'stock_manager'], 3),
     notif('transfer', 'info', 'Transfert en transit', `TRF-000001 : ${stores[0].name} → ${stores[4].name}.`, S[4], ['super_admin', 'store_admin', 'store_manager', 'stock_manager'], 20, true),
   ]

@@ -679,7 +679,7 @@ export const demoApi: DataApi = {
     const store = db.stores.find((s) => s.id === r.store_id)!
     notify({ type: 'daily_report', severity: 'info', title: 'Nouvelle déclaration', message: `${user.first_name} ${user.last_name} a soumis la déclaration du ${r.report_date} — ${store.name}.`, store_id: r.store_id, target_roles: ['super_admin', 'store_admin'] })
     if (Math.abs(r.variance_pct) > CASH_VARIANCE_TOLERANCE)
-      notify({ type: 'cash_variance', severity: 'critical', title: 'Écart de caisse', message: `Écart de ${r.variance_pct.toFixed(1)} % (${Math.round(r.variance)} F) sur ${store.name} le ${r.report_date}.`, store_id: r.store_id, target_roles: ['super_admin', 'store_admin'] })
+      notify({ type: 'cash_variance', severity: 'critical', title: 'Écart de caisse', message: `Écart de ${r.variance_pct.toFixed(1)} % (${Math.round(r.variance)} XOF) sur ${store.name} le ${r.report_date}.`, store_id: r.store_id, target_roles: ['super_admin', 'store_admin'] })
     audit('SUBMIT', 'daily_reports', r.id, `Déclaration ${store.code} du ${r.report_date}`)
     commit('daily_reports', 'notifications', 'audit_logs')
   },

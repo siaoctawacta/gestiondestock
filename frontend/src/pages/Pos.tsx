@@ -298,7 +298,7 @@ function PosTerminal({ storeId, user }: { storeId: string; user: Profile }) {
                         <Plus className="size-3.5" />
                       </button>
                     </div>
-                    <span className="w-20 text-right text-sm font-semibold tabular">{formatMoney(p.selling_price * l.quantity)}</span>
+                    <span className="min-w-[5.5rem] text-right text-sm font-semibold tabular">{formatMoney(p.selling_price * l.quantity)}</span>
                     <button onClick={() => cart.remove(p.id)} className="text-muted-foreground hover:text-destructive" aria-label="Retirer">
                       <X className="size-4" />
                     </button>
@@ -318,7 +318,7 @@ function PosTerminal({ storeId, user }: { storeId: string; user: Profile }) {
                   onClick={() => cart.setDiscount(m, 0)}
                   className={cn('rounded-md px-2.5 py-1 font-medium', cart.discountMode === m ? 'bg-muted text-foreground' : 'text-muted-foreground')}
                 >
-                  {m === 'percent' ? '%' : 'F'}
+                  {m === 'percent' ? '%' : 'XOF'}
                 </button>
               ))}
             </div>
