@@ -8,8 +8,6 @@ const cors = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const ADMIN_ASSIGNABLE = ['store_manager', 'cashier', 'stock_manager']
-
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   const json = (body: unknown, status = 200) =>
@@ -25,17 +23,35 @@ Deno.serve(async (req) => {
     const { data: auth } = await caller.auth.getUser()
     if (!auth.user) return json({ error: 'Non authentifié' }, 401)
     const { data: me } = await admin.from('users').select('*').eq('id', auth.user.id).single()
-    if (!me?.is_active || !['super_admin', 'store_admin'].includes(me.role_id))
-      return json({ error: 'Action non autorisée' }, 403)
+    // Seul le Super Admin crée, modifie, supprime des comptes et attribue les rôles.
+    if (!me?.is_active || me.deleted_at || me.role_id !== 'super_admin') return json({ error: 'Action réservée au Super Admin' }, 403)
 
     const body = await req.json()
     const { id, email, password, first_name, last_name, phone, role, store_id, store_ids, is_active } = body
 
-    if (me.role_id === 'store_admin') {
-      const { data: scope } = await admin.from('user_stores').select('store_id').eq('user_id', me.id)
-      const allowed = new Set([me.store_id, ...(scope ?? []).map((s: { store_id: string }) => s.store_id)])
-      if (role && !ADMIN_ASSIGNABLE.includes(role)) return json({ error: 'Rôle non attribuable' }, 403)
-      if (store_id && !allowed.has(store_id)) return json({ error: 'Boutique hors périmètre' }, 403)
+    const { data: target } = id ? await admin.from('users').select('*').eq('id', id).maybeSingle() : { data: null }
+    if (id && (!target || target.deleted_at)) return json({ error: 'Utilisateur introuvable ou supprimé' }, 404)
+    const otherSuperAdmins = async () => {
+      const { count } = await admin.from('users').select('id', { count: 'exact', head: true })
+        .eq('role_id', 'super_admin').eq('is_active', true).is('deleted_at', null).neq('id', id)
+      return count ?? 0
+    }
+    if (id && target.role_id === 'super_admin' && (body.delete || is_active === false || (role && role !== 'super_admin'))) {
+      if ((await otherSuperAdmins()) === 0) return json({ error: 'Impossible de retirer le dernier Super Admin' }, 400)
+    }
+    if (id && id === me.id && (body.delete || is_active === false)) return json({ error: 'Action impossible sur votre propre compte' }, 400)
+
+    // Suppression logique : historique conservé, connexion bloquée, email libéré.
+    if (body.delete) {
+      const freed = `supprime-${String(id).slice(-8)}@supprime.local`
+      const { error: authErr } = await admin.auth.admin.updateUserById(id, { email: freed, ban_duration: '876000h' })
+      if (authErr) return json({ error: authErr.message }, 400)
+      await admin.auth.admin.signOut(id).catch(() => null)
+      await admin.from('users').update({ is_active: false, deleted_at: new Date().toISOString(), email: freed }).eq('id', id)
+      await admin.from('user_stores').delete().eq('user_id', id)
+      await admin.from('stores').update({ manager_id: null }).eq('manager_id', id)
+      await admin.from('audit_logs').insert({ user_id: me.id, action: 'DELETE', entity: 'users', entity_id: id, details: `Suppression du compte ${target.email} (historique conservé)` })
+      return json({ id })
     }
 
     let userId = id as string | undefined
@@ -70,7 +86,7 @@ Deno.serve(async (req) => {
     const { error: upErr } = await admin.from('users').upsert(profile)
     if (upErr) return json({ error: upErr.message }, 400)
 
-    if (Array.isArray(store_ids) && me.role_id === 'super_admin') {
+    if (Array.isArray(store_ids)) {
       await admin.from('user_stores').delete().eq('user_id', userId)
       if (store_ids.length)
         await admin.from('user_stores').insert(store_ids.map((s: string) => ({ user_id: userId, store_id: s })))

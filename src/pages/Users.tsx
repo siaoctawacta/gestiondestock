@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Pencil, Power, UserPlus } from 'lucide-react'
+import { Pencil, Power, Trash2, UserPlus } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -8,10 +8,11 @@ import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { PageHeader } from '@/components/common/PageHeader'
 import { DataTable } from '@/components/common/DataTable'
 import { Avatar } from '@/components/common/Avatar'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { useAction, useLookups, useStores, useUsers } from '@/hooks/queries'
 import { useAuth } from '@/store/auth'
 import { api } from '@/data'
-import { assignableRoles, ROLE_LABELS, storeScope } from '@/lib/permissions'
+import { assignableRoles, can, ROLE_LABELS, storeScope } from '@/lib/permissions'
 import { formatDateTime, timeAgo } from '@/lib/utils'
 import type { Profile, UserInput } from '@/types'
 
@@ -21,11 +22,18 @@ export default function Users() {
   const L = useLookups()
   const [role, setRole] = useState('')
   const [editing, setEditing] = useState<UserInput | null>(null)
+  const [deleting, setDeleting] = useState<Profile | null>(null)
+  const manage = can(me.role, 'users.manage')
+  const remove = useAction((id: string) => api.deleteUser(id), {
+    tables: ['users', 'stores', 'audit_logs'],
+    success: 'Utilisateur supprimé',
+    onSuccess: () => setDeleting(null),
+  })
   const toggle = useAction((u: Profile) => api.setUserActive(u.id, !u.is_active), {
     tables: ['users'],
     success: 'Statut du compte mis à jour',
   })
-  const rows = (users.data ?? []).filter((u) => !role || u.role === role)
+  const rows = (users.data ?? []).filter((u) => !u.deleted_at && (!role || u.role === role))
 
   return (
     <div>
@@ -33,9 +41,11 @@ export default function Users() {
         title="Utilisateurs"
         description="Comptes, rôles et affectations aux boutiques"
         actions={
-          <Button onClick={() => setEditing({ role: assignableRoles(me.role)[0], is_active: true, store_ids: [] })}>
-            <UserPlus /> Nouvel utilisateur
-          </Button>
+          manage && (
+            <Button onClick={() => setEditing({ role: 'cashier', is_active: true, store_ids: [] })}>
+              <UserPlus /> Nouvel utilisateur
+            </Button>
+          )
         }
       />
       <Card>
@@ -96,20 +106,35 @@ export default function Users() {
               key: 'actions',
               header: '',
               cell: (u) =>
-                u.id !== me.id && (me.role === 'super_admin' || assignableRoles(me.role).includes(u.role)) ? (
+                manage ? (
                   <div className="flex justify-end gap-1">
-                    <Button variant="ghost" size="icon-sm" onClick={() => setEditing(u)} aria-label="Modifier">
+                    <Button variant="ghost" size="icon-sm" onClick={() => setEditing(u)} aria-label="Modifier" title="Modifier">
                       <Pencil />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon-sm"
-                      onClick={() => toggle.mutate(u)}
-                      aria-label={u.is_active ? 'Désactiver' : 'Réactiver'}
-                      className={u.is_active ? 'text-destructive' : 'text-emerald-600'}
-                    >
-                      <Power />
-                    </Button>
+                    {u.id !== me.id && (
+                      <>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => toggle.mutate(u)}
+                          aria-label={u.is_active ? 'Désactiver' : 'Réactiver'}
+                          title={u.is_active ? 'Désactiver' : 'Réactiver'}
+                          className={u.is_active ? 'text-amber-600' : 'text-emerald-600'}
+                        >
+                          <Power />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => setDeleting(u)}
+                          aria-label="Supprimer"
+                          title="Supprimer"
+                          className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        >
+                          <Trash2 />
+                        </Button>
+                      </>
+                    )}
                   </div>
                 ) : null,
             },
@@ -117,6 +142,25 @@ export default function Users() {
         />
       </Card>
       {editing && <UserForm initial={editing} onClose={() => setEditing(null)} />}
+      <ConfirmDialog
+        open={!!deleting}
+        title="Supprimer l’utilisateur"
+        loading={remove.isPending}
+        onCancel={() => setDeleting(null)}
+        onConfirm={() => deleting && remove.mutate(deleting.id)}
+      >
+        <p>
+          Supprimer le compte de{' '}
+          <b className="text-foreground">
+            {deleting?.first_name} {deleting?.last_name}
+          </b>{' '}
+          ({deleting?.email}) ?
+        </p>
+        <p>
+          La personne ne pourra plus se connecter et son email pourra être réutilisé. Ses ventes et actions passées restent
+          dans l’historique. Pour une absence temporaire, préférez <b className="text-foreground">Désactiver</b>.
+        </p>
+      </ConfirmDialog>
     </div>
   )
 }

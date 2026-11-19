@@ -37,6 +37,7 @@ export type Permission =
   | 'analytics'
   | 'stores.view'
   | 'stores.edit'
+  | 'users.view'
   | 'users.manage'
   | 'audit'
   | 'discount.approve'
@@ -61,8 +62,10 @@ const MATRIX: Record<Permission, Role[]> = {
   'reports.daily.validate': ['super_admin', 'store_admin'],
   analytics: ['super_admin', 'store_admin', 'store_manager', 'pole_chief'],
   'stores.view': ['super_admin', 'store_admin', 'pole_chief'],
+  // Seul le Super Admin ajoute, modifie ou supprime boutiques et utilisateurs, et attribue les rôles.
   'stores.edit': ['super_admin'],
-  'users.manage': ['super_admin', 'store_admin'],
+  'users.view': ['super_admin', 'store_admin', 'store_manager', 'pole_chief'],
+  'users.manage': ['super_admin'],
   audit: ['super_admin'],
   'discount.approve': ['super_admin', 'store_admin', 'store_manager'],
 }
@@ -72,11 +75,9 @@ export function can(role: Role | undefined | null, permission: Permission) {
   return MATRIX[permission].includes(role)
 }
 
-/** Rôles qu'un utilisateur peut attribuer. */
+/** Rôles qu'un utilisateur peut attribuer : réservé au Super Admin. */
 export function assignableRoles(role: Role): Role[] {
-  if (role === 'super_admin') return ROLES
-  if (role === 'store_admin') return ['store_manager', 'cashier', 'stock_manager']
-  return []
+  return role === 'super_admin' ? ROLES : []
 }
 
 /** Seuil de remise au-delà duquel une validation superviseur est requise. */

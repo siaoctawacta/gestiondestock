@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Mail, MapPin, Pencil, Phone, Plus, Store as StoreIcon, UserRound } from 'lucide-react'
+import { Mail, MapPin, Pencil, Phone, Plus, Store as StoreIcon, Trash2, UserRound } from 'lucide-react'
 import { subDays } from 'date-fns'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Field, Input, Select } from '@/components/ui/input'
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { PageHeader } from '@/components/common/PageHeader'
+import { ConfirmDialog } from '@/components/common/ConfirmDialog'
 import { useAction, useInventory, useLookups, useSales, useStores, useUsers } from '@/hooks/queries'
 import { useAuth } from '@/store/auth'
 import { api } from '@/data'
@@ -22,8 +23,14 @@ export default function Stores() {
   const sales = useSales({ from: subDays(new Date(), 29).toISOString().slice(0, 10) }).data ?? []
   const inventory = useInventory().data ?? []
   const [editing, setEditing] = useState<Partial<Store> | null>(null)
+  const [deleting, setDeleting] = useState<Store | null>(null)
+  const remove = useAction((id: string) => api.deleteStore(id), {
+    tables: ['stores', 'users', 'inventory', 'audit_logs'],
+    success: 'Boutique supprimée',
+    onSuccess: () => setDeleting(null),
+  })
   const scope = storeScope(user)
-  const list = (stores.data ?? []).filter((s) => scope === null || scope.includes(s.id))
+  const list = (stores.data ?? []).filter((s) => !s.deleted_at && (scope === null || scope.includes(s.id)))
   const editable = can(user.role, 'stores.edit')
 
   return (
@@ -89,15 +96,41 @@ export default function Stores() {
                 </p>
               )}
               {editable && (
-                <Button variant="outline" size="sm" className="mt-4" onClick={() => setEditing(s)}>
-                  <Pencil /> Modifier
-                </Button>
+                <div className="mt-4 flex gap-2">
+                  <Button variant="outline" size="sm" className="flex-1" onClick={() => setEditing(s)}>
+                    <Pencil /> Modifier
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => setDeleting(s)}
+                    aria-label={`Supprimer ${s.name}`}
+                  >
+                    <Trash2 /> Supprimer
+                  </Button>
+                </div>
               )}
             </Card>
           )
         })}
       </div>
       {editing && <StoreForm initial={editing} onClose={() => setEditing(null)} />}
+      <ConfirmDialog
+        open={!!deleting}
+        title="Supprimer la boutique"
+        loading={remove.isPending}
+        onCancel={() => setDeleting(null)}
+        onConfirm={() => deleting && remove.mutate(deleting.id)}
+      >
+        <p>
+          Supprimer <b className="text-foreground">{deleting?.name}</b> du réseau ?
+        </p>
+        <p>
+          Elle disparaît des listes, de la caisse et des sélections. Ses ventes, mouvements de stock et déclarations
+          restent dans l’historique et les rapports.
+        </p>
+      </ConfirmDialog>
     </div>
   )
 }

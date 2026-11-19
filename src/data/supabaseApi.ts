@@ -48,6 +48,7 @@ function mapProfile(r: Row): Profile {
     is_active: r.is_active,
     last_login_at: r.last_login_at,
     created_at: r.created_at,
+    deleted_at: r.deleted_at ?? null,
   }
 }
 
@@ -163,6 +164,9 @@ export const supabaseApi: DataApi = {
       : supabase().from('stores').insert(input)
     return check(await q.select().single())
   },
+  async deleteStore(id) {
+    check(await supabase().rpc('delete_store', { p_store: id }))
+  },
   async listUsers() {
     const rows = check(await supabase().from('users').select('*, user_stores(store_id)').order('last_name'))
     return rows.map(mapProfile)
@@ -173,6 +177,9 @@ export const supabaseApi: DataApi = {
   },
   async setUserActive(id, active) {
     await fnCall('admin-users', { id, is_active: active })
+  },
+  async deleteUser(id) {
+    await fnCall('admin-users', { id, delete: true })
   },
 
   async listCategories() {

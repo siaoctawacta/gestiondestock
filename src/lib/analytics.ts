@@ -100,6 +100,8 @@ export function storeRanking(sales: Sale[], stores: Store[]) {
       const list = sales.filter((s) => s.store_id === st.id)
       return { store: st, ...summarize(list) }
     })
+    // Une boutique supprimée n'apparaît que si elle a encore des ventes sur la période
+    .filter((r) => !r.store.deleted_at || r.count > 0)
     .sort((a, b) => b.revenue - a.revenue)
 }
 

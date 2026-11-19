@@ -40,9 +40,13 @@ export interface DataApi {
   // Référentiels
   listStores(): Promise<Store[]>
   saveStore(input: Partial<Store>): Promise<Store>
+  /** Suppression logique, Super Admin uniquement. */
+  deleteStore(id: string): Promise<void>
   listUsers(): Promise<Profile[]>
   saveUser(input: UserInput): Promise<Profile>
   setUserActive(id: string, active: boolean): Promise<void>
+  /** Suppression logique + blocage de connexion, Super Admin uniquement. */
+  deleteUser(id: string): Promise<void>
   listCategories(): Promise<Category[]>
   saveCategory(input: Partial<Category>): Promise<Category>
   deleteCategory(id: string): Promise<void>

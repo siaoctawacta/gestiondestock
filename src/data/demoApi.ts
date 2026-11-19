@@ -101,6 +101,10 @@ function guard(role: Role, perm: Parameters<typeof can>[1]) {
   if (!can(role, perm)) throw new Error('Action non autorisée pour votre rôle (RLS).')
 }
 
+function activeSuperAdmins(db: DemoDb) {
+  return db.users.filter((u) => !u.deleted_at && u.is_active && u.role === 'super_admin').length
+}
+
 function requireStore(user: Profile, storeId: string) {
   if (!inScope(user, storeId)) throw new Error('Cette boutique est hors de votre périmètre (RLS).')
 }
@@ -186,7 +190,7 @@ export const demoApi: DataApi = {
 
   /* ---------------- Auth ---------------- */
   async signIn(email, password) {
-    const u = load().users.find((x) => x.email.toLowerCase() === email.trim().toLowerCase())
+    const u = load().users.find((x) => !x.deleted_at && x.email.toLowerCase() === email.trim().toLowerCase())
     if (!u || u.password !== password) throw new Error('Email ou mot de passe incorrect.')
     if (!u.is_active) throw new Error('Ce compte est désactivé. Contactez votre administrateur.')
     u.last_login_at = nowIso()
@@ -214,7 +218,7 @@ export const demoApi: DataApi = {
     commit('users')
   },
   async verifySupervisor(email, password) {
-    const u = load().users.find((x) => x.email.toLowerCase() === email.trim().toLowerCase())
+    const u = load().users.find((x) => !x.deleted_at && x.email.toLowerCase() === email.trim().toLowerCase())
     if (!u || u.password !== password || !u.is_active) throw new Error('Identifiants superviseur invalides.')
     if (!can(u.role, 'discount.approve')) throw new Error('Ce compte ne peut pas autoriser une remise.')
     return delay(strip(u), 250)
@@ -235,9 +239,10 @@ export const demoApi: DataApi = {
     const user = me()
     guard(user.role, 'stores.edit')
     const db = load()
-    if (db.stores.some((s) => s.code === input.code && s.id !== input.id)) throw new Error('Ce code boutique existe déjà.')
+    if (db.stores.some((s) => !s.deleted_at && s.code === input.code && s.id !== input.id)) throw new Error('Ce code boutique existe déjà.')
     if (input.id) {
-      const s = db.stores.find((x) => x.id === input.id)!
+      const s = db.stores.find((x) => x.id === input.id && !x.deleted_at)
+      if (!s) throw new Error('Boutique introuvable ou supprimée.')
       Object.assign(s, input)
       audit('UPDATE', 'stores', s.id, `Modification de ${s.name}`)
       commit('stores', 'audit_logs')
@@ -255,10 +260,29 @@ export const demoApi: DataApi = {
     commit('stores', 'inventory', 'audit_logs')
     return clone(s)
   },
+  async deleteStore(id) {
+    const user = me()
+    guard(user.role, 'stores.edit')
+    const db = load()
+    const s = db.stores.find((x) => x.id === id && !x.deleted_at)
+    if (!s) throw new Error('Boutique introuvable ou déjà supprimée.')
+    if (db.transfers.some((t) => t.status === 'in_transit' && (t.source_store_id === id || t.dest_store_id === id)))
+      throw new Error('Des transferts sont en transit avec cette boutique : réceptionnez-les ou annulez-les d’abord.')
+    const assigned = db.users.filter((u) => !u.deleted_at && u.store_id === id)
+    if (assigned.length)
+      throw new Error(`${assigned.length} utilisateur(s) ont cette boutique comme boutique principale : réaffectez-les ou supprimez-les d’abord.`)
+    s.deleted_at = nowIso()
+    s.is_active = false
+    s.manager_id = null
+    db.users.forEach((u) => (u.store_ids = u.store_ids.filter((x) => x !== id)))
+    audit('DELETE', 'stores', id, `Suppression de ${s.name} (historique conservé)`)
+    commit('stores', 'users', 'inventory', 'audit_logs')
+  },
   async listUsers() {
     const user = me()
-    guard(user.role, 'users.manage')
+    guard(user.role, 'users.view')
     const scope = storeScope(user)
+    // Les comptes supprimés restent renvoyés (noms dans l'historique) ; l'écran Utilisateurs les masque.
     const list = load().users.filter(
       (u) => scope === null || (u.store_id && scope.includes(u.store_id)) || u.id === user.id,
     )
@@ -269,15 +293,14 @@ export const demoApi: DataApi = {
     guard(user.role, 'users.manage')
     const db = load()
     const email = input.email?.trim().toLowerCase()
-    if (email && db.users.some((u) => u.email === email && u.id !== input.id)) throw new Error('Cet email est déjà utilisé.')
-    if (user.role !== 'super_admin') {
-      if (input.role && !['store_manager', 'cashier', 'stock_manager'].includes(input.role))
-        throw new Error('Vous ne pouvez pas attribuer ce rôle.')
-      if (input.store_id) requireStore(user, input.store_id)
-    }
+    if (email && db.users.some((u) => !u.deleted_at && u.email === email && u.id !== input.id)) throw new Error('Cet email est déjà utilisé.')
+    if (input.store_id && db.stores.find((s) => s.id === input.store_id)?.deleted_at) throw new Error('Cette boutique a été supprimée.')
     const { password, ...rest } = input
     if (input.id) {
-      const u = db.users.find((x) => x.id === input.id)!
+      const u = db.users.find((x) => x.id === input.id && !x.deleted_at)
+      if (!u) throw new Error('Utilisateur introuvable ou supprimé.')
+      if (u.role === 'super_admin' && rest.role && rest.role !== 'super_admin' && activeSuperAdmins(db) <= 1)
+        throw new Error('Impossible de retirer le rôle du dernier Super Admin.')
       Object.assign(u, rest, email ? { email } : {})
       if (password) u.password = password
       audit('UPDATE', 'users', u.id, `Modification du compte ${u.email}`)
@@ -299,10 +322,28 @@ export const demoApi: DataApi = {
     const user = me()
     guard(user.role, 'users.manage')
     if (id === user.id) throw new Error('Vous ne pouvez pas désactiver votre propre compte.')
-    const u = load().users.find((x) => x.id === id)!
+    const u = load().users.find((x) => x.id === id && !x.deleted_at)
+    if (!u) throw new Error('Utilisateur introuvable ou supprimé.')
     u.is_active = active
     audit(active ? 'ENABLE' : 'DISABLE', 'users', id, `${active ? 'Réactivation' : 'Désactivation'} de ${u.email}`)
     commit('users', 'audit_logs')
+  },
+  async deleteUser(id) {
+    const user = me()
+    guard(user.role, 'users.manage')
+    if (id === user.id) throw new Error('Vous ne pouvez pas supprimer votre propre compte.')
+    const db = load()
+    const u = db.users.find((x) => x.id === id && !x.deleted_at)
+    if (!u) throw new Error('Utilisateur introuvable ou déjà supprimé.')
+    if (u.role === 'super_admin' && u.is_active && activeSuperAdmins(db) <= 1)
+      throw new Error('Impossible de supprimer le dernier Super Admin.')
+    const email = u.email
+    u.deleted_at = nowIso()
+    u.is_active = false
+    u.email = `supprime-${u.id.slice(-8)}@supprime.local` // libère l'email pour un nouveau compte
+    db.stores.forEach((s) => s.manager_id === id && (s.manager_id = null))
+    audit('DELETE', 'users', id, `Suppression du compte ${email} (historique conservé)`)
+    commit('users', 'stores', 'audit_logs')
   },
 
   /* ---------------- Référentiels ---------------- */
