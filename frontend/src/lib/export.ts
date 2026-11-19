@@ -91,6 +91,10 @@ export async function exportPdf(
       headStyles: { fillColor: [236, 243, 226], textColor: [24, 70, 32], fontStyle: 'bold' },
       alternateRowStyles: { fillColor: [250, 252, 248] },
       columnStyles: Object.fromEntries(s.columns.map((c, i) => [i, { halign: c.numeric ? 'right' : 'left' }])),
+      // Les en-têtes des colonnes de montants s'alignent sur leurs valeurs
+      didParseCell: (data) => {
+        if (data.section === 'head' && s.columns[data.column.index]?.numeric) data.cell.styles.halign = 'right'
+      },
       didDrawPage: () => header(),
     })
     y = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10
@@ -111,4 +115,4 @@ export async function exportPdf(
 }
 
 /** Les montants PDF utilisent des espaces simples (police standard). */
-export const pdfMoney = (v: number) => `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(v)).replace(/\u202f|\u00a0/g, ' ')} F`
+export const pdfMoney = (v: number) => `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(Math.round(v)).replace(/\u202f|\u00a0/g, ' ')} XOF`

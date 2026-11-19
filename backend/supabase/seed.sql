@@ -1,4 +1,5 @@
--- Données de référence MM Cosmétiques Stock Pro (générées depuis src/data/seed.ts)
+-- Données de référence MM Cosmétiques Stock Pro.
+-- Fichier généré par frontend/scripts/generate-seed-sql.ts (npm run seed:sql) : ne pas modifier à la main.
 -- Les comptes utilisateurs se créent via Supabase Auth (voir README).
 
 insert into public.categories (id, name, code) values

@@ -9,10 +9,11 @@ export function cn(...inputs: ClassValue[]) {
 
 const money = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 })
 
-/** Montant en Francs CFA (XOF). */
+/** Montant en francs CFA, code ISO 4217 : XOF. */
+// Espaces insécables : un montant (« 55 000 XOF ») ne se coupe jamais sur deux lignes.
 export function formatMoney(value: number, withUnit = true) {
-  const v = money.format(Math.round(value || 0)).replace(/\u202f|\u00a0/g, ' ')
-  return withUnit ? `${v} F` : v
+  const v = money.format(Math.round(value || 0)).replace(/\u202f/g, '\u00a0')
+  return withUnit ? `${v}\u00a0XOF` : v
 }
 
 export function formatCompact(value: number) {
