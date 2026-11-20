@@ -18,7 +18,8 @@ cd backend
 supabase start            # base locale + migrations + seed
 supabase test db          # tests RLS
 supabase link --project-ref <ref>
-supabase db push          # applique les migrations sur le projet distant
+supabase db push --remote # applique les migrations sur le projet distant
+                          # (CLI ≥ 3 : sans --remote, la commande vise la base locale)
 supabase functions deploy admin-users
 supabase functions deploy verify-supervisor
 ```
