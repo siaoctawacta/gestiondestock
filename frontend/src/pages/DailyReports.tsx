@@ -145,6 +145,7 @@ function ReportForm({ report, onClose }: { report: DailyReport | null; onClose: 
   const expTotal = expenses.reduce((a, e) => a + (Number(e.amount) || 0), 0)
   const v = computeVariance(theoretical, Number(declared) || 0, expTotal)
   const outTol = Math.abs(v.variance_pct) > CASH_VARIANCE_TOLERANCE
+  const invalidAmounts = Number(declared) < 0 || expenses.some((e) => Number(e.amount) < 0)
 
   const payload = () => ({
     id: report?.id,
@@ -189,7 +190,7 @@ function ReportForm({ report, onClose }: { report: DailyReport | null; onClose: 
             <p className="mt-1 text-xl font-semibold tabular">{theo.isLoading ? '…' : formatMoney(theoretical)}</p>
             <p className="mt-1 text-[11px] text-muted-foreground">Calculé automatiquement depuis les ventes</p>
           </div>
-          <Field label="Montant physique encaissé (coffre)">
+          <Field label="Montant physique encaissé (coffre)" error={Number(declared) < 0 ? 'Le montant ne peut pas être négatif' : undefined}>
             <Input type="number" min={0} value={declared} onChange={(e) => setDeclared(e.target.value)} className="h-12 text-lg font-semibold tabular" placeholder="0" />
           </Field>
         </div>
@@ -242,10 +243,10 @@ function ReportForm({ report, onClose }: { report: DailyReport | null; onClose: 
           <Textarea value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Explication d’un écart, incident…" />
         </Field>
         <DialogFooter>
-          <Button variant="outline" onClick={() => save.mutate(undefined)} loading={save.isPending} disabled={!storeId}>
+          <Button variant="outline" onClick={() => save.mutate(undefined)} loading={save.isPending} disabled={!storeId || invalidAmounts}>
             Enregistrer le brouillon
           </Button>
-          <Button onClick={() => submit.mutate(undefined)} loading={submit.isPending} disabled={!storeId || declared === ''}>
+          <Button onClick={() => submit.mutate(undefined)} loading={submit.isPending} disabled={!storeId || declared === '' || invalidAmounts}>
             <Send /> Envoyer pour validation
           </Button>
         </DialogFooter>

@@ -1,0 +1,11 @@
+{
+  "name": "mm-cosmetiques-docs",
+  "private": true,
+  "description": "Génération des PDF de documentation (sources HTML dans src/).",
+  "scripts": {
+    "build": "node src/build-pdf.cjs"
+  },
+  "dependencies": {
+    "pdf-lib": "1.17.1"
+  }
+}

@@ -13,6 +13,8 @@ ERP SaaS de gestion de stock, caisse POS multi-boutiques et business intelligenc
 
 Pour la mise en ligne sur un serveur LWS, voir [Déploiement sur un serveur LWS](#déploiement-sur-un-serveur-lws).
 
+Documentation PDF à partager : [documentation technique d'hébergement sur LWS](docs/MM-Cosmetiques-Stock-Pro_Documentation-technique-LWS.pdf) et [guide d'utilisation pour la formation](docs/MM-Cosmetiques-Stock-Pro_Guide-utilisateur.pdf) (sources dans [`docs/`](docs/)).
+
 Les deux parties sont indépendantes : le frontend parle au backend uniquement via l'API Supabase (`frontend/src/data/supabaseApi.ts`).
 
 ## Démarrage rapide (mode démo)

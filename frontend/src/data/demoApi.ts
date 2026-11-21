@@ -639,6 +639,8 @@ export const demoApi: DataApi = {
     const user = me()
     guard(user.role, 'reports.daily.edit')
     requireStore(user, input.store_id)
+    if (!(input.declared_amount >= 0)) throw new Error('Le montant encaissé ne peut pas être négatif.')
+    if (input.expenses.some((e) => e.amount < 0)) throw new Error('Une dépense ne peut pas être négative.')
     const db = load()
     const theo = theoretical(db, input.store_id, input.report_date)
     const expenses = input.expenses.filter((e) => e.label && e.amount > 0).map((e) => ({ ...e, id: uid() }))

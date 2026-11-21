@@ -1,0 +1,609 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Guide d'utilisation — MM Cosmétiques Stock Pro</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<section class="cover">
+  <img class="logo" src="../../frontend/public/logo-white.png" alt="MM Cosmétiques" />
+  <div class="kicker">Guide d'utilisation · Formation</div>
+  <h1>Bien utiliser MM Cosmétiques Stock Pro</h1>
+  <div class="subtitle">Caisse, stocks, transferts entre boutiques, déclarations de fin de journée et tableaux de bord : le guide pas à pas pour chaque rôle.</div>
+  <div class="meta">
+    <div><b>Version</b>1.0 — novembre 2026</div>
+    <div><b>Public</b>Toutes les équipes des boutiques</div>
+    <div><b>Durée de formation</b>½ journée à 1 journée</div>
+  </div>
+</section>
+
+<section class="toc">
+  <h1>Sommaire</h1>
+  <ol>
+    <li><span class="n">1</span>Présentation et rôles<span class="d">qui fait quoi</span></li>
+    <li><span class="n">2</span>Premiers pas<span class="d">connexion, écran principal, notifications</span></li>
+    <li><span class="n">3</span>Encaisser à la caisse<span class="d">Caissier, Responsable</span></li>
+    <li><span class="n">4</span>Historique des ventes et tickets<span class="d">tous les vendeurs</span></li>
+    <li><span class="n">5</span>Catalogue produits<span class="d">consultation, création</span></li>
+    <li><span class="n">6</span>Gérer les stocks<span class="d">entrées, ajustements, seuils, mouvements</span></li>
+    <li><span class="n">7</span>Transferts entre boutiques<span class="d">expédier, réceptionner</span></li>
+    <li><span class="n">8</span>Déclarations de fin de journée<span class="d">Chef de Pôle, validation</span></li>
+    <li><span class="n">9</span>Tableaux de bord et rapports<span class="d">indicateurs, exports PDF / Excel</span></li>
+    <li><span class="n">10</span>Administration<span class="d">Super Admin : boutiques, utilisateurs, audit</span></li>
+    <li><span class="n">11</span>Mon compte<span class="d">profil, mot de passe</span></li>
+    <li><span class="n">12</span>Bonnes pratiques et questions fréquentes</li>
+    <li><span class="n">13</span>Plan de formation et exercices<span class="d">pour le formateur</span></li>
+  </ol>
+  <div class="box info" style="margin-top:7mm"><span class="t">Comment lire ce guide</span>
+    Chaque chapitre indique en haut les <b>rôles concernés</b>. Les encadrés verts donnent des astuces, les encadrés orange des points d'attention, et les encadrés en pointillés des <b>exercices pratiques</b> à faire pendant la formation. Les captures d'écran proviennent de la version de démonstration : les noms et montants sont fictifs.
+  </div>
+</section>
+
+<!-- ===================================================== 1 -->
+<span class="chapter-no">Chapitre 1</span>
+<h1 class="chapter">Présentation et rôles</h1>
+<p class="lead">MM Cosmétiques Stock Pro réunit dans un seul outil la caisse de chaque boutique, le stock de tout le réseau et le suivi des ventes. Tout est mis à jour en temps réel : une vente en caisse diminue aussitôt le stock visible par tous.</p>
+
+<h2>Ce que fait l'application</h2>
+<div class="grid-cards">
+  <div class="card"><h4>Caisse</h4><p>Encaisser rapidement par scan ou recherche, en espèces, Mobile Money ou carte, et imprimer le ticket.</p></div>
+  <div class="card"><h4>Stocks</h4><p>Suivre les quantités de chaque boutique, réceptionner la marchandise, déclarer la casse ou les pertes.</p></div>
+  <div class="card"><h4>Transferts</h4><p>Envoyer des produits d'une boutique à une autre, avec réception confirmée à l'arrivée.</p></div>
+  <div class="card"><h4>Déclarations</h4><p>Contrôler chaque soir la caisse : montant attendu, montant compté, dépenses, écart.</p></div>
+  <div class="card"><h4>Alertes</h4><p>Être prévenu des ruptures, des stocks faibles et des écarts de caisse.</p></div>
+  <div class="card"><h4>Rapports</h4><p>Chiffre d'affaires, marges, rotation des stocks, performance des vendeurs ; export PDF et Excel.</p></div>
+</div>
+
+<h2>Les six rôles</h2>
+<p>Chaque personne a un compte personnel et un <b>rôle</b>, attribué par le Super Admin. Le rôle détermine les menus visibles et les boutiques accessibles : un caissier ne voit que sa boutique.</p>
+<table>
+  <thead><tr><th style="width:24%">Rôle</th><th style="width:26%">Périmètre</th><th>Missions principales</th></tr></thead>
+  <tbody>
+    <tr><td><b>Super Admin</b></td><td>Tout le réseau</td><td>Crée les boutiques et les comptes, attribue les rôles, valide les déclarations, consulte tous les rapports et le journal d'audit.</td></tr>
+    <tr><td><b>Admin Boutique</b></td><td>Ses boutiques</td><td>Pilote sa zone : stock, catalogue, transferts, validation des déclarations, rapports.</td></tr>
+    <tr><td><b>Responsable Boutique</b></td><td>Sa boutique</td><td>Encaisse, gère le stock local, réceptionne les transferts, autorise les remises importantes.</td></tr>
+    <tr><td><b>Chef de Pôle</b></td><td>Ses boutiques</td><td>Saisit les déclarations de fin de journée, suit les dépenses, consulte les rapports.</td></tr>
+    <tr><td><b>Caissier</b></td><td>Sa caisse</td><td>Encaisse les clients, imprime les tickets, consulte ses propres ventes.</td></tr>
+    <tr><td><b>Gestionnaire Stock</b></td><td>Tout le réseau (stock)</td><td>Réceptionne la marchandise, prépare les transferts, gère le catalogue et les alertes de rupture.</td></tr>
+  </tbody>
+</table>
+
+<h2>Qui a accès à quoi</h2>
+<table>
+  <thead><tr><th style="width:30%">Fonction</th><th class="c">Super Admin</th><th class="c">Admin Boutique</th><th class="c">Resp. Boutique</th><th class="c">Chef de Pôle</th><th class="c">Caissier</th><th class="c">Gest. Stock</th></tr></thead>
+  <tbody>
+    <tr><td>Caisse</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td><td class="c yes">✓</td><td class="c no">—</td></tr>
+    <tr><td>Historique des ventes</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓ <span class="small">(les siennes)</span></td><td class="c no">—</td></tr>
+    <tr><td>Consulter le catalogue</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td></tr>
+    <tr><td>Créer / modifier un produit</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Entrées et ajustements de stock</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Expédier un transfert</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Réceptionner un transfert</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td></tr>
+    <tr><td>Saisir une déclaration</td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td></tr>
+    <tr><td>Valider une déclaration</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td></tr>
+    <tr><td>Autoriser une remise &gt; 15 %</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td></tr>
+    <tr><td>Rapports et exports</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td></tr>
+    <tr><td>Boutiques, utilisateurs, rôles</td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td></tr>
+    <tr><td>Journal d'audit</td><td class="c yes">✓</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td><td class="c no">—</td></tr>
+  </tbody>
+</table>
+<p class="small">L'Admin Boutique et le Chef de Pôle consultent aussi la liste des boutiques de leur périmètre, sans pouvoir la modifier.</p>
+
+<!-- ===================================================== 2 -->
+<span class="chapter-no">Chapitre 2</span>
+<h1 class="chapter">Premiers pas</h1>
+<p class="lead"><span class="pill">Tous les rôles</span> Se connecter, se repérer dans l'écran et suivre les alertes.</p>
+
+<h2>Se connecter</h2>
+<figure class="md"><img src="img/01-connexion.jpg" alt="Écran de connexion" /><figcaption>Figure 2.1 — Écran de connexion.</figcaption></figure>
+<ol class="steps">
+  <li>Ouvrez l'adresse de l'application communiquée par votre responsable, dans un navigateur récent (Chrome, Edge, Firefox ou Safari).</li>
+  <li>Saisissez votre <b>adresse email</b> et votre <b>mot de passe</b>, puis <b>Se connecter</b>. L'icône en forme d'œil affiche le mot de passe saisi.</li>
+  <li>Un caissier arrive directement sur la caisse ; les autres rôles arrivent sur leur tableau de bord.</li>
+</ol>
+<div class="box tip"><span class="t">Mot de passe oublié</span>
+Cliquez sur <b>Mot de passe oublié ?</b>, saisissez votre email : vous recevez un lien valable une heure pour choisir un nouveau mot de passe (8 caractères minimum). Pensez à regarder dans les courriers indésirables.
+</div>
+<div class="box warn"><span class="t">Un compte par personne</span>
+Ne communiquez jamais votre mot de passe et ne travaillez jamais sur la session d'un collègue : chaque vente et chaque mouvement de stock est enregistré à votre nom. Déconnectez-vous en quittant votre poste (menu de votre nom, en haut à droite, puis <b>Se déconnecter</b>).
+</div>
+
+<h2>L'écran principal</h2>
+<figure><img src="img/02-tableau-bord-admin.jpg" alt="Tableau de bord" /><figcaption>Figure 2.2 — Écran principal (ici, le tableau de bord du Super Admin).</figcaption></figure>
+<table>
+  <thead><tr><th style="width:28%">Zone</th><th>Rôle</th></tr></thead>
+  <tbody>
+    <tr><td><b>Menu de gauche</b></td><td>Les rubriques auxquelles votre rôle donne accès, regroupées par thème (Pilotage, Ventes, Stock, Administration, Compte). Le bouton <b>Réduire</b> le replie pour gagner de la place.</td></tr>
+    <tr><td><b>Sélecteur de boutique</b> (en haut à gauche)</td><td>Si vous travaillez sur plusieurs boutiques, choisissez celle à afficher : caisse, stocks, ventes et rapports suivent ce choix. « Toutes les boutiques » affiche le réseau consolidé.</td></tr>
+    <tr><td><b>Lune / soleil</b></td><td>Bascule entre thème clair et thème sombre.</td></tr>
+    <tr><td><b>Plein écran</b></td><td>Utile sur une tablette de caisse.</td></tr>
+    <tr><td><b>Cloche</b></td><td>Les notifications, avec le nombre de non lues.</td></tr>
+    <tr><td><b>Votre nom</b></td><td>Accès aux paramètres du compte et à la déconnexion.</td></tr>
+  </tbody>
+</table>
+
+<h2>Les notifications</h2>
+<div class="two">
+  <figure><img src="img/03-notifications.jpg" alt="Notifications" /><figcaption>Figure 2.3 — Menu des notifications.</figcaption></figure>
+  <div>
+    <p>L'application vous prévient automatiquement :</p>
+    <ul>
+      <li><b>Rupture de stock</b> : un produit tombe à 0 dans une boutique ;</li>
+      <li><b>Stock faible</b> : un produit passe sous son seuil minimum ;</li>
+      <li><b>Transfert en transit</b> : une livraison est en route vers votre boutique ;</li>
+      <li><b>Nouvelle déclaration</b> et <b>écart de caisse</b> de plus de 2 % (administrateurs) ;</li>
+      <li><b>Déclaration validée ou rejetée</b> (Chef de Pôle).</li>
+    </ul>
+    <p>Un clic sur une notification la marque comme lue et ouvre la page concernée. <b>Tout marquer lu</b> efface le compteur ; <b>Voir toutes les notifications</b> ouvre la liste complète, filtrable.</p>
+  </div>
+</div>
+
+<h2>Sur téléphone et tablette</h2>
+<div class="two">
+  <figure class="avoid"><img src="img/29-mobile.jpg" alt="Version mobile" style="max-width:62%" /><figcaption>Figure 2.4 — Tableau de bord sur téléphone.</figcaption></figure>
+  <div>
+    <p>L'application s'adapte à toutes les tailles d'écran. Sur téléphone, le menu s'ouvre avec le bouton <b>☰</b> en haut à gauche.</p>
+    <p>Usage conseillé :</p>
+    <ul>
+      <li><b>Tablette 10 pouces</b> ou PC pour la caisse ;</li>
+      <li><b>Téléphone</b> pour consulter les tableaux de bord, les alertes et le stock en déplacement.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ===================================================== 3 -->
+<span class="chapter-no">Chapitre 3</span>
+<h1 class="chapter">Encaisser à la caisse</h1>
+<p class="lead"><span class="pill">Caissier</span> <span class="pill">Responsable Boutique</span> <span class="pill">Admin Boutique</span> Une vente se fait en trois temps : constituer le panier, encaisser, remettre le ticket.</p>
+
+<h2>Le tableau de bord du caissier</h2>
+<figure><img src="img/04-tableau-bord-caissier.jpg" alt="Tableau de bord caissier" /><figcaption>Figure 3.1 — Tableau de bord du caissier : ventes du jour, nombre de tickets, panier moyen, encaissements par mode de paiement.</figcaption></figure>
+
+<h2>Constituer le panier</h2>
+<figure><img src="img/05-caisse-panier.jpg" alt="Caisse" /><figcaption>Figure 3.2 — La caisse : produits à gauche, panier à droite.</figcaption></figure>
+<ol class="steps">
+  <li><b>Scannez</b> le code-barres avec la douchette : le produit s'ajoute au panier. Sans douchette, tapez quelques lettres du nom, de la marque ou du code, puis touchez la carte du produit. La touche <kbd>F2</kbd> place le curseur dans la recherche ; <kbd>Entrée</kbd> ajoute le produit quand il n'y en a qu'un.</li>
+  <li>Les <b>catégories</b> (Soin visage, Maquillage, Parfum…) filtrent les produits affichés.</li>
+  <li>Chaque carte indique le <b>prix</b> et le <b>stock disponible</b> dans la boutique. Un produit en rupture est grisé et ne peut pas être vendu ; on ne peut pas non plus mettre au panier plus que le stock.</li>
+  <li>Dans le panier, ajustez les quantités avec <b>−</b> et <b>+</b>, ou retirez une ligne avec <b>×</b>. <b>Vider</b> efface tout le panier.</li>
+</ol>
+<div class="box tip"><span class="t">Le panier est conservé</span>
+Si la page est fermée ou rechargée par erreur, le panier en cours est retrouvé à la réouverture sur le même poste.
+</div>
+
+<h2>Appliquer une remise</h2>
+<p>Sous le panier, choisissez <b>%</b> (pourcentage) ou <b>XOF</b> (montant), puis saisissez la remise. Le total, la TVA incluse et le montant de la remise se recalculent aussitôt.</p>
+<div class="box warn"><span class="t">Remise de plus de 15 %</span>
+Pour un caissier, une remise supérieure à 15 % doit être autorisée par un <b>superviseur</b> (Responsable Boutique, Admin Boutique ou Super Admin). Au moment d'encaisser, une fenêtre demande l'email et le mot de passe du superviseur, saisis par lui-même. La remise et le nom du superviseur sont enregistrés dans le journal d'audit.
+</div>
+
+<h2>Encaisser</h2>
+<p>Cliquez sur <b>Encaisser</b> (ou touche <kbd>F9</kbd>), puis choisissez le mode de paiement.</p>
+<div class="two">
+  <figure><img src="img/06-caisse-paiement.jpg" alt="Paiement en espèces" /><figcaption>Figure 3.3 — Paiement en espèces avec calcul de la monnaie.</figcaption></figure>
+  <figure><img src="img/07-caisse-mobile-money.jpg" alt="Paiement Mobile Money" /><figcaption>Figure 3.4 — Paiement Mobile Money.</figcaption></figure>
+</div>
+<table>
+  <thead><tr><th style="width:22%">Mode</th><th>Ce qu'il faut faire</th></tr></thead>
+  <tbody>
+    <tr><td><b>Espèces</b></td><td>Saisissez le montant remis par le client, ou touchez un des montants proposés. La <b>monnaie à rendre</b> s'affiche. Le bouton de validation reste inactif tant que le montant reçu est insuffisant.</td></tr>
+    <tr><td><b>Mobile Money</b></td><td>Choisissez l'opérateur (Wave, Orange Money, MTN MoMo). <b>Attendez la confirmation du paiement</b> sur le téléphone ou le terminal marchand avant de valider.</td></tr>
+    <tr><td><b>Carte</b></td><td>Faites payer sur le terminal de paiement (TPE), puis validez une fois le paiement accepté.</td></tr>
+  </tbody>
+</table>
+<p>Cliquez sur <b>Valider la vente</b> : le stock de la boutique diminue immédiatement.</p>
+
+<h2>Remettre le ticket</h2>
+<div class="two">
+  <figure><img src="img/08-caisse-ticket.jpg" alt="Vente enregistrée" /><figcaption>Figure 3.5 — Vente enregistrée.</figcaption></figure>
+  <div>
+    <p>L'écran de confirmation rappelle le montant et, pour les espèces, la <b>monnaie à rendre</b>.</p>
+    <ul>
+      <li><b>Imprimer le ticket</b> ouvre un ticket au format imprimante thermique (80 mm), avec le logo, le détail des articles, la TVA et les coordonnées de la boutique.</li>
+      <li><b>Nouvelle vente</b> vide l'écran pour le client suivant ; le curseur revient dans la recherche.</li>
+    </ul>
+    <div class="box info"><span class="t">Une vente est définitive</span>
+    Une vente validée ne peut pas être modifiée depuis la caisse. En cas d'erreur, prévenez votre responsable.</div>
+  </div>
+</div>
+
+<div class="box exercise"><span class="t">Exercice 1 — Ma première vente (10 min)</span>
+Connecté en caissier : vendez 2 produits différents, dont un en quantité 2, avec paiement en espèces (le client donne un billet supérieur au total). Imprimez le ticket et vérifiez la monnaie rendue. Refaites une vente payée en Mobile Money Wave.
+</div>
+<div class="box exercise"><span class="t">Exercice 2 — Remise avec superviseur (10 min)</span>
+Mettez un produit au panier et appliquez une remise de 20 %. Cliquez sur Encaisser : la validation superviseur est demandée. Faites saisir ses identifiants par le formateur (rôle Responsable), puis terminez la vente.
+</div>
+
+<!-- ===================================================== 4 -->
+<span class="chapter-no">Chapitre 4</span>
+<h1 class="chapter">Historique des ventes et tickets</h1>
+<p class="lead"><span class="pill">Caissier</span> <span class="pill">Responsable</span> <span class="pill">Chef de Pôle</span> <span class="pill">Admins</span> Retrouver une vente, réimprimer un ticket, exporter le journal des ventes.</p>
+<figure><img src="img/09-historique-ventes.jpg" alt="Historique des ventes" /><figcaption>Figure 4.1 — Historique des ventes.</figcaption></figure>
+<ul>
+  <li>Par défaut, la liste affiche les <b>7 derniers jours</b>. Modifiez les dates en haut du tableau, et filtrez par mode de paiement.</li>
+  <li>La recherche trouve une vente par <b>numéro de ticket</b> (ex. <code>TK-PLT-002703</code>), par produit ou par caissier.</li>
+  <li>Cliquez sur une vente pour voir son détail et <b>réimprimer le ticket</b>.</li>
+  <li>Un caissier ne voit que <b>ses propres ventes</b> ; les responsables voient celles de leurs boutiques.</li>
+  <li><b>Exporter</b> produit le journal des ventes en PDF (mis en page) ou en Excel (une feuille des ventes et une feuille du détail des lignes).</li>
+</ul>
+
+<!-- ===================================================== 5 -->
+<span class="chapter-no">Chapitre 5</span>
+<h1 class="chapter">Catalogue produits</h1>
+<p class="lead"><span class="pill">Tous (consultation)</span> <span class="pill">Super Admin, Admin Boutique, Gestionnaire Stock (création)</span></p>
+
+<figure><img src="img/10-catalogue.jpg" alt="Catalogue" /><figcaption>Figure 5.1 — Catalogue : prix d'achat HT, prix de vente TTC, taux de marque et stock du réseau.</figcaption></figure>
+
+<h2>Consulter une fiche produit</h2>
+<div class="two">
+  <figure><img src="img/12-produit-fiche.jpg" alt="Fiche produit" /><figcaption>Figure 5.2 — Fiche produit.</figcaption></figure>
+  <div>
+    <p>Cliquez sur une ligne du catalogue pour ouvrir la fiche :</p>
+    <ul>
+      <li>références : <b>SKU</b> (code interne) et <b>EAN13</b> (code-barres) ;</li>
+      <li>prix, marge brute et taux de marque ;</li>
+      <li><b>QR code</b> à imprimer pour l'inventaire avec un téléphone ;</li>
+      <li><b>stock par boutique</b>, avec l'état (OK, Faible, Rupture).</li>
+    </ul>
+  </div>
+</div>
+
+<h2>Créer ou modifier un produit</h2>
+<div class="two">
+  <figure><img src="img/11-produit-formulaire.jpg" alt="Formulaire produit" /><figcaption>Figure 5.3 — Formulaire produit.</figcaption></figure>
+  <div>
+    <ol class="steps">
+      <li><b>Nouveau produit</b> (ou l'icône crayon sur une ligne).</li>
+      <li>Renseignez le nom, la marque, le conditionnement et la <b>catégorie</b>. La catégorie détermine le SKU, créé automatiquement (ex. <code>COSM-PAR-0031</code>) ; elle ne peut plus être changée ensuite.</li>
+      <li>Saisissez ou <b>générez</b> le code-barres EAN13 (bouton ↻). L'application vérifie la clé de contrôle.</li>
+      <li>Saisissez le <b>prix d'achat HT</b>, le <b>prix de vente TTC</b> et le taux de TVA (18 % par défaut). La marge et le taux de marque s'affichent en direct. Le prix de vente ne peut pas être inférieur au prix d'achat.</li>
+      <li>Réglez le <b>seuil de stock minimum</b> qui déclenche l'alerte, et ajoutez une photo.</li>
+    </ol>
+  </div>
+</div>
+<p>Pour retirer un produit de la caisse sans perdre son historique, décochez <b>Produit actif</b> dans sa fiche. Les <b>catégories et fournisseurs</b> se gèrent dans la rubrique du même nom (Administration).</p>
+
+<!-- ===================================================== 6 -->
+<span class="chapter-no">Chapitre 6</span>
+<h1 class="chapter">Gérer les stocks</h1>
+<p class="lead"><span class="pill">Gestionnaire Stock</span> <span class="pill">Responsable Boutique</span> <span class="pill">Admins</span> Le stock ne bouge jamais « à la main » : chaque variation passe par une vente, une entrée, un ajustement ou un transfert, et laisse une trace.</p>
+
+<figure><img src="img/13-stocks.jpg" alt="Stocks" /><figcaption>Figure 6.1 — État des stocks : valeur, unités, stocks faibles et ruptures.</figcaption></figure>
+<ul>
+  <li>Les onglets <b>Tous</b>, <b>Stock faible</b> et <b>Ruptures</b> filtrent la liste ; la liste est triée des quantités les plus faibles aux plus élevées.</li>
+  <li>L'état <span class="pill r">Faible</span> apparaît quand la quantité atteint le <b>seuil</b> ; <span class="pill r">Rupture</span> à 0.</li>
+  <li>Le sélecteur de boutique (en haut) limite l'affichage à une boutique.</li>
+</ul>
+
+<h2>Réceptionner une livraison (entrée de stock)</h2>
+<div class="two">
+  <figure><img src="img/14-entree-stock.jpg" alt="Entrée de stock" /><figcaption>Figure 6.2 — Entrée de stock.</figcaption></figure>
+  <div>
+    <ol class="steps">
+      <li><b>Entrée de stock</b>.</li>
+      <li>Choisissez la boutique, le produit et la <b>quantité reçue</b>.</li>
+      <li>Saisissez le <b>numéro de lot</b> (obligatoire) et la <b>date de péremption</b>, indispensable pour les soins et le maquillage.</li>
+      <li>Indiquez la référence du bon de réception du fournisseur, puis <b>Enregistrer l'entrée</b>.</li>
+    </ol>
+  </div>
+</div>
+
+<h2>Déclarer une casse, un vol, un testeur (ajustement)</h2>
+<div class="two">
+  <figure><img src="img/15-ajustement.jpg" alt="Ajustement de stock" /><figcaption>Figure 6.3 — Ajustement de stock.</figcaption></figure>
+  <div>
+    <ol class="steps">
+      <li><b>Ajustement</b> (ou le lien <b>Ajuster</b> sur une ligne).</li>
+      <li>Choisissez le sens : <b>Sortie (−)</b> pour une perte, <b>Correction (+)</b> après un comptage.</li>
+      <li>Choisissez le <b>motif</b> : casse, vol / démarque, péremption, testeur magasin, correction d'inventaire, autre. Détaillez dans le commentaire.</li>
+      <li>Vérifiez le stock avant / après affiché sous la quantité, puis validez.</li>
+    </ol>
+    <div class="box info"><span class="t">Traçabilité</span>Chaque ajustement est enregistré au nom de son auteur, avec le motif, dans les mouvements de stock et le journal d'audit.</div>
+  </div>
+</div>
+
+<h2>Régler le seuil d'alerte d'une boutique</h2>
+<p>Dans la colonne <b>Seuil</b>, cliquez sur le chiffre souligné pour fixer un seuil propre à la boutique (par exemple plus élevé dans une grande boutique). Laissez vide pour reprendre le seuil défini dans le catalogue.</p>
+
+<h2>Consulter les mouvements</h2>
+<figure><img src="img/19-mouvements.jpg" alt="Mouvements de stock" /><figcaption>Figure 6.4 — Journal des mouvements : entrées (+), ventes, ajustements, transferts, avec lot, péremption et opérateur.</figcaption></figure>
+<p>Ce journal est <b>en lecture seule</b> : aucun mouvement ne peut être modifié ou supprimé. Il sert à expliquer tout écart de stock. Il s'exporte en PDF et en Excel.</p>
+
+<div class="box exercise"><span class="t">Exercice 3 — Réception et perte (15 min)</span>
+Connecté en Gestionnaire Stock : réceptionnez 24 flacons d'un parfum avec un numéro de lot et une date de péremption. Déclarez ensuite 1 flacon cassé. Retrouvez les deux opérations dans <b>Mouvements</b>.
+</div>
+
+<!-- ===================================================== 7 -->
+<span class="chapter-no">Chapitre 7</span>
+<h1 class="chapter">Transferts entre boutiques</h1>
+<p class="lead"><span class="pill">Gestionnaire Stock</span> <span class="pill">Admins</span> expédient — <span class="pill">Responsable de la boutique destinataire</span> réceptionne.</p>
+
+<figure><img src="img/16-transferts.jpg" alt="Transferts" /><figcaption>Figure 7.1 — Liste des transferts : en transit, reçus, annulés.</figcaption></figure>
+
+<h2>Le principe en deux étapes</h2>
+<table>
+  <thead><tr><th style="width:22%">Étape</th><th>Qui</th><th>Effet sur le stock</th></tr></thead>
+  <tbody>
+    <tr><td><b>1. Expédition</b></td><td>Gestionnaire Stock ou Admin, côté boutique de départ</td><td>Aucun mouvement encore : les quantités sont <b>réservées</b> et ne peuvent pas partir dans un autre transfert. Statut <span class="pill r">En transit</span>.</td></tr>
+    <tr><td><b>2. Réception</b></td><td>Responsable de la boutique d'arrivée (ou Gestionnaire Stock, Admin)</td><td>Le stock est <b>retiré</b> de la boutique de départ et <b>ajouté</b> à la boutique d'arrivée, en une seule opération. Statut <span class="pill r">Reçu</span>.</td></tr>
+  </tbody>
+</table>
+
+<h2>Expédier</h2>
+<div class="two">
+  <figure><img src="img/17-transfert-nouveau.jpg" alt="Nouveau transfert" /><figcaption>Figure 7.2 — Nouveau transfert.</figcaption></figure>
+  <div>
+    <ol class="steps">
+      <li><b>Nouveau transfert</b>.</li>
+      <li>Choisissez la boutique <b>source</b> et la boutique <b>destination</b>.</li>
+      <li>Ajoutez les articles : la liste affiche le stock disponible ; une quantité trop élevée est signalée en rouge.</li>
+      <li>Ajoutez une note (motif, transporteur), puis <b>Expédier</b>. La boutique destinataire reçoit une notification.</li>
+    </ol>
+  </div>
+</div>
+
+<h2>Réceptionner</h2>
+<div class="two">
+  <figure><img src="img/18-transfert-reception.jpg" alt="Réception d'un transfert" /><figcaption>Figure 7.3 — Détail d'un transfert en transit.</figcaption></figure>
+  <div>
+    <ol class="steps">
+      <li>À l'arrivée du colis, ouvrez le transfert (statut <b>En transit</b>).</li>
+      <li><b>Comptez les articles reçus</b> et comparez-les au détail affiché.</li>
+      <li>Si tout est conforme, cliquez sur <b>Valider la réception</b>.</li>
+    </ol>
+    <div class="box warn"><span class="t">Colis non conforme</span>Ne validez pas une réception incomplète : prévenez l'expéditeur. Il peut <b>annuler le transfert</b> tant qu'il est en transit et en émettre un nouveau avec les bonnes quantités.</div>
+  </div>
+</div>
+
+<div class="box exercise"><span class="t">Exercice 4 — Un transfert complet (15 min)</span>
+En binôme. Le Gestionnaire Stock expédie 5 sérums de la boutique Plateau vers la boutique Cocody. Le Responsable de Cocody (<code>resp.cocody@mmcg.ci</code>) voit la notification, ouvre le transfert et valide la réception. Vérifiez ensuite le stock des deux boutiques.
+</div>
+
+<!-- ===================================================== 8 -->
+<span class="chapter-no">Chapitre 8</span>
+<h1 class="chapter">Déclarations de fin de journée</h1>
+<p class="lead"><span class="pill">Chef de Pôle</span> saisit — <span class="pill">Admin Boutique</span> <span class="pill">Super Admin</span> valident. Chaque soir, on compare ce que la caisse aurait dû encaisser à ce qui a réellement été compté.</p>
+
+<figure><img src="img/22-declarations-liste.jpg" alt="Déclarations" /><figcaption>Figure 8.1 — Liste des déclarations, avec l'écart de chaque journée.</figcaption></figure>
+
+<h2>Le calcul de l'écart</h2>
+<table>
+  <tbody>
+    <tr><td style="width:36%"><b>Montant théorique POS</b></td><td>Total des ventes enregistrées en caisse ce jour-là. Calculé automatiquement.</td></tr>
+    <tr><td><b>Montant physique encaissé</b></td><td>Ce qui a été compté dans le coffre.</td></tr>
+    <tr><td><b>Dépenses</b></td><td>Sorties d'argent justifiées payées avec la caisse (transport, fournitures…).</td></tr>
+    <tr><td><b>Écart</b></td><td>(montant encaissé + dépenses) − montant théorique. Un écart de plus de <b>2 %</b> (en plus ou en moins) déclenche une alerte aux administrateurs.</td></tr>
+  </tbody>
+</table>
+
+<h2>Saisir la déclaration</h2>
+<div class="two">
+  <figure><img src="img/20-declaration-saisie.jpg" alt="Saisie d'une déclaration" /><figcaption>Figure 8.2 — Saisie : écart de −0,7 %, dans la tolérance.</figcaption></figure>
+  <div>
+    <ol class="steps">
+      <li><b>Nouvelle déclaration</b> ; choisissez la boutique et la date (une seule déclaration par boutique et par jour).</li>
+      <li>Le <b>montant théorique</b> s'affiche seul. Saisissez le <b>montant compté</b> dans le coffre.</li>
+      <li>Ajoutez chaque <b>dépense</b> : libellé, catégorie, montant.</li>
+      <li>Lisez l'écart : en vert dans la tolérance, en rouge au-delà de 2 %. En cas d'écart, <b>expliquez-le</b> dans les commentaires.</li>
+      <li><b>Enregistrer le brouillon</b> pour terminer plus tard, ou <b>Envoyer pour validation</b>.</li>
+    </ol>
+  </div>
+</div>
+
+<h2>Le circuit de validation</h2>
+<table>
+  <thead><tr><th style="width:22%">Statut</th><th>Signification</th><th style="width:32%">Qui peut agir</th></tr></thead>
+  <tbody>
+    <tr><td><span class="pill r">Brouillon</span></td><td>En cours de saisie, modifiable.</td><td>Chef de Pôle : modifier, envoyer</td></tr>
+    <tr><td><span class="pill r">Envoyé</span></td><td>Transmis aux administrateurs ; plus modifiable.</td><td>Admin Boutique, Super Admin : valider ou rejeter</td></tr>
+    <tr><td><span class="pill r">Validé</span></td><td>Journée clôturée.</td><td>—</td></tr>
+    <tr><td><span class="pill r">Rejeté</span></td><td>À corriger ; le motif du rejet est affiché.</td><td>Chef de Pôle : corriger puis renvoyer</td></tr>
+  </tbody>
+</table>
+
+<h2>Valider ou rejeter (administrateurs)</h2>
+<div class="two">
+  <figure><img src="img/23-declaration-validation.jpg" alt="Validation d'une déclaration" /><figcaption>Figure 8.3 — Déclaration envoyée, avec écart.</figcaption></figure>
+  <div>
+    <p>Ouvrez une déclaration <b>Envoyée</b>, contrôlez les montants, les dépenses et le commentaire, puis :</p>
+    <ul>
+      <li><b>Valider</b> : la journée est clôturée et le Chef de Pôle est prévenu ;</li>
+      <li><b>Rejeter</b> : saisissez un <b>motif</b> obligatoire (par exemple « justificatif de transport manquant »). Le Chef de Pôle est prévenu et peut corriger.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="box exercise"><span class="t">Exercice 5 — Clôture d'une journée (15 min)</span>
+Connecté en Chef de Pôle : saisissez la déclaration du jour avec une dépense de transport de 3 000 XOF et un montant compté inférieur de 10 000 XOF au montant attendu. Observez l'alerte d'écart, ajoutez une explication et envoyez. Le formateur (Admin) la rejette avec un motif ; corrigez et renvoyez-la.
+</div>
+
+<!-- ===================================================== 9 -->
+<span class="chapter-no">Chapitre 9</span>
+<h1 class="chapter">Tableaux de bord et rapports</h1>
+<p class="lead"><span class="pill">Super Admin</span> <span class="pill">Admin Boutique</span> <span class="pill">Responsable</span> <span class="pill">Chef de Pôle</span> Suivre l'activité et exporter les chiffres.</p>
+
+<h2>Le tableau de bord selon le rôle</h2>
+<table>
+  <thead><tr><th style="width:26%">Rôle</th><th>Ce qu'il affiche</th></tr></thead>
+  <tbody>
+    <tr><td><b>Super Admin, Admin Boutique, Chef de Pôle</b></td><td>Chiffre d'affaires TTC, marge brute, valeur du stock et nombre de ventes sur 7, 30 ou 60 jours, comparés à la période précédente ; courbe des ventes ; modes de paiement ; top 10 des produits ; palmarès des boutiques ; ventes récentes ; alertes de réapprovisionnement.</td></tr>
+    <tr><td><b>Responsable Boutique</b></td><td>Chiffre d'affaires et tickets du jour comparés à la veille, panier moyen, marge, ventes des 14 derniers jours, affluence par heure, ventes de l'équipe, alertes de stock.</td></tr>
+    <tr><td><b>Caissier</b></td><td>Ses ventes du jour, son nombre de tickets, son panier moyen, ses encaissements par mode de paiement.</td></tr>
+    <tr><td><b>Gestionnaire Stock</b></td><td>Valeur du stock, ruptures, stocks faibles, transferts en transit, alertes.</td></tr>
+  </tbody>
+</table>
+
+<h2>Le centre de reporting</h2>
+<figure><img src="img/24-rapports.jpg" alt="Rapports" /><figcaption>Figure 9.1 — Centre de reporting.</figcaption></figure>
+<ol class="steps">
+  <li>Choisissez la période : <b>7 j</b>, <b>30 j</b>, <b>90 j</b>, ou des dates précises.</li>
+  <li>Choisissez l'onglet : <b>Ventes</b> (par jour, catégorie, boutique), <b>Stock</b> (valeur, rotation, jours de couverture), <b>Marges</b> (produits les plus rentables), <b>Employés</b> (performance par caissier).</li>
+  <li><b>Exporter</b> → <b>PDF</b> pour un document mis en page à transmettre, ou <b>Excel</b> pour retravailler les chiffres.</li>
+</ol>
+<div class="box tip"><span class="t">Lire la couverture de stock</span>
+Dans l'onglet Stock, la <b>couverture</b> estime en combien de jours le stock actuel sera vendu au rythme de la période. Une couverture inférieure à 7 jours s'affiche en rouge : c'est le signal pour réapprovisionner.
+</div>
+
+<!-- ===================================================== 10 -->
+<span class="chapter-no">Chapitre 10</span>
+<h1 class="chapter">Administration</h1>
+<p class="lead"><span class="pill">Super Admin uniquement</span> Gestion des boutiques, des comptes et des rôles.</p>
+
+<h2>Les boutiques</h2>
+<figure><img src="img/25-boutiques.jpg" alt="Boutiques" /><figcaption>Figure 10.1 — Réseau de boutiques.</figcaption></figure>
+<ul>
+  <li><b>Nouvelle boutique</b> : nom, <b>code unique</b> (ex. <code>BTQ-PLT</code>, utilisé dans les numéros de ticket), adresse, téléphone, email, région, responsable.</li>
+  <li><b>Modifier</b> : mettre à jour la fiche, ou décocher <b>Boutique active</b> pour la fermer temporairement.</li>
+  <li><b>Supprimer</b> : la boutique disparaît des listes et de la caisse ; ses ventes et mouvements restent dans l'historique et les rapports. La suppression est refusée tant que des <b>transferts sont en transit</b> avec elle ou que des <b>utilisateurs</b> y sont rattachés : réaffectez-les d'abord.</li>
+</ul>
+
+<h2>Les utilisateurs et leurs rôles</h2>
+<figure><img src="img/26-utilisateurs.jpg" alt="Utilisateurs" /><figcaption>Figure 10.2 — Utilisateurs : rôle, affectation, dernière connexion, statut.</figcaption></figure>
+<div class="two">
+  <figure><img src="img/27-utilisateur-formulaire.jpg" alt="Nouvel utilisateur" /><figcaption>Figure 10.3 — Création d'un compte.</figcaption></figure>
+  <div>
+    <ol class="steps">
+      <li><b>Nouvel utilisateur</b> : prénom, nom, email, téléphone.</li>
+      <li>Choisissez le <b>rôle</b> et la <b>boutique principale</b>. Pour un Admin Boutique ou un Chef de Pôle, ajoutez les <b>boutiques supplémentaires</b> de son périmètre.</li>
+      <li>Fixez un <b>mot de passe initial</b> (8 caractères minimum) et communiquez-le à la personne de vive voix ; elle le changera dans <b>Paramètres</b>.</li>
+    </ol>
+  </div>
+</div>
+<table>
+  <thead><tr><th style="width:24%">Action</th><th>Effet</th><th style="width:28%">Quand l'utiliser</th></tr></thead>
+  <tbody>
+    <tr><td><b>Modifier</b> (crayon)</td><td>Change les informations, le rôle, la boutique ou le mot de passe.</td><td>Mutation, promotion, oubli de mot de passe.</td></tr>
+    <tr><td><b>Désactiver</b> (bouton marche)</td><td>Bloque la connexion ; réactivable à tout moment.</td><td>Congé, absence, suspension.</td></tr>
+    <tr><td><b>Supprimer</b> (corbeille)</td><td>Bloque définitivement la connexion et libère l'email. Les ventes passées restent attribuées à la personne.</td><td>Départ définitif.</td></tr>
+  </tbody>
+</table>
+<div class="box warn"><span class="t">Garde-fous</span>
+Vous ne pouvez ni désactiver ni supprimer votre propre compte, et l'application empêche de retirer le <b>dernier Super Admin</b>. Gardez au moins deux Super Admins de confiance.
+</div>
+
+<h2>Le journal d'audit</h2>
+<p>La rubrique <b>Journal d'audit</b> liste les actions sensibles avec leur auteur et leur date : créations et modifications de produits (dont les changements de prix), de boutiques et de comptes, ajustements de stock, remises de plus de 15 %, validations et rejets de déclarations. Ce journal ne peut pas être modifié et s'exporte en PDF et en Excel.</p>
+
+<!-- ===================================================== 11 -->
+<span class="chapter-no">Chapitre 11</span>
+<h1 class="chapter">Mon compte</h1>
+<p class="lead"><span class="pill">Tous les rôles</span> Rubrique <b>Paramètres</b> (menu Compte, ou votre nom en haut à droite).</p>
+<figure><img src="img/28-parametres.jpg" alt="Paramètres" /><figcaption>Figure 11.1 — Paramètres du compte.</figcaption></figure>
+<ul>
+  <li><b>Informations personnelles</b> : prénom, nom, téléphone. L'email, le rôle et la boutique sont gérés par le Super Admin.</li>
+  <li><b>Mot de passe</b> : changez le mot de passe initial dès votre première connexion (8 caractères minimum, à confirmer).</li>
+  <li><b>Mes habilitations</b> : la liste de ce que votre rôle vous permet de faire.</li>
+</ul>
+
+<!-- ===================================================== 12 -->
+<span class="chapter-no">Chapitre 12</span>
+<h1 class="chapter">Bonnes pratiques et questions fréquentes</h1>
+
+<h2>Les règles d'or</h2>
+<div class="grid-cards">
+  <div class="card"><h4>1. Mon compte, mon nom</h4><p>Ne jamais partager son mot de passe ; se déconnecter en quittant le poste.</p></div>
+  <div class="card"><h4>2. Tout passe par l'outil</h4><p>Pas de vente « hors caisse », pas de sortie de stock sans ajustement et motif.</p></div>
+  <div class="card"><h4>3. Lots et péremptions</h4><p>Toujours saisis à la réception : ils protègent la boutique et les clients.</p></div>
+  <div class="card"><h4>4. Réception = comptage</h4><p>Valider un transfert seulement après avoir compté les articles reçus.</p></div>
+  <div class="card"><h4>5. Clôture chaque soir</h4><p>Déclaration envoyée le jour même ; tout écart expliqué.</p></div>
+  <div class="card"><h4>6. Alertes lues</h4><p>Traiter les ruptures et stocks faibles chaque matin.</p></div>
+</div>
+
+<h2>Questions fréquentes</h2>
+<table>
+  <thead><tr><th style="width:36%">Question</th><th>Réponse</th></tr></thead>
+  <tbody>
+    <tr><td>Le produit scanné n'est pas trouvé.</td><td>Son code-barres n'est pas enregistré dans le catalogue. Cherchez-le par son nom et signalez le code au Gestionnaire Stock pour qu'il complète la fiche.</td></tr>
+    <tr><td>Je ne peux pas ajouter un produit au panier.</td><td>Il est en rupture dans votre boutique, ou la quantité demandée dépasse le stock. Vérifiez le stock et, si besoin, demandez un transfert.</td></tr>
+    <tr><td>Je me suis trompé dans une vente validée.</td><td>Une vente validée ne se modifie pas en caisse. Prévenez votre responsable, qui régularise.</td></tr>
+    <tr><td>Le paiement Mobile Money n'est pas arrivé.</td><td>Ne validez pas la vente : attendez la confirmation de l'opérateur, ou proposez un autre mode de paiement.</td></tr>
+    <tr><td>Le stock affiché ne correspond pas au rayon.</td><td>Consultez les <b>Mouvements</b> du produit pour comprendre l'écart, puis faites un <b>ajustement</b> avec le motif « Correction d'inventaire ».</td></tr>
+    <tr><td>Je ne vois pas un menu présent chez un collègue.</td><td>Les menus dépendent du rôle. Consultez <b>Paramètres → Mes habilitations</b> ; une modification de rôle se demande au Super Admin.</td></tr>
+    <tr><td>Ma déclaration a été rejetée.</td><td>Ouvrez-la : le motif est affiché. Cliquez sur <b>Modifier</b>, corrigez, puis <b>Envoyer</b> à nouveau.</td></tr>
+    <tr><td>J'ai oublié mon mot de passe.</td><td>Lien <b>Mot de passe oublié ?</b> sur l'écran de connexion, ou demande au Super Admin.</td></tr>
+    <tr><td>Un bandeau jaune « Mode démo » s'affiche.</td><td>Vous êtes sur la version de formation : les données sont fictives. N'y saisissez jamais de vraies ventes.</td></tr>
+  </tbody>
+</table>
+
+<h2>Lexique</h2>
+<table>
+  <tbody>
+    <tr><td style="width:26%"><b>SKU</b></td><td>Code interne unique d'un produit (ex. <code>COSM-SOI-0001</code>).</td></tr>
+    <tr><td><b>EAN13</b></td><td>Code-barres à 13 chiffres imprimé sur l'emballage, lu par la douchette.</td></tr>
+    <tr><td><b>PA HT / PV TTC</b></td><td>Prix d'achat hors taxes / prix de vente toutes taxes comprises.</td></tr>
+    <tr><td><b>Taux de marque</b></td><td>Part de la marge dans le prix de vente hors taxes.</td></tr>
+    <tr><td><b>Seuil minimum</b></td><td>Quantité en dessous de laquelle une alerte « stock faible » est envoyée.</td></tr>
+    <tr><td><b>Panier moyen</b></td><td>Chiffre d'affaires divisé par le nombre de tickets.</td></tr>
+    <tr><td><b>Écart de caisse</b></td><td>Différence entre l'argent compté (plus les dépenses) et les ventes enregistrées.</td></tr>
+    <tr><td><b>XOF</b></td><td>Code du franc CFA (BCEAO), devise utilisée dans l'application.</td></tr>
+  </tbody>
+</table>
+
+<!-- ===================================================== 13 -->
+<span class="chapter-no">Chapitre 13</span>
+<h1 class="chapter">Plan de formation et exercices</h1>
+<p class="lead">Pour le formateur. Les sessions se font sur la <b>version de démonstration</b> de l'application : données fictives, aucun risque pour les vraies données.</p>
+
+<h2>Préparer la session</h2>
+<ul class="check">
+  <li>Un poste par participant (PC ou tablette), connecté à Internet, avec un navigateur récent.</li>
+  <li>L'adresse de la version de démonstration, communiquée par le responsable technique.</li>
+  <li>Une douchette code-barres et une imprimante de tickets si disponibles (sinon, recherche par nom et ticket PDF à l'écran).</li>
+  <li>Ce guide, imprimé ou partagé en PDF.</li>
+</ul>
+
+<h2>Comptes de la version de démonstration</h2>
+<p>L'écran de connexion de la démo propose un bouton de connexion rapide par rôle. Mot de passe commun : <code>demo1234</code>.</p>
+<table>
+  <thead><tr><th style="width:30%">Rôle</th><th>Email</th><th style="width:28%">Boutique</th></tr></thead>
+  <tbody>
+    <tr><td>Super Admin</td><td><code>admin@mmcg.ci</code></td><td>Tout le réseau</td></tr>
+    <tr><td>Admin Boutique</td><td><code>admin.sud@mmcg.ci</code></td><td>Plateau, Marcory</td></tr>
+    <tr><td>Responsable Boutique</td><td><code>resp.plateau@mmcg.ci</code></td><td>Plateau</td></tr>
+    <tr><td>Chef de Pôle</td><td><code>pole.nord@mmcg.ci</code></td><td>Cocody, Yopougon</td></tr>
+    <tr><td>Caissier</td><td><code>caisse.plateau@mmcg.ci</code></td><td>Plateau</td></tr>
+    <tr><td>Gestionnaire Stock</td><td><code>stock@mmcg.ci</code></td><td>Tout le réseau</td></tr>
+  </tbody>
+</table>
+<div class="box tip"><span class="t">Repartir de zéro</span>
+Les données de démonstration sont propres à chaque navigateur. Elles ne sont pas partagées entre deux postes : chaque participant travaille sur sa propre copie. Pour les remettre à l'état initial entre deux sessions : <b>Paramètres → Données de démonstration → Réinitialiser</b>. Il existe aussi un compte caissier par boutique (<code>caisse.cocody@mmcg.ci</code>, <code>caisse.yop@mmcg.ci</code>, <code>caisse.marcory@mmcg.ci</code>, <code>caisse.bouake@mmcg.ci</code>) et un responsable pour Cocody (<code>resp.cocody@mmcg.ci</code>), avec le même mot de passe.
+</div>
+
+<h2>Programme conseillé</h2>
+<table>
+  <thead><tr><th style="width:30%">Module</th><th style="width:30%">Public</th><th style="width:12%">Durée</th><th>Chapitres et exercices</th></tr></thead>
+  <tbody>
+    <tr><td><b>Tronc commun</b></td><td>Tout le monde</td><td>30 min</td><td>Chapitres 1, 2 et 11 ; règles d'or (chapitre 12)</td></tr>
+    <tr><td><b>Caisse</b></td><td>Caissiers, Responsables</td><td>1 h</td><td>Chapitres 3 et 4 ; exercices 1 et 2</td></tr>
+    <tr><td><b>Stock et transferts</b></td><td>Gestionnaires Stock, Responsables, Admins</td><td>1 h 15</td><td>Chapitres 5, 6 et 7 ; exercices 3 et 4</td></tr>
+    <tr><td><b>Clôture de caisse</b></td><td>Chefs de Pôle, Admins</td><td>45 min</td><td>Chapitre 8 ; exercice 5</td></tr>
+    <tr><td><b>Pilotage</b></td><td>Responsables, Chefs de Pôle, Admins</td><td>45 min</td><td>Chapitre 9 ; exercice 6</td></tr>
+    <tr><td><b>Administration</b></td><td>Super Admins</td><td>45 min</td><td>Chapitre 10 ; exercice 7</td></tr>
+  </tbody>
+</table>
+
+<h2>Exercices complémentaires</h2>
+<div class="box exercise"><span class="t">Exercice 6 — Analyser un mois (15 min)</span>
+Connecté en Admin Boutique : ouvrez les Rapports sur 30 jours. Relevez la boutique qui a le meilleur chiffre d'affaires, la catégorie la plus vendue et un produit dont la couverture de stock est inférieure à 7 jours. Exportez le rapport des ventes en PDF, puis le rapport de stock en Excel.
+</div>
+<div class="box exercise"><span class="t">Exercice 7 — Arrivée et départ d'un employé (15 min)</span>
+Connecté en Super Admin : créez un compte Caissier pour une nouvelle recrue de la boutique Yopougon. Déconnectez-vous, reconnectez-vous avec ce compte <b>dans le même navigateur</b> et vérifiez qu'il ne voit que sa boutique. Revenez en Super Admin, désactivez le compte, constatez que sa connexion est refusée, puis supprimez-le.
+</div>
+
+<h2>Évaluation de fin de formation</h2>
+<p>Chaque participant réalise seul, sans aide, les tâches de son rôle :</p>
+<table>
+  <thead><tr><th style="width:30%">Rôle</th><th>Tâches à réussir</th></tr></thead>
+  <tbody>
+    <tr><td>Caissier</td><td>Une vente de 3 articles en espèces avec ticket ; une vente Mobile Money ; retrouver une vente de la veille et réimprimer le ticket.</td></tr>
+    <tr><td>Gestionnaire Stock</td><td>Une entrée de stock avec lot et péremption ; un ajustement « casse » ; un transfert expédié.</td></tr>
+    <tr><td>Responsable Boutique</td><td>La réception d'un transfert ; l'autorisation d'une remise de 20 % ; la lecture des alertes du jour.</td></tr>
+    <tr><td>Chef de Pôle</td><td>Une déclaration complète avec dépenses et commentaire, envoyée.</td></tr>
+    <tr><td>Admin / Super Admin</td><td>La validation et le rejet motivé d'une déclaration ; un export de rapport ; la création d'un compte avec le bon rôle.</td></tr>
+  </tbody>
+</table>
+
+</body>
+</html>
