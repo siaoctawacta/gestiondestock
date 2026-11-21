@@ -86,6 +86,9 @@ describe('Étanchéité multi-boutiques (RLS émulée)', () => {
     const today = new Date().toISOString().slice(0, 10)
     const r = await demoApi.saveDailyReport({ store_id: chief.store_id!, report_date: today, declared_amount: 0, notes: null, expenses: [] })
     expect(r.status).toBe('draft')
+    await expect(
+      demoApi.saveDailyReport({ id: r.id, store_id: chief.store_id!, report_date: today, declared_amount: -4500, notes: null, expenses: [] }),
+    ).rejects.toThrow(/négatif/)
     await demoApi.submitDailyReport(r.id)
     await login('admin@mmcg.ci')
     await expect(demoApi.rejectDailyReport(r.id, '')).rejects.toThrow()

@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Documentation technique — Hébergement sur LWS — MM Cosmétiques Stock Pro</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<section class="cover">
+  <img class="logo" src="../../frontend/public/logo-white.png" alt="MM Cosmétiques" />
+  <div class="kicker">Documentation technique</div>
+  <h1>Hébergement de MM Cosmétiques Stock Pro sur LWS</h1>
+  <div class="subtitle">Mise en ligne de l'application, installation de la base de données, exploitation quotidienne, sauvegardes et dépannage.</div>
+  <div class="meta">
+    <div><b>Version</b>1.0 — novembre 2026</div>
+    <div><b>Public</b>Responsable technique, prestataire</div>
+    <div><b>Dépôt</b>github.com/siaoctawacta/gestiondestock</div>
+  </div>
+</section>
+
+<section class="toc">
+  <h1>Sommaire</h1>
+  <ol>
+    <li><span class="n">1</span>Objet du document et architecture<span class="d">ce qu'il faut héberger</span></li>
+    <li><span class="n">2</span>Choisir son option d'hébergement<span class="d">A : LWS + Supabase Cloud — B : tout sur un VPS LWS</span></li>
+    <li><span class="n">3</span>Prérequis<span class="d">comptes, outils, nom de domaine</span></li>
+    <li><span class="n">4</span>Option A — Hébergement web LWS + Supabase Cloud<span class="d">recommandée</span></li>
+    <li><span class="n">5</span>Option B — Tout sur un VPS LWS<span class="d">Supabase auto-hébergé</span></li>
+    <li><span class="n">6</span>Mise en service : vérifications finales<span class="d">liste de contrôle</span></li>
+    <li><span class="n">7</span>Exploitation courante<span class="d">mises à jour, sauvegardes, journaux</span></li>
+    <li><span class="n">8</span>Sécurité<span class="d">secrets, accès, bonnes pratiques</span></li>
+    <li><span class="n">9</span>Dépannage<span class="d">symptôme → cause → solution</span></li>
+    <li><span class="n">10</span>Annexes<span class="d">variables, arborescence, aide-mémoire</span></li>
+  </ol>
+  <div class="box info" style="margin-top:8mm"><span class="t">Conventions</span>
+    Dans les commandes, remplacez les valeurs entre chevrons : <code>&lt;ref-du-projet&gt;</code>, <code>&lt;ip-du-vps&gt;</code>… Les exemples utilisent les domaines fictifs <code>votredomaine.ci</code>, <code>stock.votredomaine.ci</code> et <code>api.votredomaine.ci</code>. Les lignes commençant par <code>#</code> dans les blocs de commandes sont des commentaires.
+  </div>
+</section>
+
+<!-- ===================================================== 1 -->
+<span class="chapter-no">Chapitre 1</span>
+<h1 class="chapter">Objet du document et architecture</h1>
+<p class="lead">Ce document décrit pas à pas la mise en ligne de l'application de gestion de stock MM Cosmétiques chez l'hébergeur LWS, puis son exploitation au quotidien.</p>
+
+<h2>Les deux parties de l'application</h2>
+<p>Le dépôt contient deux projets indépendants, qui s'hébergent différemment :</p>
+<table>
+  <thead><tr><th style="width:22%">Partie</th><th>Contenu</th><th style="width:30%">Hébergement</th></tr></thead>
+  <tbody>
+    <tr><td><b>Frontend</b><br><code>frontend/</code></td><td>L'application que les utilisateurs ouvrent dans leur navigateur (React). Une fois construite, ce n'est qu'un dossier de fichiers statiques : <code>frontend/dist/</code>.</td><td>N'importe quel hébergement web : l'hébergement LWS cPanel suffit.</td></tr>
+    <tr><td><b>Backend</b><br><code>backend/</code></td><td>Un projet <b>Supabase</b> : base PostgreSQL, authentification des utilisateurs, API REST, temps réel, stockage des images, fonctions serveur (<i>Edge Functions</i>), règles de sécurité par boutique (RLS).</td><td>Supabase Cloud, ou Supabase installé sur un VPS (Docker).</td></tr>
+  </tbody>
+</table>
+
+<div class="box warn"><span class="t">Point essentiel</span>
+L'hébergement web mutualisé de LWS fournit une base PostgreSQL, mais <b>une base seule ne suffit pas</b> : l'application a besoin de toute la plateforme Supabase (connexion des utilisateurs, API, temps réel, fonctions serveur). C'est pourquoi la base est soit sur <b>Supabase Cloud</b>, soit sur un <b>VPS LWS</b> qui fait tourner Supabase.
+</div>
+
+<h2>Schéma de fonctionnement</h2>
+<figure>
+<svg viewBox="0 0 700 265" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
+  <defs><marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#2c6b36"/></marker></defs>
+  <!-- Navigateur -->
+  <rect x="8" y="100" width="150" height="66" rx="10" fill="#fff" stroke="#b2cd8a" stroke-width="1.6"/>
+  <text x="83" y="128" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">Navigateur</text>
+  <text x="83" y="148" text-anchor="middle" font-size="10.5" fill="#5d6b5c">PC, tablette, mobile</text>
+  <!-- Frontend -->
+  <rect x="215" y="18" width="250" height="84" rx="10" fill="#f1f6ea" stroke="#2c6b36" stroke-width="1.6"/>
+  <text x="340" y="44" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">Frontend (fichiers statiques)</text>
+  <text x="340" y="64" text-anchor="middle" font-size="10.5" fill="#5d6b5c">index.html · assets/ · .htaccess</text>
+  <text x="340" y="84" text-anchor="middle" font-size="10.5" fill="#2c6b36">Hébergement LWS ou VPS</text>
+  <!-- API -->
+  <rect x="215" y="160" width="250" height="90" rx="10" fill="#f1f6ea" stroke="#2c6b36" stroke-width="1.6"/>
+  <text x="340" y="186" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">API Supabase (HTTPS)</text>
+  <text x="340" y="206" text-anchor="middle" font-size="10.5" fill="#5d6b5c">Auth · REST · Temps réel · Fonctions</text>
+  <text x="340" y="226" text-anchor="middle" font-size="10.5" fill="#2c6b36">Supabase Cloud ou VPS (Docker)</text>
+  <!-- PostgreSQL -->
+  <rect x="520" y="160" width="172" height="90" rx="10" fill="#184620"/>
+  <text x="606" y="190" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">PostgreSQL</text>
+  <text x="606" y="210" text-anchor="middle" font-size="10.5" fill="#dfe9d3">tables, fonctions, audit,</text>
+  <text x="606" y="227" text-anchor="middle" font-size="10.5" fill="#dfe9d3">règles RLS par boutique</text>
+  <!-- Flèches -->
+  <path d="M158,118 C185,110 190,62 213,60" fill="none" stroke="#2c6b36" stroke-width="1.7" marker-end="url(#a)"/>
+  <path d="M158,150 C185,158 190,203 213,205" fill="none" stroke="#2c6b36" stroke-width="1.7" marker-end="url(#a)"/>
+  <path d="M465,205 L518,205" fill="none" stroke="#2c6b36" stroke-width="1.7" marker-end="url(#a)"/>
+  <!-- Légendes -->
+  <text x="10" y="70" font-size="10.5" fill="#184620" font-weight="600">1. charge le site</text>
+  <text x="10" y="205" font-size="10.5" fill="#184620" font-weight="600">2. lit / écrit</text>
+  <text x="10" y="220" font-size="10.5" fill="#184620" font-weight="600">les données</text>
+  <text x="520" y="40" font-size="10.5" fill="#5d6b5c">Le navigateur ne parle jamais</text>
+  <text x="520" y="56" font-size="10.5" fill="#5d6b5c">directement à PostgreSQL :</text>
+  <text x="520" y="72" font-size="10.5" fill="#5d6b5c">chaque requête passe par l'API,</text>
+  <text x="520" y="88" font-size="10.5" fill="#5d6b5c">qui applique les règles de</text>
+  <text x="520" y="104" font-size="10.5" fill="#5d6b5c">sécurité de la base.</text>
+</svg>
+<figcaption>Figure 1 — Le frontend est un site statique ; toutes les données passent par l'API Supabase.</figcaption>
+</figure>
+
+<h2>Mode démo et mode production</h2>
+<p>Le frontend choisit son mode <b>au moment du build</b>, selon le fichier <code>frontend/.env</code> :</p>
+<ul>
+  <li>avec <code>VITE_SUPABASE_URL</code> et <code>VITE_SUPABASE_ANON_KEY</code> renseignées : <b>production</b>, les données sont dans Supabase ;</li>
+  <li>sans ces variables : <b>mode démo</b>, avec des données fictives stockées dans le navigateur et un bandeau jaune « Mode démo » en haut des pages.</li>
+</ul>
+<div class="box danger"><span class="t">À vérifier à chaque mise en ligne</span>
+Si le site de production affiche le bandeau <b>« Mode démo »</b>, il a été construit sans les variables Supabase : les ventes saisies resteraient dans le navigateur du poste et seraient perdues. Reconstruisez le site avec le bon <code>.env</code> avant toute utilisation.
+</div>
+
+<!-- ===================================================== 2 -->
+<span class="chapter-no">Chapitre 2</span>
+<h1 class="chapter">Choisir son option d'hébergement</h1>
+<p class="lead">Deux options possibles. L'option A est recommandée pour démarrer : elle ne demande aucune administration de serveur.</p>
+
+<table>
+  <thead><tr><th style="width:26%"></th><th>Option A — recommandée</th><th>Option B — tout chez LWS</th></tr></thead>
+  <tbody>
+    <tr><td><b>Frontend</b></td><td>Hébergement web LWS (cPanel)</td><td>VPS LWS (serveur web Caddy)</td></tr>
+    <tr><td><b>Base de données</b></td><td>Supabase Cloud (supabase.com)</td><td>Supabase installé sur le même VPS, avec Docker</td></tr>
+    <tr><td><b>Mise en place</b></td><td>≈ 30 minutes</td><td>≈ 2 heures</td></tr>
+    <tr><td><b>Compétences</b></td><td>Utiliser cPanel, lancer quelques commandes</td><td>Administration Linux, Docker, pare-feu</td></tr>
+    <tr><td><b>Sauvegardes de la base</b></td><td>Gérées par Supabase (selon l'offre) + copie manuelle possible</td><td><b>À votre charge</b> (script fourni)</td></tr>
+    <tr><td><b>Mises à jour de sécurité</b></td><td>Gérées par Supabase</td><td><b>À votre charge</b> (système et Supabase)</td></tr>
+    <tr><td><b>Localisation des données</b></td><td>Région Supabase choisie (ex. Europe de l'Ouest)</td><td>Sur votre VPS LWS</td></tr>
+    <tr><td><b>Coût</b></td><td>Hébergement LWS + offre Supabase (gratuite pour démarrer, payante pour plus de capacité et les sauvegardes avancées)</td><td>Un VPS LWS d'au moins 4 Go de RAM</td></tr>
+  </tbody>
+</table>
+
+<div class="box tip"><span class="t">Recommandation</span>
+Commencez par l'<b>option A</b>. Si vous devez plus tard rapatrier les données chez LWS, la base peut être exportée de Supabase Cloud et restaurée sur un VPS (chapitre 7), sans modifier l'application.
+</div>
+
+<!-- ===================================================== 3 -->
+<span class="chapter-no">Chapitre 3</span>
+<h1 class="chapter">Prérequis</h1>
+<p class="lead">À réunir avant de commencer.</p>
+
+<h2>Comptes et services</h2>
+<ul class="check">
+  <li>Un <b>nom de domaine</b> géré chez LWS (ou ailleurs), avec accès à sa zone DNS.</li>
+  <li><b>Option A :</b> un <b>hébergement web LWS</b> avec cPanel, et un compte <b>Supabase</b> (supabase.com).</li>
+  <li><b>Option B :</b> un <b>VPS LWS</b> sous Ubuntu, de préférence le modèle « VPS Docker » (Docker préinstallé). Les identifiants root SSH arrivent par email à l'activation.</li>
+  <li>Une <b>boîte email</b> pour envoyer les emails « mot de passe oublié » (par exemple une adresse de votre messagerie LWS), avec ses paramètres SMTP.</li>
+  <li>L'accès au <b>dépôt GitHub</b> du projet.</li>
+</ul>
+
+<h2>Outils sur le poste de travail</h2>
+<table>
+  <thead><tr><th style="width:30%">Outil</th><th>Usage</th><th style="width:22%">Option</th></tr></thead>
+  <tbody>
+    <tr><td><b>Git</b></td><td>Récupérer le code du dépôt</td><td>A et B</td></tr>
+    <tr><td><b>Node.js 22</b> (avec npm)</td><td>Construire le frontend (<code>npm run build</code>)</td><td>A et B</td></tr>
+    <tr><td><b>CLI Supabase</b> version 3 ou plus</td><td>Appliquer les migrations, déployer les fonctions, sauvegarder</td><td>A</td></tr>
+    <tr><td><b>psql</b> (client PostgreSQL)</td><td>Charger les données de départ</td><td>A</td></tr>
+    <tr><td><b>Docker Desktop</b></td><td>Nécessaire à <code>supabase db dump</code> (sauvegarde manuelle)</td><td>A</td></tr>
+    <tr><td>Client <b>SSH</b> (terminal, PuTTY) et <b>rsync</b></td><td>Administrer le VPS et y envoyer le site</td><td>B</td></tr>
+    <tr><td>Client <b>FTP</b> (FileZilla) — facultatif</td><td>Envoyer le site sur l'hébergement cPanel</td><td>A</td></tr>
+  </tbody>
+</table>
+
+<h2>Récupérer le code</h2>
+<pre><code>git clone https://github.com/siaoctawacta/gestiondestock.git
+cd gestiondestock</code></pre>
+
+
+
+<!-- ===================================================== 4 -->
+<span class="chapter-no">Chapitre 4</span>
+<h1 class="chapter">Option A — Hébergement web LWS + Supabase Cloud</h1>
+<p class="lead">Le site est hébergé par LWS ; la base de données et l'authentification sont fournies par Supabase Cloud.</p>
+
+<h2>4.1 Créer le projet Supabase</h2>
+<ol class="steps">
+  <li>Créez un compte sur <b>supabase.com</b>, puis un <b>nouveau projet</b>. Choisissez une région proche (par exemple <i>West EU</i>) et un <b>mot de passe de base</b> robuste : notez-le dans un gestionnaire de mots de passe.</li>
+  <li>Dans <i>Project Settings → API</i>, notez l'<b>URL du projet</b> (<code>https://&lt;ref&gt;.supabase.co</code>) et la clé <b>anon public</b>. Le <code>&lt;ref&gt;</code> est l'identifiant de 20 lettres dans l'URL.</li>
+  <li>Dans <i>Project Settings → Database → Connection string</i>, copiez la <b>chaîne de connexion</b> (format URI) : elle sert à charger les données de départ et aux sauvegardes.</li>
+</ol>
+
+<h2>4.2 Installer la base de l'application</h2>
+<div class="box warn"><span class="t">CLI Supabase version 3</span>
+Depuis la version 3, <code>supabase db push</code> et <code>supabase db dump</code> agissent sur une base <b>locale</b> par défaut. Pour agir sur le projet en ligne, ajoutez <b>toujours</b> <code>--remote</code>. Sans cette option, la commande ne modifie rien sur votre base de production.
+</div>
+<p>Depuis le dossier du dépôt, sur votre poste :</p>
+<pre><code>cd backend
+supabase login
+supabase link --project-ref &lt;ref-du-projet&gt;
+
+<span class="c"># Crée les tables, fonctions, déclencheurs et règles de sécurité (dans l'ordre des migrations)</span>
+supabase db push --remote
+
+<span class="c"># Données de départ : boutiques, catégories, fournisseurs, produits — UNE SEULE FOIS, sur une base vide</span>
+psql "&lt;chaîne de connexion&gt;" -f supabase/seed.sql
+
+<span class="c"># Fonctions serveur : gestion des comptes, validation superviseur des remises</span>
+supabase functions deploy admin-users
+supabase functions deploy verify-supervisor</code></pre>
+
+<div class="box info"><span class="t">Ce que contient la base</span>
+Les migrations (<code>backend/supabase/migrations/</code>) créent les 19 tables, les fonctions métier (vente, transferts, déclarations…), les déclencheurs d'audit et d'alertes, et active la sécurité par boutique (RLS) sur toutes les tables. Le fichier <code>seed.sql</code> ne contient que les référentiels : <b>aucun utilisateur, aucune vente</b>. Adaptez-le à vos boutiques et produits réels avant de le charger, ou créez-les ensuite depuis l'application.
+</div>
+
+<h2>4.3 Créer le premier Super Admin</h2>
+<ol class="steps">
+  <li>Dans Supabase : <i>Authentication → Users → Add user</i>. Saisissez l'email et un mot de passe, et cochez <b>Auto Confirm User</b>.</li>
+  <li>Dans <i>SQL Editor</i>, donnez-lui le rôle Super Admin :
+<pre><code>update public.users
+   set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom'
+ where email = 'vous@votredomaine.ci';</code></pre></li>
+  <li>Tous les autres comptes se créent ensuite depuis l'écran <b>Utilisateurs</b> de l'application, par ce Super Admin.</li>
+</ol>
+
+<h2>4.4 Configurer l'authentification</h2>
+<p>Dans <i>Authentication → URL Configuration</i> :</p>
+<table>
+  <thead><tr><th style="width:35%">Réglage</th><th>Valeur</th></tr></thead>
+  <tbody>
+    <tr><td>Site URL</td><td><code>https://stock.votredomaine.ci</code></td></tr>
+    <tr><td>Redirect URLs</td><td><code>https://stock.votredomaine.ci/reset-password</code> (lien « mot de passe oublié »)</td></tr>
+  </tbody>
+</table>
+<p>Pour que les emails de réinitialisation partent de votre domaine, renseignez votre serveur SMTP dans <i>Authentication → SMTP Settings</i> (l'envoi par défaut de Supabase est limité). Désactivez l'inscription libre (<i>Allow new users to sign up</i>) : les comptes sont créés par le Super Admin.</p>
+
+<h2>4.5 Construire le site</h2>
+<p>Les clés Supabase sont intégrées au site <b>au moment du build</b> : construisez sur votre poste, pas sur le serveur.</p>
+<pre><code>cd frontend
+cp .env.example .env
+<span class="c"># Éditez .env :</span>
+<span class="c">#   VITE_SUPABASE_URL=https://&lt;ref&gt;.supabase.co</span>
+<span class="c">#   VITE_SUPABASE_ANON_KEY=&lt;clé anon public&gt;</span>
+npm ci
+npm run build          <span class="c"># produit le dossier frontend/dist/</span></code></pre>
+<div class="box danger"><span class="t">Ne jamais publier la clé service_role</span>
+Seule la clé <b>anon</b> va dans <code>.env</code> : elle est publique par nature, la sécurité reposant sur les règles RLS de la base. La clé <b>service_role</b> contourne toutes les règles : elle ne doit jamais apparaître dans le frontend, un email ou le dépôt.
+</div>
+
+<h2>4.6 Publier sur l'hébergement LWS</h2>
+<ol class="steps">
+  <li>Dans l'espace client LWS, ouvrez le <b>cPanel</b> de l'hébergement. Si vous utilisez un sous-domaine (<code>stock.votredomaine.ci</code>), créez-le dans <i>Domaines</i> et notez son dossier racine.</li>
+  <li>Activez le <b>certificat SSL</b> (Let's Encrypt) pour ce domaine dans cPanel.</li>
+  <li>Ouvrez le <b>Gestionnaire de fichiers</b> et allez dans le dossier racine du domaine (souvent <code>public_html/</code>). Dans <i>Paramètres</i>, cochez <b>Afficher les fichiers cachés</b>. Videz le dossier s'il contient une page par défaut.</li>
+  <li>Compressez <b>le contenu</b> de <code>frontend/dist/</code> en <code>.zip</code> (pas le dossier lui-même), envoyez l'archive, puis <b>Extraire</b>. Vérifiez la présence de <code>index.html</code>, du dossier <code>assets/</code>, des logos et du fichier <b><code>.htaccess</code></b>. Supprimez ensuite l'archive.</li>
+  <li>Variante FTP : avec les identifiants FTP de l'espace client, copiez le contenu de <code>dist/</code> dans le dossier racine (afficher les fichiers cachés dans FileZilla : <i>Serveur → Forcer l'affichage des fichiers cachés</i>).</li>
+</ol>
+
+<h3>Rôle du fichier .htaccess</h3>
+<p>Le fichier <code>frontend/public/.htaccess</code> est copié dans <code>dist/</code> à chaque build. Il :</p>
+<ul>
+  <li>force le <b>HTTPS</b> ;</li>
+  <li>renvoie les adresses de l'application (<code>/pos</code>, <code>/stores</code>…) vers <code>index.html</code>. <b>Sans lui, recharger une page autre que l'accueil donne une erreur 404</b> ;</li>
+  <li>ajoute des en-têtes de sécurité et règle le cache : <code>index.html</code> n'est jamais mis en cache, pour que chaque mise à jour soit prise en compte.</li>
+</ul>
+
+<!-- ===================================================== 5 -->
+<span class="chapter-no">Chapitre 5</span>
+<h1 class="chapter">Option B — Tout sur un VPS LWS</h1>
+<p class="lead">Supabase est installé sur votre VPS avec Docker ; le même serveur publie le site. Réservez cette option à une équipe à l'aise avec l'administration Linux.</p>
+
+<div class="box warn"><span class="t">Responsabilités</span>
+Supabase auto-hébergé est maintenu par la communauté. La <b>sécurité du serveur, les mises à jour et les sauvegardes</b> sont entièrement à votre charge. La configuration par défaut de Supabase <b>n'est pas sûre</b> pour la production : suivez toutes les étapes de ce chapitre.
+</div>
+
+<h2>5.1 Préparer le serveur et le DNS</h2>
+<ul class="check">
+  <li>VPS LWS sous <b>Ubuntu</b>, 4 Go de RAM minimum (modèle « VPS Docker » de préférence).</li>
+  <li>Deux enregistrements DNS de type <b>A</b> vers l'IP du VPS : <code>stock.votredomaine.ci</code> (application) et <code>api.votredomaine.ci</code> (Supabase).</li>
+</ul>
+<pre><code>ssh root@&lt;ip-du-vps&gt;
+apt update &amp;&amp; apt upgrade -y
+apt install -y git postgresql-client
+<span class="c"># Uniquement si Docker n'est pas préinstallé :</span>
+curl -fsSL https://get.docker.com | sh</code></pre>
+
+<h2>5.2 Installer Supabase</h2>
+<pre><code>git clone --depth 1 https://github.com/supabase/supabase /opt/supabase-src
+mkdir -p /opt/supabase &amp;&amp; cp -r /opt/supabase-src/docker/. /opt/supabase/
+cd /opt/supabase
+cp .env.example .env
+sh utils/generate-keys.sh --update-env     <span class="c"># génère JWT_SECRET, ANON_KEY, SERVICE_ROLE_KEY, etc.</span>
+nano .env</code></pre>
+
+<p>Dans <code>.env</code>, <b>avant le premier démarrage</b>, vérifiez ou modifiez au minimum :</p>
+<table>
+  <thead><tr><th style="width:42%">Variable</th><th>Valeur</th></tr></thead>
+  <tbody>
+    <tr><td><code>POSTGRES_PASSWORD</code></td><td>Long mot de passe aléatoire (à conserver dans un coffre)</td></tr>
+    <tr><td><code>DASHBOARD_USERNAME</code>, <code>DASHBOARD_PASSWORD</code></td><td>Identifiants du tableau de bord Supabase Studio</td></tr>
+    <tr><td><code>SUPABASE_PUBLIC_URL</code></td><td><code>https://api.votredomaine.ci</code></td></tr>
+    <tr><td><code>API_EXTERNAL_URL</code></td><td><code>https://api.votredomaine.ci/auth/v1</code></td></tr>
+    <tr><td><code>SITE_URL</code></td><td><code>https://stock.votredomaine.ci</code></td></tr>
+    <tr><td><code>ADDITIONAL_REDIRECT_URLS</code></td><td><code>https://stock.votredomaine.ci/reset-password</code></td></tr>
+    <tr><td><code>DISABLE_SIGNUP</code></td><td><code>true</code> — les comptes sont créés par le Super Admin</td></tr>
+    <tr><td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>SMTP_ADMIN_EMAIL</code>, <code>SMTP_SENDER_NAME</code></td><td>Paramètres de la boîte email d'envoi (emails « mot de passe oublié »)</td></tr>
+  </tbody>
+</table>
+<p>Le haut du fichier <code>.env.example</code> liste tous les secrets : n'en laissez <b>aucun</b> à sa valeur par défaut. Démarrez ensuite :</p>
+<pre><code>sh run.sh start        <span class="c"># équivaut à docker compose up -d --wait</span>
+sh run.sh status       <span class="c"># tous les services doivent être « healthy »</span></code></pre>
+
+<h2>5.3 Fermer les ports internes</h2>
+<p>Par défaut, Docker publie sur Internet le port de l'API (<code>8000</code>) et ceux de PostgreSQL (<code>5432</code>, <code>6543</code>). Seuls les ports <b>22</b> (SSH), <b>80</b> et <b>443</b> doivent être ouverts.</p>
+<div class="box danger"><span class="t">Piège courant</span>
+Le pare-feu <code>ufw</code> <b>ne s'applique pas</b> aux ports publiés par Docker. Il faut ajouter la règle dans la chaîne <code>DOCKER-USER</code> :
+</div>
+<pre><code>ip route | grep default          <span class="c"># repérez l'interface publique, par exemple eth0 ou ens3</span>
+iptables -I DOCKER-USER -i eth0 -p tcp -m multiport --dports 8000,5432,6543 -j DROP
+apt install -y iptables-persistent &amp;&amp; netfilter-persistent save</code></pre>
+<p>Le serveur web installé à l'étape suivante accède à l'API en local (<code>localhost:8000</code>) : il n'est pas concerné par ce blocage. Vérifiez depuis un autre ordinateur que <code>http://&lt;ip-du-vps&gt;:8000</code> ne répond plus.</p>
+
+<h2>5.4 HTTPS et site web avec Caddy</h2>
+<p>Caddy obtient et renouvelle automatiquement les certificats Let's Encrypt.</p>
+<pre><code>apt install -y caddy
+mkdir -p /var/www/mm-stock
+cat &gt; /etc/caddy/Caddyfile &lt;&lt;'CADDY'
+api.votredomaine.ci {
+    reverse_proxy localhost:8000
+}
+
+stock.votredomaine.ci {
+    root * /var/www/mm-stock
+    encode gzip
+    try_files {path} /index.html
+    file_server
+}
+CADDY
+systemctl reload caddy</code></pre>
+<p>Supabase Studio est alors accessible sur <code>https://api.votredomaine.ci</code>, protégé par <code>DASHBOARD_USERNAME</code> / <code>DASHBOARD_PASSWORD</code>.</p>
+
+<h2>5.5 Installer la base de l'application</h2>
+<p>Dans le conteneur de la base, les connexions via <code>localhost</code> sont acceptées sans mot de passe : c'est pourquoi les commandes passent <code>-h localhost</code>. Les migrations s'exécutent avec le rôle <code>postgres</code>, comme sur Supabase Cloud.</p>
+<pre><code>git clone https://github.com/siaoctawacta/gestiondestock /opt/gestiondestock
+cd /opt/gestiondestock/backend/supabase
+
+<span class="c"># Migrations, dans l'ordre (les noms de fichiers sont horodatés)</span>
+for f in migrations/*.sql; do
+  echo "== $f"
+  docker exec -i supabase-db psql -h localhost -v ON_ERROR_STOP=1 -U postgres -d postgres &lt; "$f" || break
+done
+
+<span class="c"># Données de départ : UNE SEULE FOIS, sur une base vide</span>
+docker exec -i supabase-db psql -h localhost -v ON_ERROR_STOP=1 -U postgres -d postgres &lt; seed.sql
+
+<span class="c"># Fonctions serveur : à côté du dossier « main » fourni par Supabase</span>
+cp -r functions/admin-users functions/verify-supervisor /opt/supabase/volumes/functions/
+cd /opt/supabase &amp;&amp; sh run.sh restart functions</code></pre>
+
+<p>Créez le premier Super Admin dans Studio (<i>Authentication → Add user</i>), puis :</p>
+<pre><code>docker exec -i supabase-db psql -h localhost -U postgres -d postgres -c \
+  "update public.users set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom' where email = 'vous@votredomaine.ci';"</code></pre>
+
+<h2>5.6 Construire et publier le frontend</h2>
+<p>Sur votre poste, <code>frontend/.env</code> contient :</p>
+<pre><code>VITE_SUPABASE_URL=https://api.votredomaine.ci
+VITE_SUPABASE_ANON_KEY=&lt;ANON_KEY du fichier /opt/supabase/.env&gt;</code></pre>
+<pre><code>cd frontend &amp;&amp; npm ci &amp;&amp; npm run build
+rsync -av --delete dist/ root@&lt;ip-du-vps&gt;:/var/www/mm-stock/</code></pre>
+<p>Avec Caddy, le fichier <code>.htaccess</code> n'est pas utilisé : la directive <code>try_files</code> du Caddyfile joue le même rôle.</p>
+
+<!-- ===================================================== 6 -->
+<span class="chapter-no">Chapitre 6</span>
+<h1 class="chapter">Mise en service : vérifications finales</h1>
+<p class="lead">À dérouler avant d'ouvrir l'application aux utilisateurs, quelle que soit l'option.</p>
+
+<h2>Liste de contrôle technique</h2>
+<ul class="check">
+  <li>Le site s'ouvre en <b>HTTPS</b>, avec un cadenas valide, et <code>http://</code> redirige vers <code>https://</code>.</li>
+  <li><b>Aucun bandeau « Mode démo »</b> n'apparaît en haut des pages.</li>
+  <li>Recharger directement <code>/pos</code> ou <code>/stores</code> affiche la page (pas d'erreur 404).</li>
+  <li>Le Super Admin se connecte ; un compte inconnu ou un mauvais mot de passe est refusé.</li>
+  <li>Le lien « Mot de passe oublié » envoie bien un email, et le lien reçu ouvre la page de nouveau mot de passe.</li>
+  <li>Création d'un utilisateur depuis l'écran <b>Utilisateurs</b> : fonctionne (cela valide la fonction <code>admin-users</code>).</li>
+  <li>Une vente test en caisse avec remise de plus de 15 % demande bien la validation d'un superviseur (fonction <code>verify-supervisor</code>).</li>
+  <li>La vente test apparaît dans l'historique et le stock de la boutique a diminué.</li>
+  <li>Un caissier d'une boutique A ne voit <b>ni les ventes ni le stock</b> d'une boutique B.</li>
+  <li>Le ticket PDF et un export PDF / Excel se génèrent correctement.</li>
+  <li><b>Option B :</b> les ports 8000, 5432 et 6543 ne répondent pas depuis l'extérieur ; une première sauvegarde a été faite <b>et restaurée avec succès</b> sur une base de test.</li>
+</ul>
+
+<h2>Liste de contrôle des données</h2>
+<ul class="check">
+  <li>Les boutiques réelles sont créées (codes, adresses, responsables) et les boutiques d'exemple inutiles supprimées.</li>
+  <li>Le catalogue réel est saisi : prix d'achat HT, prix de vente TTC, taux de TVA, codes-barres EAN13, seuils minimum.</li>
+  <li>Le stock initial de chaque boutique est saisi par des <b>entrées de stock</b> (avec numéro de lot et date de péremption).</li>
+  <li>Les comptes utilisateurs sont créés avec le bon rôle et la bonne boutique.</li>
+  <li>Les ventes de test sont identifiées, ou faites sur un environnement séparé.</li>
+</ul>
+
+<!-- ===================================================== 7 -->
+<span class="chapter-no">Chapitre 7</span>
+<h1 class="chapter">Exploitation courante</h1>
+<p class="lead">Mises à jour, sauvegardes, restauration et consultation des journaux.</p>
+
+<h2>7.1 Publier une nouvelle version</h2>
+<p>Ordre à respecter quand une version modifie aussi la base : <b>migrations d'abord, frontend ensuite</b>.</p>
+<pre><code>git pull                                   <span class="c"># récupérer la nouvelle version</span>
+
+<span class="c"># 1. Base de données — option A</span>
+cd backend &amp;&amp; supabase db push --remote --dry-run     <span class="c"># prévisualiser</span>
+supabase db push --remote
+
+<span class="c"># 1. Base de données — option B (sur le VPS, pour chaque nouvelle migration)</span>
+docker exec -i supabase-db psql -h localhost -v ON_ERROR_STOP=1 -U postgres -d postgres \
+  &lt; backend/supabase/migrations/&lt;nouveau-fichier&gt;.sql
+
+<span class="c"># 2. Frontend</span>
+cd frontend &amp;&amp; npm ci &amp;&amp; npm run build
+<span class="c"># option A : remplacer le contenu du dossier racine cPanel par celui de dist/ (garder .htaccess)</span>
+<span class="c"># option B : rsync -av --delete dist/ root@&lt;ip-du-vps&gt;:/var/www/mm-stock/</span></code></pre>
+<p>Si une fonction serveur a changé : <code>supabase functions deploy &lt;nom&gt;</code> (option A), ou recopier son dossier dans <code>/opt/supabase/volumes/functions/</code> puis <code>sh run.sh restart functions</code> (option B).</p>
+
+<h2>7.2 Sauvegardes</h2>
+<h3>Option A — Supabase Cloud</h3>
+<p>Supabase sauvegarde automatiquement la base selon l'offre souscrite (<i>Database → Backups</i>). Pour une copie complète sous votre contrôle (Docker Desktop requis sur le poste) :</p>
+<pre><code>cd backend
+supabase db dump --remote --role-only -f roles.sql
+supabase db dump --remote -f schema.sql
+supabase db dump --remote --data-only --use-copy -f data.sql</code></pre>
+
+<h3>Option B — VPS</h3>
+<p>Les sauvegardes complètes se font avec le superutilisateur <code>supabase_admin</code>. Sauvegarde automatique chaque nuit à 2 h, avec 14 jours d'historique (<code>crontab -e</code>) :</p>
+<pre><code>mkdir -p /root/backups
+0 2 * * * docker exec supabase-db pg_dump -h localhost -U supabase_admin -d postgres -Fc &gt; /root/backups/mm-$(date +\%F).dump &amp;&amp; find /root/backups -name 'mm-*.dump' -mtime +14 -delete</code></pre>
+<div class="box warn"><span class="t">Copier hors du serveur</span>
+Une sauvegarde qui reste sur le VPS disparaît avec lui. Copiez régulièrement <code>/root/backups</code> ailleurs (poste local, stockage externe), par exemple : <code>rsync -av root@&lt;ip-du-vps&gt;:/root/backups/ ./sauvegardes-mm/</code>.
+</div>
+
+<h2>7.3 Restaurer</h2>
+<p><b>Option A</b>, dans un projet vide (chaîne de connexion du projet cible) :</p>
+<pre><code>psql "&lt;chaîne de connexion&gt;" --single-transaction --variable ON_ERROR_STOP=1 \
+  --file roles.sql --file schema.sql \
+  --command 'SET session_replication_role = replica' --file data.sql</code></pre>
+<p><b>Option B</b> :</p>
+<pre><code>docker exec -i supabase-db pg_restore -h localhost --clean --if-exists -U supabase_admin -d postgres &lt; /root/backups/mm-AAAA-MM-JJ.dump</code></pre>
+<div class="box tip"><span class="t">Tester ses sauvegardes</span>
+Une sauvegarde n'a de valeur que si sa restauration a été testée. Faites l'essai une fois par trimestre sur un projet ou un serveur de test, jamais directement sur la production.
+</div>
+
+<h2>7.4 Surveillance et commandes du quotidien</h2>
+<table>
+  <thead><tr><th style="width:28%">Besoin</th><th>Option A (Supabase Cloud)</th><th>Option B (VPS, dans <code>/opt/supabase</code>)</th></tr></thead>
+  <tbody>
+    <tr><td>État des services</td><td>Tableau de bord Supabase</td><td><code>sh run.sh status</code></td></tr>
+    <tr><td>Journaux</td><td><i>Logs</i> : API, Auth, Postgres, Edge Functions</td><td><code>sh run.sh logs</code> ou <code>sh run.sh logs auth</code> (aussi <code>rest</code>, <code>db</code>, <code>functions</code>, <code>storage</code>)</td></tr>
+    <tr><td>Redémarrer</td><td>Non nécessaire</td><td><code>sh run.sh restart</code>, ou un service : <code>sh run.sh restart functions</code></td></tr>
+    <tr><td>Mettre à jour Supabase</td><td>Automatique</td><td>Après une sauvegarde : <code>sh update.sh --dry-run</code>, <code>sh update.sh</code>, puis <code>sh run.sh pull &amp;&amp; sh run.sh recreate</code></td></tr>
+    <tr><td>Mises à jour du système</td><td>—</td><td><code>apt update &amp;&amp; apt upgrade</code> chaque mois</td></tr>
+    <tr><td>Espace disque</td><td>Quotas du tableau de bord</td><td><code>df -h</code> et <code>docker system df</code></td></tr>
+  </tbody>
+</table>
+
+<!-- ===================================================== 8 -->
+<span class="chapter-no">Chapitre 8</span>
+<h1 class="chapter">Sécurité</h1>
+<p class="lead">Principes intégrés à l'application, et règles à respecter côté hébergement.</p>
+
+<h2>Ce que l'application garantit</h2>
+<ul>
+  <li><b>Sécurité par boutique (RLS)</b> activée sur toutes les tables : un utilisateur ne lit et n'écrit que les données de ses boutiques, même en appelant l'API directement.</li>
+  <li><b>Aucune écriture directe</b> sur le stock, les ventes, les transferts ou les déclarations : tout passe par des fonctions de la base qui vérifient le rôle et la boutique.</li>
+  <li>Les <b>totaux de vente sont recalculés</b> par la base à partir des prix du catalogue : un poste modifié ne peut pas changer un prix.</li>
+  <li>Le journal des mouvements de stock et le journal d'audit sont <b>inaltérables</b>.</li>
+  <li>Seul le <b>Super Admin</b> crée, modifie ou supprime des boutiques et des comptes et attribue les rôles.</li>
+</ul>
+
+<h2>Règles d'exploitation</h2>
+<table>
+  <thead><tr><th style="width:32%">Élément</th><th>Règle</th></tr></thead>
+  <tbody>
+    <tr><td>Clé <code>service_role</code> / <code>SERVICE_ROLE_KEY</code></td><td>Jamais dans le frontend, un email, une capture ou le dépôt Git. À régénérer si elle a fuité.</td></tr>
+    <tr><td>Fichier <code>.env</code></td><td>Jamais dans le dépôt (déjà exclu par <code>.gitignore</code>). Sur le VPS : <code>chmod 600 /opt/supabase/.env</code>.</td></tr>
+    <tr><td>Mots de passe</td><td>Gestionnaire de mots de passe ; un compte par personne, jamais de compte partagé en caisse.</td></tr>
+    <tr><td>Départ d'un employé</td><td>Désactiver ou supprimer son compte le jour même (écran Utilisateurs).</td></tr>
+    <tr><td>Accès SSH (option B)</td><td>Connexion par clé SSH, puis désactiver la connexion root par mot de passe.</td></tr>
+    <tr><td>Super Admins</td><td>En limiter le nombre (deux personnes de confiance) ; l'application empêche de retirer le dernier.</td></tr>
+    <tr><td>Sauvegardes</td><td>Quotidiennes, copiées hors du serveur, restauration testée chaque trimestre.</td></tr>
+  </tbody>
+</table>
+
+<!-- ===================================================== 9 -->
+<span class="chapter-no">Chapitre 9</span>
+<h1 class="chapter">Dépannage</h1>
+<p class="lead">Problèmes les plus probables lors de la mise en ligne, et leur solution.</p>
+
+<table>
+  <thead><tr><th style="width:28%">Symptôme</th><th style="width:30%">Cause probable</th><th>Solution</th></tr></thead>
+  <tbody>
+    <tr><td>Erreur 404 en rechargeant <code>/pos</code> ou une autre page</td><td>Fichier <code>.htaccess</code> absent (fichier caché non envoyé)</td><td>Afficher les fichiers cachés dans le gestionnaire de fichiers ou FTP, et envoyer <code>.htaccess</code> depuis <code>dist/</code>.</td></tr>
+    <tr><td>Bandeau « Mode démo » en production</td><td>Build fait sans <code>frontend/.env</code></td><td>Renseigner <code>VITE_SUPABASE_URL</code> et <code>VITE_SUPABASE_ANON_KEY</code>, reconstruire, republier.</td></tr>
+    <tr><td>Page blanche après une mise à jour</td><td>Ancien <code>index.html</code> en cache, ou dossier <code>assets/</code> incomplet</td><td>Republier tout le contenu de <code>dist/</code> ; vider le cache du navigateur (<kbd>Ctrl</kbd>+<kbd>F5</kbd>).</td></tr>
+    <tr><td>« Invalid API key » à la connexion</td><td>Clé anon erronée, ou clé d'un autre projet</td><td>Recopier la clé <b>anon</b> du bon projet dans <code>.env</code> et reconstruire.</td></tr>
+    <tr><td>« Profil utilisateur introuvable »</td><td>Compte créé dans Auth avant l'application des migrations</td><td>Appliquer les migrations, puis recréer le compte (ou insérer sa ligne dans <code>public.users</code>).</td></tr>
+    <tr><td>Erreurs « permission denied » ou fonctions introuvables</td><td>Migrations non appliquées au projet en ligne (<code>--remote</code> oublié)</td><td><code>supabase db push --remote</code> ; vérifier dans <i>Database → Migrations</i>.</td></tr>
+    <tr><td>Création d'utilisateur impossible</td><td>Fonction <code>admin-users</code> non déployée, ou compte non Super Admin</td><td>Déployer la fonction ; vérifier le rôle du compte connecté.</td></tr>
+    <tr><td>Remise &gt; 15 % : validation superviseur en échec</td><td>Fonction <code>verify-supervisor</code> non déployée</td><td>Déployer la fonction (option A) ou la copier dans <code>volumes/functions</code> (option B).</td></tr>
+    <tr><td>Email « mot de passe oublié » non reçu</td><td>SMTP non configuré, ou URL de redirection absente</td><td>Configurer le SMTP ; ajouter <code>…/reset-password</code> aux URL de redirection ; vérifier les spams.</td></tr>
+    <tr><td>Site en HTTPS mais erreurs « mixed content »</td><td>URL de l'API en <code>http://</code></td><td>Utiliser <code>https://</code> dans <code>VITE_SUPABASE_URL</code> et dans le <code>.env</code> Supabase.</td></tr>
+    <tr><td>Option B : un service reste « unhealthy »</td><td>Secret mal renseigné, mémoire insuffisante</td><td><code>sh run.sh logs &lt;service&gt;</code> ; vérifier <code>.env</code> ; VPS de 4 Go minimum.</td></tr>
+    <tr><td>Option B : disque plein</td><td>Sauvegardes ou journaux accumulés</td><td><code>df -h</code> ; purger les anciennes sauvegardes copiées ailleurs ; <code>docker system prune</code> (images inutilisées).</td></tr>
+  </tbody>
+</table>
+
+<!-- ===================================================== 10 -->
+<span class="chapter-no">Chapitre 10</span>
+<h1 class="chapter">Annexes</h1>
+
+<h2>A. Arborescence du dépôt</h2>
+<pre><code>frontend/                 application React (interface, exports, ticket de caisse)
+  public/.htaccess        règles Apache pour l'hébergement LWS
+  .env.example            modèle des variables VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
+  scripts/                générateur de backend/supabase/seed.sql
+backend/supabase/
+  migrations/             schéma, fonctions, déclencheurs, règles RLS (ordre chronologique)
+  functions/              admin-users, verify-supervisor (Edge Functions)
+  tests/                  tests de sécurité RLS (pgTAP)
+  seed.sql                référentiels de départ
+.github/workflows/ci.yml  vérifications automatiques (frontend + backend)</code></pre>
+
+<h2>B. Variables du frontend</h2>
+<table>
+  <thead><tr><th style="width:35%">Variable</th><th>Option A</th><th>Option B</th></tr></thead>
+  <tbody>
+    <tr><td><code>VITE_SUPABASE_URL</code></td><td><code>https://&lt;ref&gt;.supabase.co</code></td><td><code>https://api.votredomaine.ci</code></td></tr>
+    <tr><td><code>VITE_SUPABASE_ANON_KEY</code></td><td>Clé <i>anon public</i> (Project Settings → API)</td><td><code>ANON_KEY</code> de <code>/opt/supabase/.env</code></td></tr>
+  </tbody>
+</table>
+
+<h2>C. Aide-mémoire</h2>
+<table>
+  <thead><tr><th style="width:36%">Action</th><th>Commande</th></tr></thead>
+  <tbody>
+    <tr><td>Construire le site</td><td><code>cd frontend &amp;&amp; npm ci &amp;&amp; npm run build</code></td></tr>
+    <tr><td>Appliquer les migrations (A)</td><td><code>cd backend &amp;&amp; supabase db push --remote</code></td></tr>
+    <tr><td>Déployer une fonction (A)</td><td><code>supabase functions deploy &lt;nom&gt;</code></td></tr>
+    <tr><td>Sauvegarder (A)</td><td><code>supabase db dump --remote [--role-only | --data-only --use-copy] -f &lt;fichier&gt;</code></td></tr>
+    <tr><td>État / journaux (B)</td><td><code>sh run.sh status</code> · <code>sh run.sh logs &lt;service&gt;</code></td></tr>
+    <tr><td>Appliquer une migration (B)</td><td><code>docker exec -i supabase-db psql -h localhost -v ON_ERROR_STOP=1 -U postgres -d postgres &lt; &lt;fichier&gt;</code></td></tr>
+    <tr><td>Sauvegarder (B)</td><td><code>docker exec supabase-db pg_dump -h localhost -U supabase_admin -d postgres -Fc &gt; &lt;fichier&gt;.dump</code></td></tr>
+    <tr><td>Publier le site (B)</td><td><code>rsync -av --delete dist/ root@&lt;ip-du-vps&gt;:/var/www/mm-stock/</code></td></tr>
+  </tbody>
+</table>
+
+<h2>D. Références</h2>
+<ul class="small">
+  <li>README du dépôt, section « Déploiement sur un serveur LWS » (même contenu, tenu à jour avec le code).</li>
+  <li>Supabase — auto-hébergement avec Docker : github.com/supabase/supabase/tree/master/docker et supabase.com/docs/guides/self-hosting/docker</li>
+  <li>Aide LWS — bases PostgreSQL sur l'hébergement cPanel : help.lwshosting.com/a/1798 ; modèle VPS Docker CE : aide.lwshosting.com/a/1932</li>
+</ul>
+
+</body>
+</html>

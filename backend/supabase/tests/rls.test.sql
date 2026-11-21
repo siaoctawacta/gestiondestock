@@ -3,7 +3,7 @@
 -- les données de la boutique B via l'API (rôle `authenticated`).
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(17);
+select plan(18);
 
 -- Jeu de données isolé
 insert into auth.users (id, email) values
@@ -92,6 +92,9 @@ update public.users set deleted_at = now(), is_active = false where id = '000000
 select public.delete_store('00000000-0000-4000-8000-00000000000b');
 select is((select count(*) from public.sales where store_id = '00000000-0000-4000-8000-00000000000b')::int, 1,
   'La boutique supprimée garde ses ventes (historique conservé)');
+
+select throws_ok($$ select public.save_daily_report(null, '00000000-0000-4000-8000-00000000000a', current_date, -4500, null, '[]') $$,
+  '23514', null, 'Montant encaissé négatif refusé dans une déclaration');
 
 select * from finish();
 rollback;

@@ -1,0 +1,126 @@
+/* Feuille de style commune aux documents PDF MM Cosmétiques Stock Pro */
+@page { size: A4; margin: 20mm 17mm 20mm 17mm; }
+@page :first { margin: 0; }
+
+:root {
+  --green: #184620;
+  --green-2: #2c6b36;
+  --sage: #b2cd8a;
+  --sage-bg: #f1f6ea;
+  --ink: #18241a;
+  --muted: #5d6b5c;
+  --line: #dfe6d8;
+  --paper: #fbfcf9;
+  --warn-bg: #fff7e6;
+  --warn: #9a5b00;
+  --danger-bg: #fdeeee;
+  --danger: #a8231f;
+  --info-bg: #eef5fb;
+  --info: #1d5a8c;
+}
+
+* { box-sizing: border-box; }
+html { font-family: 'Inter', sans-serif; font-size: 10.2pt; color: var(--ink); line-height: 1.55;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact; font-feature-settings: 'cv11', 'ss01'; }
+body { margin: 0; }
+
+/* ---------- Couverture ---------- */
+.cover { height: 297mm; width: 210mm; position: relative; overflow: hidden; background: var(--green); color: #fff;
+  padding: 26mm 22mm; display: flex; flex-direction: column; break-after: page; }
+.cover::before { content: ''; position: absolute; width: 150mm; height: 150mm; border-radius: 50%; right: -55mm; top: -45mm;
+  background: radial-gradient(circle, rgba(178,205,138,.35), rgba(178,205,138,0) 70%); }
+.cover::after { content: ''; position: absolute; width: 120mm; height: 120mm; border-radius: 50%; left: -50mm; bottom: -40mm;
+  background: radial-gradient(circle, rgba(178,205,138,.18), rgba(178,205,138,0) 70%); }
+.cover .logo { height: 22mm; position: relative; align-self: flex-start; }
+.cover .kicker { margin-top: auto; position: relative; font-size: 10pt; letter-spacing: .22em; text-transform: uppercase; color: var(--sage); font-weight: 600; }
+.cover h1 { position: relative; font-family: 'Inter Display', 'Inter', sans-serif; font-size: 34pt; line-height: 1.08; margin: 4mm 0 0; font-weight: 700; letter-spacing: -.01em; }
+.cover .subtitle { position: relative; font-size: 13pt; color: #dfe9d3; margin-top: 6mm; max-width: 150mm; }
+.cover .meta { position: relative; margin-top: 18mm; display: grid; grid-template-columns: repeat(3, auto); gap: 4mm 12mm; font-size: 9pt; color: #cfdcc4; }
+.cover .meta b { display: block; color: #fff; font-weight: 600; font-size: 10pt; }
+
+/* ---------- Titres ---------- */
+h1, h2, h3, h4 { font-family: 'Inter Display', 'Inter', sans-serif; color: var(--green); line-height: 1.2; break-after: avoid; }
+h1.chapter { font-size: 22pt; margin: 0 0 2mm; break-before: page; letter-spacing: -.01em; }
+.chapter-no { display: block; font-size: 9pt; letter-spacing: .2em; text-transform: uppercase; color: var(--green-2); font-weight: 600; margin-bottom: 2mm; break-before: page; }
+.chapter-no + h1.chapter { break-before: avoid; }
+.lead { font-size: 11pt; color: var(--muted); margin: 0 0 7mm; }
+h2 { font-size: 14pt; margin: 8mm 0 2.5mm; padding-bottom: 1.5mm; border-bottom: 1.5px solid var(--sage); }
+h3 { font-size: 11.5pt; margin: 5.5mm 0 1.5mm; }
+h4 { font-size: 10.2pt; margin: 4mm 0 1mm; color: var(--ink); }
+p { margin: 0 0 2.6mm; }
+ul, ol { margin: 0 0 3mm; padding-left: 5.5mm; }
+li { margin-bottom: 1mm; }
+li::marker { color: var(--green-2); }
+strong, b { font-weight: 600; }
+a { color: var(--green-2); text-decoration: none; }
+
+/* ---------- Sommaire ---------- */
+.toc { break-after: page; }
+.toc h1 { font-size: 20pt; margin: 0 0 6mm; }
+.toc ol { list-style: none; padding: 0; counter-reset: none; }
+.toc li { display: flex; align-items: baseline; gap: 3mm; padding: 2.2mm 0; border-bottom: 1px solid var(--line); margin: 0; font-size: 10.5pt; }
+.toc li span.n { color: var(--green-2); font-weight: 700; width: 9mm; flex-shrink: 0; }
+.toc li span.d { color: var(--muted); font-size: 9pt; margin-left: auto; text-align: right; }
+
+/* ---------- Encadrés ---------- */
+.box { border-radius: 2.5mm; padding: 3.2mm 4mm 3.2mm 4mm; margin: 3.5mm 0 4mm; break-inside: avoid; border-left: 1.2mm solid; font-size: 9.6pt; }
+.box > :last-child { margin-bottom: 0; }
+.box .t { font-weight: 700; display: block; margin-bottom: 1mm; font-size: 9.4pt; letter-spacing: .02em; }
+.box.info { background: var(--info-bg); border-color: var(--info); }
+.box.info .t { color: var(--info); }
+.box.tip { background: var(--sage-bg); border-color: var(--green-2); }
+.box.tip .t { color: var(--green); }
+.box.warn { background: var(--warn-bg); border-color: #e0a100; }
+.box.warn .t { color: var(--warn); }
+.box.danger { background: var(--danger-bg); border-color: var(--danger); }
+.box.danger .t { color: var(--danger); }
+.box.exercise { background: #fff; border: 1.5px dashed var(--green-2); border-left: 1.2mm solid var(--green-2); }
+.box.exercise .t { color: var(--green); }
+
+/* ---------- Étapes ---------- */
+ol.steps { list-style: none; padding: 0; counter-reset: step; margin: 2mm 0 4mm; }
+ol.steps > li { counter-increment: step; position: relative; padding-left: 10mm; margin-bottom: 2.4mm; break-inside: avoid; }
+ol.steps > li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 6.4mm; height: 6.4mm; border-radius: 50%;
+  background: var(--green); color: #fff; font-weight: 700; font-size: 8.6pt; display: grid; place-items: center; }
+
+/* ---------- Tableaux ---------- */
+table { width: 100%; border-collapse: collapse; margin: 2.5mm 0 4.5mm; font-size: 9.2pt; break-inside: auto; }
+thead { display: table-header-group; }
+tr { break-inside: avoid; }
+th { background: var(--sage-bg); color: var(--green); text-align: left; font-weight: 600; padding: 2mm 2.6mm; border-bottom: 1.5px solid var(--sage); }
+td { padding: 1.9mm 2.6mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.c, th.c { text-align: center; }
+.yes { color: var(--green-2); font-weight: 700; }
+.no { color: #b9c2b6; }
+
+/* ---------- Code ---------- */
+code { font-family: 'JetBrains Mono', monospace; font-size: 8.6pt; background: #eef2ea; color: #1e3a22; padding: .3mm 1.2mm; border-radius: 1mm; }
+pre { font-family: 'JetBrains Mono', monospace; font-size: 8.1pt; line-height: 1.5; background: #14231a; color: #e3ecd9; padding: 3.2mm 4mm;
+  border-radius: 2.5mm; margin: 2mm 0 4mm; white-space: pre-wrap; word-break: break-word; break-inside: avoid; }
+pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+pre .c { color: #8fae86; }
+kbd { font-family: 'JetBrains Mono', monospace; font-size: 8.2pt; border: 1px solid #c9d3c3; border-bottom-width: 2px; border-radius: 1mm; padding: 0 1.3mm; background: #fff; }
+
+/* ---------- Figures ---------- */
+figure { margin: 3mm 0 5mm; break-inside: avoid; text-align: center; }
+figure img { max-width: 100%; border: 1px solid var(--line); border-radius: 2mm; box-shadow: 0 1mm 3mm rgba(24,70,32,.08); }
+figure.sm img { max-width: 62%; }
+figure.md img { max-width: 80%; }
+figure.phone img { max-width: 34%; }
+figcaption { font-size: 8.6pt; color: var(--muted); margin-top: 1.6mm; }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; align-items: start; }
+.two figure { margin-top: 0; }
+
+/* ---------- Divers ---------- */
+.pill { display: inline-block; border-radius: 9mm; padding: .2mm 2.2mm; font-size: 8.4pt; font-weight: 600; background: var(--sage-bg); color: var(--green); border: 1px solid #cfe0b8; }
+.pill.r { background: #fff; }
+.grid-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3mm; margin: 2mm 0 4mm; }
+.card { border: 1px solid var(--line); border-radius: 2.5mm; padding: 3mm 3.4mm; background: #fff; break-inside: avoid; }
+.card h4 { margin: 0 0 1mm; color: var(--green); }
+.card p { font-size: 9pt; color: var(--muted); margin: 0; }
+.check { list-style: none; padding-left: 0; }
+.check li { padding-left: 6.5mm; position: relative; }
+.check li::before { content: ''; position: absolute; left: 0; top: 1mm; width: 3.4mm; height: 3.4mm; border: 1.4px solid var(--green-2); border-radius: .8mm; }
+.avoid { break-inside: avoid; }
+.page-break { break-before: page; }
+.small { font-size: 8.8pt; color: var(--muted); }
