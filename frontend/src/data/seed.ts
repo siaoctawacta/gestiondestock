@@ -32,7 +32,7 @@ export interface DemoDb {
 }
 
 export const DEMO_PASSWORD = 'demo1234'
-export const DB_VERSION = 5
+export const DB_VERSION = 6
 
 function rng(seed: number) {
   return () => {
@@ -60,12 +60,10 @@ export function buildSeed(): DemoDb {
   }
 
   /* ---------- Boutiques ---------- */
+  // Les deux boutiques MM Cosmétiques, à Lomé (Togo) — coordonnées fournies par MM Cosmétiques.
   const storeDefs = [
-    ['PLT', 'MM Cosmétiques Plateau', 'Av. Chardy, Plateau, Abidjan', 'Abidjan Sud'],
-    ['COC', 'MM Cosmétiques Cocody Riviera', 'Bd Mitterrand, Riviera 2, Abidjan', 'Abidjan Nord'],
-    ['YOP', 'MM Cosmétiques Yopougon', 'Carrefour Siporex, Yopougon', 'Abidjan Nord'],
-    ['MAR', 'MM Cosmétiques Marcory Zone 4', 'Rue du Canal, Zone 4, Marcory', 'Abidjan Sud'],
-    ['BKE', 'MM Cosmétiques Bouaké Centre', 'Av. de la Paix, Bouaké', 'Intérieur'],
+    ['AGB', 'MM Cosmétiques Agbalépédo', 'Agbalépédo', 'Grand Lomé'],
+    ['CAC', 'MM Cosmétiques Cacaveli', 'Cacaveli', 'Grand Lomé'],
   ]
   const stores: Store[] = storeDefs.map(([code, name, address, region], i) => ({
     id: id('5707e', i + 1),
@@ -73,8 +71,8 @@ export function buildSeed(): DemoDb {
     name,
     address,
     region,
-    phone: `+225 07 0${i + 1} 2${i} 4${i} ${10 + i}`,
-    email: `${code.toLowerCase()}@mmcg.ci`,
+    phone: '(+228) 93 65 53 41',
+    email: 'contact@mmcosmetiques.com',
     manager_id: null,
     is_active: true,
     created_at: iso(daysAgo(400)),
@@ -95,7 +93,7 @@ export function buildSeed(): DemoDb {
     first_name: first,
     last_name: last,
     email,
-    phone: `+225 05 ${String(10 + n).padStart(2, '0')} 33 ${String(40 + n).padStart(2, '0')} 11`,
+    phone: `+228 90 ${String(10 + n).padStart(2, '0')} ${String(40 + n).padStart(2, '0')} 11`,
     role,
     store_id,
     store_ids,
@@ -105,30 +103,21 @@ export function buildSeed(): DemoDb {
     password: DEMO_PASSWORD,
   })
   const users = [
-    u(1, 'Mariam', 'Coulibaly', 'admin@mmcg.ci', 'super_admin', null),
-    u(2, 'Yannick', 'Kouassi', 'admin.sud@mmcg.ci', 'store_admin', S[0], [S[0], S[3]]),
-    u(3, 'Awa', 'Traoré', 'resp.plateau@mmcg.ci', 'store_manager', S[0]),
-    u(4, 'Serge', 'Bamba', 'resp.cocody@mmcg.ci', 'store_manager', S[1]),
-    u(5, 'Fatou', 'Diallo', 'pole.nord@mmcg.ci', 'pole_chief', S[1], [S[1], S[2]]),
-    u(6, 'Ibrahim', 'Koné', 'pole.sud@mmcg.ci', 'pole_chief', S[0], [S[0], S[3]]),
-    u(7, 'Aïcha', 'Ouattara', 'caisse.plateau@mmcg.ci', 'cashier', S[0]),
-    u(8, 'Junior', "N'Guessan", 'caisse.cocody@mmcg.ci', 'cashier', S[1]),
-    u(9, 'Grace', 'Yao', 'caisse.yop@mmcg.ci', 'cashier', S[2]),
-    u(10, 'Moussa', 'Sanogo', 'caisse.marcory@mmcg.ci', 'cashier', S[3]),
-    u(11, 'Esther', 'Kra', 'caisse.bouake@mmcg.ci', 'cashier', S[4]),
-    u(12, 'Didier', 'Aka', 'stock@mmcg.ci', 'stock_manager', null),
+    u(1, 'Afi', 'Mensah', 'admin@mmcg.tg', 'super_admin', null),
+    u(2, 'Kossi', 'Agbéko', 'admin.boutique@mmcg.tg', 'store_admin', S[0], [S[0], S[1]]),
+    u(3, 'Akouvi', 'Amegah', 'resp.agbalepedo@mmcg.tg', 'store_manager', S[0]),
+    u(4, 'Edem', 'Kpodar', 'resp.cacaveli@mmcg.tg', 'store_manager', S[1]),
+    u(5, 'Sena', 'Lawson', 'pole@mmcg.tg', 'pole_chief', S[0], [S[0], S[1]]),
+    u(6, 'Abla', 'Dossou', 'caisse.agbalepedo@mmcg.tg', 'cashier', S[0]),
+    u(7, 'Kokou', 'Adjovi', 'caisse.cacaveli@mmcg.tg', 'cashier', S[1]),
+    u(8, 'Yao', 'Gbédji', 'stock@mmcg.tg', 'stock_manager', null),
   ]
-  stores[0].manager_id = users[2].id
-  stores[1].manager_id = users[3].id
-  stores[2].manager_id = users[4].id
-  stores[3].manager_id = users[1].id
-  stores[4].manager_id = users[10].id
+  const [superAdmin, storeAdmin, respAgb, respCac, poleChief, , , stockManager] = users
+  stores[0].manager_id = respAgb.id
+  stores[1].manager_id = respCac.id
   const cashierOf: Record<string, string> = {
-    [S[0]]: users[6].id,
-    [S[1]]: users[7].id,
-    [S[2]]: users[8].id,
-    [S[3]]: users[9].id,
-    [S[4]]: users[10].id,
+    [S[0]]: users[5].id,
+    [S[1]]: users[6].id,
   }
 
   /* ---------- Catégories & fournisseurs ---------- */
@@ -151,15 +140,15 @@ export function buildSeed(): DemoDb {
     ['Beauté Import SARL', 'Kader Touré'],
     ['L’Atelier Parfums', 'Nadia Sylla'],
     ['Afro Naturals', 'Paul Ehui'],
-    ['Distrib Cosmétiques CI', 'Rokia Camara'],
+    ['Distrib Cosmétiques Togo', 'Rokia Amouzou'],
   ]
   const suppliers: Supplier[] = supDefs.map(([name, contact], i) => ({
     id: id('50991', i + 1),
     name,
     contact_name: contact,
-    phone: `+225 27 22 4${i} 5${i} 60`,
-    email: `contact@${name.toLowerCase().replace(/[^a-z]/g, '').slice(0, 12)}.ci`,
-    address: 'Zone industrielle, Abidjan',
+    phone: `+228 22 2${i} 4${i} 60`,
+    email: `contact@${name.toLowerCase().replace(/[^a-z]/g, '').slice(0, 12)}.tg`,
+    address: 'Zone portuaire, Lomé',
   }))
 
   /* ---------- Produits ---------- */
@@ -178,8 +167,8 @@ export function buildSeed(): DemoDb {
     ['Palette Ombres Sahara', 'Glamour', 1, 'Palette 12 teintes', 7400, 15900],
     ['Poudre Libre Fixatrice', 'Ébène Studio', 1, 'Boîte 20 g', 4100, 8900],
     ['Eyeliner Feutre Noir', 'Glamour', 1, 'Feutre 1 ml', 2200, 4900],
-    ['Eau de Parfum Oud Royal', 'Maison Abidjan', 2, 'Flacon 100 ml', 18500, 39000],
-    ['Eau de Parfum Fleur d’Ylang', 'Maison Abidjan', 2, 'Flacon 50 ml', 12800, 27500],
+    ['Eau de Parfum Oud Royal', 'Maison Lomé', 2, 'Flacon 100 ml', 18500, 39000],
+    ['Eau de Parfum Fleur d’Ylang', 'Maison Lomé', 2, 'Flacon 50 ml', 12800, 27500],
     ['Eau de Toilette Vétiver', 'L’Atelier', 2, 'Flacon 100 ml', 11200, 23900],
     ['Brume Parfumée Coco', 'L’Atelier', 2, 'Spray 250 ml', 3900, 8500],
     ['Huile Sèche Pailletée', 'Lumière', 3, 'Flacon 100 ml', 5400, 11500],
@@ -227,15 +216,15 @@ export function buildSeed(): DemoDb {
   let mv = 0
   const qty: Record<string, number> = {}
   const key = (s: string, p: string) => `${s}|${p}`
-  stores.forEach((s, si) => {
+  stores.forEach((s) => {
     products.forEach((p, pi) => {
-      const base = 30 + Math.floor(r() * 50) + (si === 4 ? -10 : 0)
+      const base = 30 + Math.floor(r() * 50)
       qty[key(s.id, p.id)] = base + 70 // stock avant historique de ventes
       movements.push({
         id: id('70e3', ++mv),
         product_id: p.id,
         store_id: s.id,
-        user_id: users[11].id,
+        user_id: stockManager.id,
         type: 'entry',
         quantity: base + 70,
         reason: 'Stock initial',
@@ -258,7 +247,7 @@ export function buildSeed(): DemoDb {
   for (let d = 59; d >= 0; d--) {
     stores.forEach((s, si) => {
       const weekend = [0, 6].includes(daysAgo(d).getDay())
-      const count = Math.floor((weekend ? 9 : 6) * (si === 0 ? 1.4 : si === 4 ? 0.7 : 1) + r() * 5)
+      const count = Math.floor((weekend ? 9 : 6) * (si === 0 ? 2.2 : 1.8) + r() * 5)
       for (let k = 0; k < count; k++) {
         const nLines = 1 + Math.floor(r() * 3)
         const lines = new Map<string, number>()
@@ -326,9 +315,9 @@ export function buildSeed(): DemoDb {
     [0, 12, 2],
     [0, 7, 0],
     [1, 0, 4],
-    [2, 9, 1],
-    [4, 13, 0],
-    [3, 22, 3],
+    [1, 9, 1],
+    [1, 13, 0],
+    [0, 22, 3],
   ]
   lowSet.forEach(([si, pi, q]) => {
     const k = key(S[si], products[pi].id)
@@ -338,7 +327,7 @@ export function buildSeed(): DemoDb {
       id: id('70e3', ++mv),
       product_id: products[pi].id,
       store_id: S[si],
-      user_id: users[2].id,
+      user_id: respAgb.id,
       type: 'adjustment',
       quantity: delta,
       reason: 'Inventaire tournant',
@@ -369,10 +358,10 @@ export function buildSeed(): DemoDb {
       id: id('7a5f', 1),
       reference: 'TRF-000001',
       source_store_id: S[0],
-      dest_store_id: S[4],
+      dest_store_id: S[1],
       status: 'in_transit',
       notes: 'Réassort parfums pour le week-end',
-      created_by: users[11].id,
+      created_by: stockManager.id,
       received_by: null,
       created_at: iso(daysAgo(1, 15)),
       received_at: null,
@@ -384,11 +373,11 @@ export function buildSeed(): DemoDb {
     {
       id: id('7a5f', 2),
       reference: 'TRF-000002',
-      source_store_id: S[3],
-      dest_store_id: S[1],
+      source_store_id: S[1],
+      dest_store_id: S[0],
       status: 'in_transit',
       notes: null,
-      created_by: users[1].id,
+      created_by: storeAdmin.id,
       received_by: null,
       created_at: iso(daysAgo(0, 9)),
       received_at: null,
@@ -397,12 +386,12 @@ export function buildSeed(): DemoDb {
     {
       id: id('7a5f', 3),
       reference: 'TRF-000003',
-      source_store_id: S[1],
-      dest_store_id: S[2],
+      source_store_id: S[0],
+      dest_store_id: S[1],
       status: 'received',
       notes: 'Maquillage — opération fête des mères',
-      created_by: users[11].id,
-      received_by: users[4].id,
+      created_by: stockManager.id,
+      received_by: respCac.id,
       created_at: iso(daysAgo(6, 10)),
       received_at: iso(daysAgo(5, 11)),
       items: [
@@ -443,16 +432,15 @@ export function buildSeed(): DemoDb {
       status,
       notes: gap < 0 ? 'Écart constaté au comptage du coffre.' : null,
       rejection_reason: status === 'rejected' ? 'Justificatif de transport manquant.' : null,
-      validated_by: status === 'validated' || status === 'rejected' ? users[0].id : null,
+      validated_by: status === 'validated' || status === 'rejected' ? superAdmin.id : null,
       validated_at: status === 'validated' || status === 'rejected' ? iso(daysAgo(d - 1, 9)) : null,
       created_at: iso(daysAgo(d, 20)),
       expenses,
     })
   }
   for (let d = 6; d >= 1; d--) {
-    mkReport(S[1], users[4].id, d, d > 2 ? 'validated' : d === 2 ? 'rejected' : 'submitted', d === 1 ? -9500 : 0)
-    mkReport(S[2], users[4].id, d, d > 1 ? 'validated' : 'submitted', 0)
-    mkReport(S[0], users[5].id, d, d > 1 ? 'validated' : 'draft', d === 3 ? -2000 : 0)
+    mkReport(S[1], poleChief.id, d, d > 2 ? 'validated' : d === 2 ? 'rejected' : 'submitted', d === 1 ? -9500 : 0)
+    mkReport(S[0], poleChief.id, d, d > 1 ? 'validated' : 'draft', d === 3 ? -2000 : 0)
   }
 
   /* ---------- Notifications ---------- */
@@ -481,22 +469,22 @@ export function buildSeed(): DemoDb {
   const stockRoles: AppNotification['target_roles'] = ['super_admin', 'store_admin', 'store_manager', 'stock_manager']
   const notifications: AppNotification[] = [
     notif('out_of_stock', 'critical', 'Rupture de stock', `${products[7].name} est épuisé à ${stores[0].name}.`, S[0], stockRoles, 2),
-    notif('out_of_stock', 'critical', 'Rupture de stock', `${products[13].name} est épuisé à ${stores[4].name}.`, S[4], stockRoles, 5),
+    notif('out_of_stock', 'critical', 'Rupture de stock', `${products[13].name} est épuisé à ${stores[1].name}.`, S[1], stockRoles, 5),
     notif('low_stock', 'warning', 'Stock faible', `${products[12].name} : 2 unités restantes à ${stores[0].name}.`, S[0], stockRoles, 6),
     notif('low_stock', 'warning', 'Stock faible', `${products[0].name} : 4 unités restantes à ${stores[1].name}.`, S[1], stockRoles, 9),
-    notif('daily_report', 'info', 'Nouvelle déclaration', `Fatou Diallo a soumis la déclaration de ${stores[1].name}.`, S[1], ['super_admin', 'store_admin'], 14),
+    notif('daily_report', 'info', 'Nouvelle déclaration', `${poleChief.first_name} ${poleChief.last_name} a soumis la déclaration de ${stores[1].name}.`, S[1], ['super_admin', 'store_admin'], 14),
     notif('cash_variance', 'critical', 'Écart de caisse', `Écart de −9 500 XOF détecté sur la déclaration de ${stores[1].name}.`, S[1], ['super_admin', 'store_admin'], 14),
-    notif('transfer', 'info', 'Transfert en transit', `TRF-000002 : ${stores[3].name} → ${stores[1].name}.`, S[1], ['super_admin', 'store_admin', 'store_manager', 'stock_manager'], 3),
-    notif('transfer', 'info', 'Transfert en transit', `TRF-000001 : ${stores[0].name} → ${stores[4].name}.`, S[4], ['super_admin', 'store_admin', 'store_manager', 'stock_manager'], 20, true),
+    notif('transfer', 'info', 'Transfert en transit', `TRF-000002 : ${stores[1].name} → ${stores[0].name}.`, S[0], ['super_admin', 'store_admin', 'store_manager', 'stock_manager'], 3),
+    notif('transfer', 'info', 'Transfert en transit', `TRF-000001 : ${stores[0].name} → ${stores[1].name}.`, S[1], ['super_admin', 'store_admin', 'store_manager', 'stock_manager'], 20, true),
   ]
 
   const audit_logs: AuditLog[] = [
-    { id: id('a0d1', 1), user_id: users[0].id, action: 'UPDATE', entity: 'products', entity_id: products[12].id, details: 'Prix de vente : 37 500 → 39 000', created_at: iso(daysAgo(3, 11)) },
-    { id: id('a0d1', 2), user_id: users[0].id, action: 'INSERT', entity: 'stores', entity_id: S[4], details: 'Création de la boutique MM Cosmétiques Bouaké Centre', created_at: iso(daysAgo(120, 9)) },
-    { id: id('a0d1', 3), user_id: users[2].id, action: 'ADJUST', entity: 'inventory', entity_id: null, details: 'Inventaire tournant — 6 références ajustées', created_at: iso(daysAgo(1, 18)) },
-    { id: id('a0d1', 4), user_id: users[0].id, action: 'VALIDATE', entity: 'daily_reports', entity_id: daily_reports[0].id, details: 'Déclaration validée', created_at: iso(daysAgo(5, 9)) },
-    { id: id('a0d1', 5), user_id: users[0].id, action: 'REJECT', entity: 'daily_reports', entity_id: null, details: 'Justificatif de transport manquant.', created_at: iso(daysAgo(1, 9)) },
-    { id: id('a0d1', 6), user_id: users[1].id, action: 'UPDATE', entity: 'users', entity_id: users[9].id, details: 'Réaffectation à MM Cosmétiques Marcory Zone 4', created_at: iso(daysAgo(10, 15)) },
+    { id: id('a0d1', 1), user_id: superAdmin.id, action: 'UPDATE', entity: 'products', entity_id: products[12].id, details: 'Prix de vente : 37 500 → 39 000', created_at: iso(daysAgo(3, 11)) },
+    { id: id('a0d1', 2), user_id: superAdmin.id, action: 'INSERT', entity: 'stores', entity_id: S[1], details: `Création de la boutique ${stores[1].name}`, created_at: iso(daysAgo(120, 9)) },
+    { id: id('a0d1', 3), user_id: respAgb.id, action: 'ADJUST', entity: 'inventory', entity_id: null, details: 'Inventaire tournant — 6 références ajustées', created_at: iso(daysAgo(1, 18)) },
+    { id: id('a0d1', 4), user_id: superAdmin.id, action: 'VALIDATE', entity: 'daily_reports', entity_id: daily_reports[0].id, details: 'Déclaration validée', created_at: iso(daysAgo(5, 9)) },
+    { id: id('a0d1', 5), user_id: superAdmin.id, action: 'REJECT', entity: 'daily_reports', entity_id: null, details: 'Justificatif de transport manquant.', created_at: iso(daysAgo(1, 9)) },
+    { id: id('a0d1', 6), user_id: superAdmin.id, action: 'UPDATE', entity: 'users', entity_id: users[6].id, details: `Réaffectation à ${stores[1].name}`, created_at: iso(daysAgo(10, 15)) },
   ]
 
   return {

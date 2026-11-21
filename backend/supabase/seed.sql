@@ -12,17 +12,14 @@ insert into public.categories (id, name, code) values
   ('ca7e0000-0000-4000-8000-000000000007', 'Accessoires', 'ACC');
 
 insert into public.suppliers (id, name, contact_name, phone, email, address) values
-  ('50991000-0000-4000-8000-000000000001', 'Beauté Import SARL', 'Kader Touré', '+225 27 22 40 50 60', 'contact@beautimports.ci', 'Zone industrielle, Abidjan'),
-  ('50991000-0000-4000-8000-000000000002', 'L’Atelier Parfums', 'Nadia Sylla', '+225 27 22 41 51 60', 'contact@latelierparf.ci', 'Zone industrielle, Abidjan'),
-  ('50991000-0000-4000-8000-000000000003', 'Afro Naturals', 'Paul Ehui', '+225 27 22 42 52 60', 'contact@afronaturals.ci', 'Zone industrielle, Abidjan'),
-  ('50991000-0000-4000-8000-000000000004', 'Distrib Cosmétiques CI', 'Rokia Camara', '+225 27 22 43 53 60', 'contact@distribcosmt.ci', 'Zone industrielle, Abidjan');
+  ('50991000-0000-4000-8000-000000000001', 'Beauté Import SARL', 'Kader Touré', '+228 22 20 40 60', 'contact@beautimports.tg', 'Zone portuaire, Lomé'),
+  ('50991000-0000-4000-8000-000000000002', 'L’Atelier Parfums', 'Nadia Sylla', '+228 22 21 41 60', 'contact@latelierparf.tg', 'Zone portuaire, Lomé'),
+  ('50991000-0000-4000-8000-000000000003', 'Afro Naturals', 'Paul Ehui', '+228 22 22 42 60', 'contact@afronaturals.tg', 'Zone portuaire, Lomé'),
+  ('50991000-0000-4000-8000-000000000004', 'Distrib Cosmétiques Togo', 'Rokia Amouzou', '+228 22 23 43 60', 'contact@distribcosmt.tg', 'Zone portuaire, Lomé');
 
 insert into public.stores (id, code, name, address, phone, email, region) values
-  ('5707e000-0000-4000-8000-000000000001', 'BTQ-PLT', 'MM Cosmétiques Plateau', 'Av. Chardy, Plateau, Abidjan', '+225 07 01 20 40 10', 'plt@mmcg.ci', 'Abidjan Sud'),
-  ('5707e000-0000-4000-8000-000000000002', 'BTQ-COC', 'MM Cosmétiques Cocody Riviera', 'Bd Mitterrand, Riviera 2, Abidjan', '+225 07 02 21 41 11', 'coc@mmcg.ci', 'Abidjan Nord'),
-  ('5707e000-0000-4000-8000-000000000003', 'BTQ-YOP', 'MM Cosmétiques Yopougon', 'Carrefour Siporex, Yopougon', '+225 07 03 22 42 12', 'yop@mmcg.ci', 'Abidjan Nord'),
-  ('5707e000-0000-4000-8000-000000000004', 'BTQ-MAR', 'MM Cosmétiques Marcory Zone 4', 'Rue du Canal, Zone 4, Marcory', '+225 07 04 23 43 13', 'mar@mmcg.ci', 'Abidjan Sud'),
-  ('5707e000-0000-4000-8000-000000000005', 'BTQ-BKE', 'MM Cosmétiques Bouaké Centre', 'Av. de la Paix, Bouaké', '+225 07 05 24 44 14', 'bke@mmcg.ci', 'Intérieur');
+  ('5707e000-0000-4000-8000-000000000001', 'BTQ-AGB', 'MM Cosmétiques Agbalépédo', 'Agbalépédo', '(+228) 93 65 53 41', 'contact@mmcosmetiques.com', 'Grand Lomé'),
+  ('5707e000-0000-4000-8000-000000000002', 'BTQ-CAC', 'MM Cosmétiques Cacaveli', 'Cacaveli', '(+228) 93 65 53 41', 'contact@mmcosmetiques.com', 'Grand Lomé');
 
 insert into public.products (id, sku, barcode, name, brand, description, packaging, category_id, supplier_id, purchase_price, selling_price, vat_rate, min_stock_level) values
   ('9d0c0000-0000-4000-8000-000000000001', 'COSM-SOI-0001', '0619001000003', 'Sérum Éclat Vitamine C', 'Lumière', 'Sérum Éclat Vitamine C — Lumière. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Flacon 30 ml', 'ca7e0000-0000-4000-8000-000000000001', '50991000-0000-4000-8000-000000000001', 7800, 15500, 18, 6),
@@ -37,8 +34,8 @@ insert into public.products (id, sku, barcode, name, brand, description, packagi
   ('9d0c0000-0000-4000-8000-000000000010', 'COSM-MAQ-0010', '0619001003332', 'Palette Ombres Sahara', 'Glamour', 'Palette Ombres Sahara — Glamour. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Palette 12 teintes', 'ca7e0000-0000-4000-8000-000000000002', '50991000-0000-4000-8000-000000000002', 7400, 15900, 18, 6),
   ('9d0c0000-0000-4000-8000-000000000011', 'COSM-MAQ-0011', '0619001003707', 'Poudre Libre Fixatrice', 'Ébène Studio', 'Poudre Libre Fixatrice — Ébène Studio. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Boîte 20 g', 'ca7e0000-0000-4000-8000-000000000002', '50991000-0000-4000-8000-000000000003', 4100, 8900, 18, 6),
   ('9d0c0000-0000-4000-8000-000000000012', 'COSM-MAQ-0012', '0619001004070', 'Eyeliner Feutre Noir', 'Glamour', 'Eyeliner Feutre Noir — Glamour. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Feutre 1 ml', 'ca7e0000-0000-4000-8000-000000000002', '50991000-0000-4000-8000-000000000004', 2200, 4900, 18, 6),
-  ('9d0c0000-0000-4000-8000-000000000013', 'COSM-PAR-0013', '0619001004445', 'Eau de Parfum Oud Royal', 'Maison Abidjan', 'Eau de Parfum Oud Royal — Maison Abidjan. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Flacon 100 ml', 'ca7e0000-0000-4000-8000-000000000003', '50991000-0000-4000-8000-000000000001', 18500, 39000, 18, 3),
-  ('9d0c0000-0000-4000-8000-000000000014', 'COSM-PAR-0014', '0619001004810', 'Eau de Parfum Fleur d’Ylang', 'Maison Abidjan', 'Eau de Parfum Fleur d’Ylang — Maison Abidjan. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Flacon 50 ml', 'ca7e0000-0000-4000-8000-000000000003', '50991000-0000-4000-8000-000000000002', 12800, 27500, 18, 3),
+  ('9d0c0000-0000-4000-8000-000000000013', 'COSM-PAR-0013', '0619001004445', 'Eau de Parfum Oud Royal', 'Maison Lomé', 'Eau de Parfum Oud Royal — Maison Lomé. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Flacon 100 ml', 'ca7e0000-0000-4000-8000-000000000003', '50991000-0000-4000-8000-000000000001', 18500, 39000, 18, 3),
+  ('9d0c0000-0000-4000-8000-000000000014', 'COSM-PAR-0014', '0619001004810', 'Eau de Parfum Fleur d’Ylang', 'Maison Lomé', 'Eau de Parfum Fleur d’Ylang — Maison Lomé. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Flacon 50 ml', 'ca7e0000-0000-4000-8000-000000000003', '50991000-0000-4000-8000-000000000002', 12800, 27500, 18, 3),
   ('9d0c0000-0000-4000-8000-000000000015', 'COSM-PAR-0015', '0619001005183', 'Eau de Toilette Vétiver', 'L’Atelier', 'Eau de Toilette Vétiver — L’Atelier. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Flacon 100 ml', 'ca7e0000-0000-4000-8000-000000000003', '50991000-0000-4000-8000-000000000003', 11200, 23900, 18, 3),
   ('9d0c0000-0000-4000-8000-000000000016', 'COSM-PAR-0016', '0619001005558', 'Brume Parfumée Coco', 'L’Atelier', 'Brume Parfumée Coco — L’Atelier. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Spray 250 ml', 'ca7e0000-0000-4000-8000-000000000003', '50991000-0000-4000-8000-000000000004', 3900, 8500, 18, 6),
   ('9d0c0000-0000-4000-8000-000000000017', 'COSM-COR-0017', '0619001005923', 'Huile Sèche Pailletée', 'Lumière', 'Huile Sèche Pailletée — Lumière. Formule pensée pour les peaux et cheveux d’Afrique de l’Ouest.', 'Flacon 100 ml', 'ca7e0000-0000-4000-8000-000000000004', '50991000-0000-4000-8000-000000000001', 5400, 11500, 18, 6),

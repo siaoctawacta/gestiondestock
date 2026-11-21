@@ -78,7 +78,7 @@ export async function generateReceiptPdf(sale: Sale, store: Store | undefined, c
   center('Merci de votre visite !', 8, true)
   center('Les produits cosmétiques ouverts ne sont', 6.5)
   center('ni repris ni échangés.', 6.5)
-  center(store?.email ?? 'MM Cosmétiques', 6.5)
+  center(store?.email || 'MM Cosmétiques', 6.5)
 
   const blob = doc.output('blob')
   const url = URL.createObjectURL(blob)
