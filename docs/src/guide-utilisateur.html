@@ -223,7 +223,7 @@ Mettez un produit au panier et appliquez une remise de 20 %. Cliquez sur Encaiss
 <figure><img src="img/09-historique-ventes.jpg" alt="Historique des ventes" /><figcaption>Figure 4.1 — Historique des ventes.</figcaption></figure>
 <ul>
   <li>Par défaut, la liste affiche les <b>7 derniers jours</b>. Modifiez les dates en haut du tableau, et filtrez par mode de paiement.</li>
-  <li>La recherche trouve une vente par <b>numéro de ticket</b> (ex. <code>TK-PLT-002703</code>), par produit ou par caissier.</li>
+  <li>La recherche trouve une vente par <b>numéro de ticket</b> (ex. <code>TK-AGB-002703</code>), par produit ou par caissier.</li>
   <li>Cliquez sur une vente pour voir son détail et <b>réimprimer le ticket</b>.</li>
   <li>Un caissier ne voit que <b>ses propres ventes</b> ; les responsables voient celles de leurs boutiques.</li>
   <li><b>Exporter</b> produit le journal des ventes en PDF (mis en page) ou en Excel (une feuille des ventes et une feuille du détail des lignes).</li>
@@ -358,7 +358,7 @@ Connecté en Gestionnaire Stock : réceptionnez 24 flacons d'un parfum avec un n
 </div>
 
 <div class="box exercise"><span class="t">Exercice 4 — Un transfert complet (15 min)</span>
-En binôme. Le Gestionnaire Stock expédie 5 sérums de la boutique Plateau vers la boutique Cocody. Le Responsable de Cocody (<code>resp.cocody@mmcg.ci</code>) voit la notification, ouvre le transfert et valide la réception. Vérifiez ensuite le stock des deux boutiques.
+En binôme. Le Gestionnaire Stock expédie 5 sérums de la boutique Agbalépédo vers la boutique Cacaveli. Le Responsable de Cacaveli (<code>resp.cacaveli@mmcg.tg</code>) voit la notification, ouvre le transfert et valide la réception. Vérifiez ensuite le stock des deux boutiques.
 </div>
 
 <!-- ===================================================== 8 -->
@@ -454,7 +454,7 @@ Dans l'onglet Stock, la <b>couverture</b> estime en combien de jours le stock ac
 <h2>Les boutiques</h2>
 <figure><img src="img/25-boutiques.jpg" alt="Boutiques" /><figcaption>Figure 10.1 — Réseau de boutiques.</figcaption></figure>
 <ul>
-  <li><b>Nouvelle boutique</b> : nom, <b>code unique</b> (ex. <code>BTQ-PLT</code>, utilisé dans les numéros de ticket), adresse, téléphone, email, région, responsable.</li>
+  <li><b>Nouvelle boutique</b> : nom, <b>code unique</b> (ex. <code>BTQ-AGB</code>, utilisé dans les numéros de ticket), adresse, téléphone, email, région, responsable.</li>
   <li><b>Modifier</b> : mettre à jour la fiche, ou décocher <b>Boutique active</b> pour la fermer temporairement.</li>
   <li><b>Supprimer</b> : la boutique disparaît des listes et de la caisse ; ses ventes et mouvements restent dans l'historique et les rapports. La suppression est refusée tant que des <b>transferts sont en transit</b> avec elle ou que des <b>utilisateurs</b> y sont rattachés : réaffectez-les d'abord.</li>
 </ul>
@@ -559,16 +559,16 @@ Vous ne pouvez ni désactiver ni supprimer votre propre compte, et l'application
 <table>
   <thead><tr><th style="width:30%">Rôle</th><th>Email</th><th style="width:28%">Boutique</th></tr></thead>
   <tbody>
-    <tr><td>Super Admin</td><td><code>admin@mmcg.ci</code></td><td>Tout le réseau</td></tr>
-    <tr><td>Admin Boutique</td><td><code>admin.sud@mmcg.ci</code></td><td>Plateau, Marcory</td></tr>
-    <tr><td>Responsable Boutique</td><td><code>resp.plateau@mmcg.ci</code></td><td>Plateau</td></tr>
-    <tr><td>Chef de Pôle</td><td><code>pole.nord@mmcg.ci</code></td><td>Cocody, Yopougon</td></tr>
-    <tr><td>Caissier</td><td><code>caisse.plateau@mmcg.ci</code></td><td>Plateau</td></tr>
-    <tr><td>Gestionnaire Stock</td><td><code>stock@mmcg.ci</code></td><td>Tout le réseau</td></tr>
+    <tr><td>Super Admin</td><td><code>admin@mmcg.tg</code></td><td>Les deux boutiques</td></tr>
+    <tr><td>Admin Boutique</td><td><code>admin.boutique@mmcg.tg</code></td><td>Agbalépédo, Cacaveli</td></tr>
+    <tr><td>Responsable Boutique</td><td><code>resp.agbalepedo@mmcg.tg</code></td><td>Agbalépédo</td></tr>
+    <tr><td>Chef de Pôle</td><td><code>pole@mmcg.tg</code></td><td>Agbalépédo, Cacaveli</td></tr>
+    <tr><td>Caissier</td><td><code>caisse.agbalepedo@mmcg.tg</code></td><td>Agbalépédo</td></tr>
+    <tr><td>Gestionnaire Stock</td><td><code>stock@mmcg.tg</code></td><td>Les deux boutiques</td></tr>
   </tbody>
 </table>
 <div class="box tip"><span class="t">Repartir de zéro</span>
-Les données de démonstration sont propres à chaque navigateur. Elles ne sont pas partagées entre deux postes : chaque participant travaille sur sa propre copie. Pour les remettre à l'état initial entre deux sessions : <b>Paramètres → Données de démonstration → Réinitialiser</b>. Il existe aussi un compte caissier par boutique (<code>caisse.cocody@mmcg.ci</code>, <code>caisse.yop@mmcg.ci</code>, <code>caisse.marcory@mmcg.ci</code>, <code>caisse.bouake@mmcg.ci</code>) et un responsable pour Cocody (<code>resp.cocody@mmcg.ci</code>), avec le même mot de passe.
+Les données de démonstration sont propres à chaque navigateur. Elles ne sont pas partagées entre deux postes : chaque participant travaille sur sa propre copie. Pour les remettre à l'état initial entre deux sessions : <b>Paramètres → Données de démonstration → Réinitialiser</b>. Pour la boutique Cacaveli, utilisez <code>caisse.cacaveli@mmcg.tg</code> (caissier) et <code>resp.cacaveli@mmcg.tg</code> (responsable), avec le même mot de passe.
 </div>
 
 <h2>Programme conseillé</h2>
@@ -586,10 +586,10 @@ Les données de démonstration sont propres à chaque navigateur. Elles ne sont 
 
 <h2>Exercices complémentaires</h2>
 <div class="box exercise"><span class="t">Exercice 6 — Analyser un mois (15 min)</span>
-Connecté en Admin Boutique : ouvrez les Rapports sur 30 jours. Relevez la boutique qui a le meilleur chiffre d'affaires, la catégorie la plus vendue et un produit dont la couverture de stock est inférieure à 7 jours. Exportez le rapport des ventes en PDF, puis le rapport de stock en Excel.
+Connecté en Admin Boutique : ouvrez les Rapports sur 30 jours. Comparez le chiffre d'affaires des deux boutiques, relevez la catégorie la plus vendue et un produit dont la couverture de stock est inférieure à 7 jours. Exportez le rapport des ventes en PDF, puis le rapport de stock en Excel.
 </div>
 <div class="box exercise"><span class="t">Exercice 7 — Arrivée et départ d'un employé (15 min)</span>
-Connecté en Super Admin : créez un compte Caissier pour une nouvelle recrue de la boutique Yopougon. Déconnectez-vous, reconnectez-vous avec ce compte <b>dans le même navigateur</b> et vérifiez qu'il ne voit que sa boutique. Revenez en Super Admin, désactivez le compte, constatez que sa connexion est refusée, puis supprimez-le.
+Connecté en Super Admin : créez un compte Caissier pour une nouvelle recrue de la boutique Cacaveli. Déconnectez-vous, reconnectez-vous avec ce compte <b>dans le même navigateur</b> et vérifiez qu'il ne voit que sa boutique. Revenez en Super Admin, désactivez le compte, constatez que sa connexion est refusée, puis supprimez-le.
 </div>
 
 <h2>Évaluation de fin de formation</h2>

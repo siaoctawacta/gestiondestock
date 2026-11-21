@@ -34,7 +34,7 @@
     <li><span class="n">10</span>Annexes<span class="d">variables, arborescence, aide-mémoire</span></li>
   </ol>
   <div class="box info" style="margin-top:8mm"><span class="t">Conventions</span>
-    Dans les commandes, remplacez les valeurs entre chevrons : <code>&lt;ref-du-projet&gt;</code>, <code>&lt;ip-du-vps&gt;</code>… Les exemples utilisent les domaines fictifs <code>votredomaine.ci</code>, <code>stock.votredomaine.ci</code> et <code>api.votredomaine.ci</code>. Les lignes commençant par <code>#</code> dans les blocs de commandes sont des commentaires.
+    Dans les commandes, remplacez les valeurs entre chevrons : <code>&lt;ref-du-projet&gt;</code>, <code>&lt;ip-du-vps&gt;</code>… Les exemples utilisent le domaine <code>mmcosmetiques.com</code>, avec les sous-domaines proposés <code>stock.mmcosmetiques.com</code> (application) et <code>api.mmcosmetiques.com</code> (Supabase) : adaptez-les à votre choix. Les lignes commençant par <code>#</code> dans les blocs de commandes sont des commentaires.
   </div>
 </section>
 
@@ -205,7 +205,7 @@ Les migrations (<code>backend/supabase/migrations/</code>) créent les 19 tables
   <li>Dans <i>SQL Editor</i>, donnez-lui le rôle Super Admin :
 <pre><code>update public.users
    set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom'
- where email = 'vous@votredomaine.ci';</code></pre></li>
+ where email = 'vous@mmcosmetiques.com';</code></pre></li>
   <li>Tous les autres comptes se créent ensuite depuis l'écran <b>Utilisateurs</b> de l'application, par ce Super Admin.</li>
 </ol>
 
@@ -214,8 +214,8 @@ Les migrations (<code>backend/supabase/migrations/</code>) créent les 19 tables
 <table>
   <thead><tr><th style="width:35%">Réglage</th><th>Valeur</th></tr></thead>
   <tbody>
-    <tr><td>Site URL</td><td><code>https://stock.votredomaine.ci</code></td></tr>
-    <tr><td>Redirect URLs</td><td><code>https://stock.votredomaine.ci/reset-password</code> (lien « mot de passe oublié »)</td></tr>
+    <tr><td>Site URL</td><td><code>https://stock.mmcosmetiques.com</code></td></tr>
+    <tr><td>Redirect URLs</td><td><code>https://stock.mmcosmetiques.com/reset-password</code> (lien « mot de passe oublié »)</td></tr>
   </tbody>
 </table>
 <p>Pour que les emails de réinitialisation partent de votre domaine, renseignez votre serveur SMTP dans <i>Authentication → SMTP Settings</i> (l'envoi par défaut de Supabase est limité). Désactivez l'inscription libre (<i>Allow new users to sign up</i>) : les comptes sont créés par le Super Admin.</p>
@@ -235,7 +235,7 @@ Seule la clé <b>anon</b> va dans <code>.env</code> : elle est publique par natu
 
 <h2>4.6 Publier sur l'hébergement LWS</h2>
 <ol class="steps">
-  <li>Dans l'espace client LWS, ouvrez le <b>cPanel</b> de l'hébergement. Si vous utilisez un sous-domaine (<code>stock.votredomaine.ci</code>), créez-le dans <i>Domaines</i> et notez son dossier racine.</li>
+  <li>Dans l'espace client LWS, ouvrez le <b>cPanel</b> de l'hébergement. Si vous utilisez un sous-domaine (<code>stock.mmcosmetiques.com</code>), créez-le dans <i>Domaines</i> et notez son dossier racine.</li>
   <li>Activez le <b>certificat SSL</b> (Let's Encrypt) pour ce domaine dans cPanel.</li>
   <li>Ouvrez le <b>Gestionnaire de fichiers</b> et allez dans le dossier racine du domaine (souvent <code>public_html/</code>). Dans <i>Paramètres</i>, cochez <b>Afficher les fichiers cachés</b>. Videz le dossier s'il contient une page par défaut.</li>
   <li>Compressez <b>le contenu</b> de <code>frontend/dist/</code> en <code>.zip</code> (pas le dossier lui-même), envoyez l'archive, puis <b>Extraire</b>. Vérifiez la présence de <code>index.html</code>, du dossier <code>assets/</code>, des logos et du fichier <b><code>.htaccess</code></b>. Supprimez ensuite l'archive.</li>
@@ -262,7 +262,7 @@ Supabase auto-hébergé est maintenu par la communauté. La <b>sécurité du ser
 <h2>5.1 Préparer le serveur et le DNS</h2>
 <ul class="check">
   <li>VPS LWS sous <b>Ubuntu</b>, 4 Go de RAM minimum (modèle « VPS Docker » de préférence).</li>
-  <li>Deux enregistrements DNS de type <b>A</b> vers l'IP du VPS : <code>stock.votredomaine.ci</code> (application) et <code>api.votredomaine.ci</code> (Supabase).</li>
+  <li>Deux enregistrements DNS de type <b>A</b> vers l'IP du VPS : <code>stock.mmcosmetiques.com</code> (application) et <code>api.mmcosmetiques.com</code> (Supabase).</li>
 </ul>
 <pre><code>ssh root@&lt;ip-du-vps&gt;
 apt update &amp;&amp; apt upgrade -y
@@ -284,10 +284,10 @@ nano .env</code></pre>
   <tbody>
     <tr><td><code>POSTGRES_PASSWORD</code></td><td>Long mot de passe aléatoire (à conserver dans un coffre)</td></tr>
     <tr><td><code>DASHBOARD_USERNAME</code>, <code>DASHBOARD_PASSWORD</code></td><td>Identifiants du tableau de bord Supabase Studio</td></tr>
-    <tr><td><code>SUPABASE_PUBLIC_URL</code></td><td><code>https://api.votredomaine.ci</code></td></tr>
-    <tr><td><code>API_EXTERNAL_URL</code></td><td><code>https://api.votredomaine.ci/auth/v1</code></td></tr>
-    <tr><td><code>SITE_URL</code></td><td><code>https://stock.votredomaine.ci</code></td></tr>
-    <tr><td><code>ADDITIONAL_REDIRECT_URLS</code></td><td><code>https://stock.votredomaine.ci/reset-password</code></td></tr>
+    <tr><td><code>SUPABASE_PUBLIC_URL</code></td><td><code>https://api.mmcosmetiques.com</code></td></tr>
+    <tr><td><code>API_EXTERNAL_URL</code></td><td><code>https://api.mmcosmetiques.com/auth/v1</code></td></tr>
+    <tr><td><code>SITE_URL</code></td><td><code>https://stock.mmcosmetiques.com</code></td></tr>
+    <tr><td><code>ADDITIONAL_REDIRECT_URLS</code></td><td><code>https://stock.mmcosmetiques.com/reset-password</code></td></tr>
     <tr><td><code>DISABLE_SIGNUP</code></td><td><code>true</code> — les comptes sont créés par le Super Admin</td></tr>
     <tr><td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>SMTP_ADMIN_EMAIL</code>, <code>SMTP_SENDER_NAME</code></td><td>Paramètres de la boîte email d'envoi (emails « mot de passe oublié »)</td></tr>
   </tbody>
@@ -311,11 +311,11 @@ apt install -y iptables-persistent &amp;&amp; netfilter-persistent save</code></
 <pre><code>apt install -y caddy
 mkdir -p /var/www/mm-stock
 cat &gt; /etc/caddy/Caddyfile &lt;&lt;'CADDY'
-api.votredomaine.ci {
+api.mmcosmetiques.com {
     reverse_proxy localhost:8000
 }
 
-stock.votredomaine.ci {
+stock.mmcosmetiques.com {
     root * /var/www/mm-stock
     encode gzip
     try_files {path} /index.html
@@ -323,7 +323,7 @@ stock.votredomaine.ci {
 }
 CADDY
 systemctl reload caddy</code></pre>
-<p>Supabase Studio est alors accessible sur <code>https://api.votredomaine.ci</code>, protégé par <code>DASHBOARD_USERNAME</code> / <code>DASHBOARD_PASSWORD</code>.</p>
+<p>Supabase Studio est alors accessible sur <code>https://api.mmcosmetiques.com</code>, protégé par <code>DASHBOARD_USERNAME</code> / <code>DASHBOARD_PASSWORD</code>.</p>
 
 <h2>5.5 Installer la base de l'application</h2>
 <p>Dans le conteneur de la base, les connexions via <code>localhost</code> sont acceptées sans mot de passe : c'est pourquoi les commandes passent <code>-h localhost</code>. Les migrations s'exécutent avec le rôle <code>postgres</code>, comme sur Supabase Cloud.</p>
@@ -345,11 +345,11 @@ cd /opt/supabase &amp;&amp; sh run.sh restart functions</code></pre>
 
 <p>Créez le premier Super Admin dans Studio (<i>Authentication → Add user</i>), puis :</p>
 <pre><code>docker exec -i supabase-db psql -h localhost -U postgres -d postgres -c \
-  "update public.users set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom' where email = 'vous@votredomaine.ci';"</code></pre>
+  "update public.users set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom' where email = 'vous@mmcosmetiques.com';"</code></pre>
 
 <h2>5.6 Construire et publier le frontend</h2>
 <p>Sur votre poste, <code>frontend/.env</code> contient :</p>
-<pre><code>VITE_SUPABASE_URL=https://api.votredomaine.ci
+<pre><code>VITE_SUPABASE_URL=https://api.mmcosmetiques.com
 VITE_SUPABASE_ANON_KEY=&lt;ANON_KEY du fichier /opt/supabase/.env&gt;</code></pre>
 <pre><code>cd frontend &amp;&amp; npm ci &amp;&amp; npm run build
 rsync -av --delete dist/ root@&lt;ip-du-vps&gt;:/var/www/mm-stock/</code></pre>
@@ -518,7 +518,7 @@ backend/supabase/
 <table>
   <thead><tr><th style="width:35%">Variable</th><th>Option A</th><th>Option B</th></tr></thead>
   <tbody>
-    <tr><td><code>VITE_SUPABASE_URL</code></td><td><code>https://&lt;ref&gt;.supabase.co</code></td><td><code>https://api.votredomaine.ci</code></td></tr>
+    <tr><td><code>VITE_SUPABASE_URL</code></td><td><code>https://&lt;ref&gt;.supabase.co</code></td><td><code>https://api.mmcosmetiques.com</code></td></tr>
     <tr><td><code>VITE_SUPABASE_ANON_KEY</code></td><td>Clé <i>anon public</i> (Project Settings → API)</td><td><code>ANON_KEY</code> de <code>/opt/supabase/.env</code></td></tr>
   </tbody>
 </table>

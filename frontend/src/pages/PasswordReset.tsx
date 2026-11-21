@@ -47,7 +47,7 @@ export function ForgotPasswordPage() {
             }}
           >
             <Field label="Adresse email">
-              <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@mmcg.ci" />
+              <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@mmcg.tg" />
             </Field>
             <Button className="w-full" size="lg" loading={loading}>
               Envoyer le lien

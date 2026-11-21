@@ -12,12 +12,12 @@ import { errorMessage } from '@/lib/utils'
 import type { Role } from '@/types'
 
 const DEMO_ACCOUNTS: [Role, string][] = [
-  ['super_admin', 'admin@mmcg.ci'],
-  ['store_admin', 'admin.sud@mmcg.ci'],
-  ['store_manager', 'resp.plateau@mmcg.ci'],
-  ['pole_chief', 'pole.nord@mmcg.ci'],
-  ['cashier', 'caisse.plateau@mmcg.ci'],
-  ['stock_manager', 'stock@mmcg.ci'],
+  ['super_admin', 'admin@mmcg.tg'],
+  ['store_admin', 'admin.boutique@mmcg.tg'],
+  ['store_manager', 'resp.agbalepedo@mmcg.tg'],
+  ['pole_chief', 'pole@mmcg.tg'],
+  ['cashier', 'caisse.agbalepedo@mmcg.tg'],
+  ['stock_manager', 'stock@mmcg.tg'],
 ]
 
 export default function LoginPage() {
@@ -57,7 +57,7 @@ export default function LoginPage() {
 
       <form onSubmit={submit} className="mt-8 space-y-4" noValidate>
         <Field label="Adresse email">
-          <Input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@mmcg.ci" autoFocus />
+          <Input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="vous@mmcg.tg" autoFocus />
         </Field>
         <Field label="Mot de passe">
           <div className="relative">

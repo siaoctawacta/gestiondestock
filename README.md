@@ -27,16 +27,16 @@ npm run dev
 
 (Depuis la racine, `npm run setup` puis `npm run dev` font la même chose.)
 
-Sans variables Supabase, l'application démarre en **mode démo** : les données (5 boutiques, 30 produits, 60 jours de ventes) sont générées localement dans le navigateur et les règles RLS sont émulées côté client. L'écran de connexion propose un accès rapide pour chacun des 6 rôles (mot de passe commun `demo1234`).
+Sans variables Supabase, l'application démarre en **mode démo** : les données (les 2 boutiques Agbalépédo et Cacaveli, 30 produits, 60 jours de ventes) sont générées localement dans le navigateur et les règles RLS sont émulées côté client. L'écran de connexion propose un accès rapide pour chacun des 6 rôles (mot de passe commun `demo1234`).
 
 | Rôle | Email démo |
 |---|---|
-| Super Admin | admin@mmcg.ci |
-| Admin Boutique | admin.sud@mmcg.ci |
-| Responsable Boutique | resp.plateau@mmcg.ci |
-| Chef de Pôle | pole.nord@mmcg.ci |
-| Caissier | caisse.plateau@mmcg.ci |
-| Gestionnaire Stock | stock@mmcg.ci |
+| Super Admin | admin@mmcg.tg |
+| Admin Boutique | admin.boutique@mmcg.tg |
+| Responsable Boutique | resp.agbalepedo@mmcg.tg |
+| Chef de Pôle | pole@mmcg.tg |
+| Caissier | caisse.agbalepedo@mmcg.tg |
+| Gestionnaire Stock | stock@mmcg.tg |
 
 Les données démo se réinitialisent depuis **Paramètres → Données de démonstration**.
 
@@ -57,7 +57,7 @@ Les données démo se réinitialisent depuis **Paramètres → Données de démo
    ```
 3. Créer le premier Super Admin : *Authentication → Add user*, puis
    ```sql
-   update public.users set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom' where email = 'vous@domaine.ci';
+   update public.users set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom' where email = 'vous@mmcosmetiques.com';
    ```
    Les autres comptes se créent ensuite depuis l'écran **Utilisateurs**.
 4. Copier `frontend/.env.example` en `frontend/.env` et renseigner `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`.
@@ -106,10 +106,10 @@ Deux options :
    ```sql
    update public.users
       set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom'
-    where email = 'vous@votredomaine.ci';
+    where email = 'vous@mmcosmetiques.com';
    ```
    Les autres comptes se créent ensuite depuis l'écran **Utilisateurs** de l'application.
-5. Dans *Authentication → URL Configuration*, mettez **Site URL** = `https://votredomaine.ci` et ajoutez `https://votredomaine.ci/reset-password` aux *Redirect URLs* (lien « mot de passe oublié »).
+5. Dans *Authentication → URL Configuration*, mettez **Site URL** = `https://mmcosmetiques.com` et ajoutez `https://mmcosmetiques.com/reset-password` aux *Redirect URLs* (lien « mot de passe oublié »).
 
 **2. Construire le site**
 
@@ -130,7 +130,7 @@ La clé *anon* peut être publique : la sécurité repose sur les règles RLS de
 2. Ouvrez le **Gestionnaire de fichiers** et allez dans `public_html/` (ou le dossier racine du domaine / sous-domaine choisi). Videz-le s'il contient la page par défaut.
 3. Déposez **le contenu** de `frontend/dist/` : `index.html`, le dossier `assets/`, les logos **et le fichier caché `.htaccess`** (activez *Afficher les fichiers cachés* dans les paramètres du gestionnaire). Le plus simple : compressez le contenu de `dist/` en `.zip`, envoyez-le, puis *Extraire*.
    - Avec un client FTP (FileZilla, identifiants FTP de l'espace client) : copiez le contenu de `dist/` dans `public_html/`.
-4. Ouvrez `https://votredomaine.ci` et connectez-vous avec le Super Admin.
+4. Ouvrez `https://mmcosmetiques.com` et connectez-vous avec le Super Admin.
 
 Le `.htaccess` (dans `frontend/public/`, copié à chaque build) force le HTTPS et renvoie les URL de l'application (`/pos`, `/stores`…) vers `index.html`. **Sans lui, recharger une page autre que l'accueil donne une erreur 404.**
 
@@ -166,7 +166,7 @@ psql "<chaîne de connexion>" --single-transaction --variable ON_ERROR_STOP=1 \
 
 À réserver si les données doivent rester sur vos serveurs. Supabase auto-hébergé est maintenu par la communauté : sauvegardes, mises à jour et sécurité sont à votre charge.
 
-**Prérequis :** un **VPS LWS** sous Ubuntu, de préférence le modèle **Docker** (Docker préinstallé, accès root SSH envoyé par email), 4 Go de RAM minimum ; un domaine avec deux enregistrements DNS de type A vers l'IP du VPS, par exemple `stock.votredomaine.ci` (application) et `api.votredomaine.ci` (Supabase).
+**Prérequis :** un **VPS LWS** sous Ubuntu, de préférence le modèle **Docker** (Docker préinstallé, accès root SSH envoyé par email), 4 Go de RAM minimum ; un domaine avec deux enregistrements DNS de type A vers l'IP du VPS, par exemple `stock.mmcosmetiques.com` (application) et `api.mmcosmetiques.com` (Supabase).
 
 **1. Installer Supabase sur le VPS**
 
@@ -190,10 +190,10 @@ Dans `.env`, **avant le premier démarrage**, vérifiez ou modifiez au minimum :
 |---|---|
 | `POSTGRES_PASSWORD` | long mot de passe aléatoire (notez-le) |
 | `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD` | identifiants du tableau de bord Studio |
-| `SUPABASE_PUBLIC_URL` | `https://api.votredomaine.ci` |
-| `API_EXTERNAL_URL` | `https://api.votredomaine.ci/auth/v1` |
-| `SITE_URL` | `https://stock.votredomaine.ci` |
-| `ADDITIONAL_REDIRECT_URLS` | `https://stock.votredomaine.ci/reset-password` |
+| `SUPABASE_PUBLIC_URL` | `https://api.mmcosmetiques.com` |
+| `API_EXTERNAL_URL` | `https://api.mmcosmetiques.com/auth/v1` |
+| `SITE_URL` | `https://stock.mmcosmetiques.com` |
+| `ADDITIONAL_REDIRECT_URLS` | `https://stock.mmcosmetiques.com/reset-password` |
 | `DISABLE_SIGNUP` | `true` (les comptes sont créés par le Super Admin, pas en libre inscription) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_ADMIN_EMAIL`, `SMTP_SENDER_NAME` | paramètres d'une boîte email (ex. votre messagerie LWS) pour l'email « mot de passe oublié » |
 
@@ -224,11 +224,11 @@ Caddy obtient et renouvelle automatiquement les certificats Let's Encrypt :
 apt install -y caddy
 mkdir -p /var/www/mm-stock
 cat > /etc/caddy/Caddyfile <<'CADDY'
-api.votredomaine.ci {
+api.mmcosmetiques.com {
     reverse_proxy localhost:8000
 }
 
-stock.votredomaine.ci {
+stock.mmcosmetiques.com {
     root * /var/www/mm-stock
     encode gzip
     try_files {path} /index.html
@@ -238,7 +238,7 @@ CADDY
 systemctl reload caddy
 ```
 
-Le tableau de bord Studio est alors sur `https://api.votredomaine.ci` (identifiants `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`).
+Le tableau de bord Studio est alors sur `https://api.mmcosmetiques.com` (identifiants `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`).
 
 **4. Installer la base de l'application**
 
@@ -268,12 +268,12 @@ Créez ensuite le premier Super Admin dans Studio (*Authentication → Add user*
 
 ```bash
 docker exec -i supabase-db psql -h localhost -U postgres -d postgres -c \
-  "update public.users set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom' where email = 'vous@votredomaine.ci';"
+  "update public.users set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom' where email = 'vous@mmcosmetiques.com';"
 ```
 
 **5. Construire et publier le frontend**
 
-Sur votre ordinateur, `frontend/.env` contient `VITE_SUPABASE_URL=https://api.votredomaine.ci` et `VITE_SUPABASE_ANON_KEY=<ANON_KEY du .env du VPS>`, puis :
+Sur votre ordinateur, `frontend/.env` contient `VITE_SUPABASE_URL=https://api.mmcosmetiques.com` et `VITE_SUPABASE_ANON_KEY=<ANON_KEY du .env du VPS>`, puis :
 
 ```bash
 cd frontend && npm ci && npm run build
