@@ -1,6 +1,8 @@
 /**
- * Génère backend/supabase/seed.sql à partir des données démo (src/data/seed.ts),
- * pour que le mode démo et la base Supabase partent des mêmes référentiels.
+ * Génère, à partir des données démo (src/data/seed.ts), les données de départ des backends :
+ *  - backend-supabase/supabase/seed.sql (Supabase)
+ *  - backend/database/seeders/data/reference.json (Laravel)
+ * Le mode démo et les bases de production partent ainsi des mêmes référentiels.
  * Usage : npm run seed:sql
  */
 import { writeFileSync } from 'node:fs'
@@ -40,6 +42,19 @@ const out = [
 ].join('\n')
 
 // npm run exécute le script depuis le dossier frontend/
-const target = resolve(process.cwd(), '../backend/supabase/seed.sql')
+const target = resolve(process.cwd(), '../backend-supabase/supabase/seed.sql')
 writeFileSync(target, out)
 console.log(`seed.sql écrit : ${target}`)
+
+// Laravel : référentiels réels (boutiques, catégories) + catalogue de démonstration séparé
+const reference = {
+  stores: db.stores.map(({ id, code, name, address, phone, email, region }) => ({ id, code, name, address, phone, email, region })),
+  categories: db.categories.map(({ id, name, code }) => ({ id, name, code })),
+  demo: {
+    suppliers: db.suppliers,
+    products: db.products.map(({ created_at: _c, image_url: _i, ...p }) => p),
+  },
+}
+const jsonTarget = resolve(process.cwd(), '../backend/database/seeders/data/reference.json')
+writeFileSync(jsonTarget, JSON.stringify(reference, null, 2) + '\n')
+console.log(`reference.json écrit : ${jsonTarget}`)

@@ -145,6 +145,10 @@ export const supabaseApi: DataApi = {
   async updatePassword(password) {
     check(await supabase().auth.updateUser({ password }))
   },
+  async resetPasswordWithToken(_token, _email, password) {
+    // Supabase ouvre une session de récupération depuis le lien : il suffit de changer le mot de passe.
+    check(await supabase().auth.updateUser({ password }))
+  },
   async verifySupervisor(email, password) {
     const res = await fnCall<{ profile: Row }>('verify-supervisor', { email, password })
     return mapProfile(res.profile)

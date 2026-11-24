@@ -1,21 +1,23 @@
 # MM Cosmétiques — Stock Pro
 
-ERP SaaS de gestion de stock, caisse POS multi-boutiques et business intelligence pour chaînes de cosmétiques.
+ERP SaaS de gestion de stock, caisse POS multi-boutiques et business intelligence pour les boutiques MM Cosmétiques.
 
-**Stack** : React 18 · TypeScript strict · Tailwind CSS · composants Shadcn UI (Radix) · Zustand · TanStack Query · Supabase (PostgreSQL, Auth, RLS, Storage, Realtime).
+**Stack** : React 18 · TypeScript strict · Tailwind CSS · composants Shadcn UI (Radix) · Zustand · TanStack Query · API **Laravel 12** (PHP 8.2+) · **MySQL / MariaDB**.
 
 ## Organisation du dépôt
 
 | Dossier | Contenu | Détails |
 |---|---|---|
 | [`frontend/`](frontend/) | Application React (interface, mode démo, exports) | [frontend/README.md](frontend/README.md) |
-| [`backend/`](backend/) | Supabase : schéma PostgreSQL, RPC, RLS, Edge Functions, tests | [backend/README.md](backend/README.md) |
+| [`backend/`](backend/) | **API Laravel + MySQL** : backend de production (hébergement cPanel LWS) | [backend/README.md](backend/README.md) |
+| [`backend-supabase/`](backend-supabase/) | Variante Supabase du backend (PostgreSQL, RLS), conservée comme alternative | [backend-supabase/README.md](backend-supabase/README.md) |
+| [`scripts/build-lws.sh`](scripts/build-lws.sh) | Fabrique les archives à téléverser sur LWS | voir le guide ci-dessous |
 
-Pour la mise en ligne sur un serveur LWS, voir [Déploiement sur un serveur LWS](#déploiement-sur-un-serveur-lws).
+Mise en ligne : [Déploiement sur LWS (cPanel + Laravel + MySQL)](#déploiement-sur-lws-cpanel--laravel--mysql).
 
 Documentation PDF à partager : [documentation technique d'hébergement sur LWS](docs/MM-Cosmetiques-Stock-Pro_Documentation-technique-LWS.pdf) et [guide d'utilisation pour la formation](docs/MM-Cosmetiques-Stock-Pro_Guide-utilisateur.pdf) (sources dans [`docs/`](docs/)).
 
-Les deux parties sont indépendantes : le frontend parle au backend uniquement via l'API Supabase (`frontend/src/data/supabaseApi.ts`).
+Le frontend choisit son backend au moment du build : `VITE_API_URL` → API Laravel (`frontend/src/data/laravelApi.ts`) ; sinon `VITE_SUPABASE_URL` → Supabase ; sinon mode démo dans le navigateur.
 
 ## Démarrage rapide (mode démo)
 
@@ -27,7 +29,7 @@ npm run dev
 
 (Depuis la racine, `npm run setup` puis `npm run dev` font la même chose.)
 
-Sans variables Supabase, l'application démarre en **mode démo** : les données (les 2 boutiques Agbalépédo et Cacaveli, 30 produits, 60 jours de ventes) sont générées localement dans le navigateur et les règles RLS sont émulées côté client. L'écran de connexion propose un accès rapide pour chacun des 6 rôles (mot de passe commun `demo1234`).
+Sans variable de backend, l'application démarre en **mode démo** : les données (les 2 boutiques Agbalépédo et Cacaveli, 30 produits, 60 jours de ventes) sont générées localement dans le navigateur et les règles RLS sont émulées côté client. L'écran de connexion propose un accès rapide pour chacun des 6 rôles (mot de passe commun `demo1234`).
 
 | Rôle | Email démo |
 |---|---|
@@ -40,296 +42,182 @@ Sans variables Supabase, l'application démarre en **mode démo** : les données
 
 Les données démo se réinitialisent depuis **Paramètres → Données de démonstration**.
 
-## Production avec Supabase
+## Déploiement sur LWS (cPanel + Laravel + MySQL)
 
-1. Créer un projet Supabase, puis appliquer le schéma :
-   ```bash
-   cd backend
-   supabase link --project-ref <ref>
-   supabase db push --remote  # applique backend/supabase/migrations/* au projet en ligne
-   psql "$DATABASE_URL" -f supabase/seed.sql   # catégories, fournisseurs, boutiques, produits
-   ```
-2. Déployer les Edge Functions (création de comptes et validation superviseur, qui exigent la clé `service_role` côté serveur) :
-   ```bash
-   cd backend
-   supabase functions deploy admin-users
-   supabase functions deploy verify-supervisor
-   ```
-3. Créer le premier Super Admin : *Authentication → Add user*, puis
-   ```sql
-   update public.users set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom' where email = 'vous@mmcosmetiques.com';
-   ```
-   Les autres comptes se créent ensuite depuis l'écran **Utilisateurs**.
-4. Copier `frontend/.env.example` en `frontend/.env` et renseigner `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY`.
-5. Dans *Authentication → URL Configuration*, ajouter `https://<votre-domaine>/reset-password` aux URL de redirection.
+Tout s'installe sur l'hébergement web **cPanel** de LWS, sans serveur dédié :
 
-### Déploiement Vercel
-
-Importer le dépôt dans Vercel avec **Root Directory = `frontend`** (preset Vite), puis définir les deux variables d'environnement. `frontend/vercel.json` gère la réécriture SPA et les en-têtes de sécurité. Chaque branche obtient une URL de prévisualisation.
-
-## Déploiement sur un serveur LWS
-
-L'application a deux parties qui s'hébergent différemment :
-
-- **Le frontend** n'est qu'un ensemble de fichiers statiques (`frontend/dist/`) : n'importe quel hébergement web LWS peut le servir.
-- **Le backend** est un projet **Supabase**, pas une simple base de données : PostgreSQL, mais aussi l'authentification, l'API REST, le temps réel, le stockage des images et les Edge Functions. Une base PostgreSQL seule, comme celle fournie avec l'hébergement mutualisé cPanel, ne suffit donc pas.
-
-Deux options :
-
-| | Option A — recommandée | Option B — tout chez LWS |
+| Élément | Où | Adresse (exemple) |
 |---|---|---|
-| Frontend | Hébergement web LWS (cPanel) | VPS LWS |
-| Backend | Supabase Cloud (supabase.com) | Supabase auto-hébergé sur le même VPS LWS (Docker) |
-| Mise en place | ~30 min, aucune administration serveur | ~2 h, administration Linux requise |
-| Sauvegardes, mises à jour, sécurité de la base | Gérées par Supabase | **À votre charge** |
+| API Laravel (`backend/`) | dossier `~/mm-api`, hors de `public_html` | `https://api.mmcosmetiques.com` |
+| Base de données | MySQL / MariaDB de cPanel | `localhost` |
+| Application React (`frontend/`) | dossier `~/stock` | `https://stock.mmcosmetiques.com` |
+| Emails « mot de passe oublié » | boîte email cPanel | `contact@mmcosmetiques.com` |
 
-### Option A — Frontend sur l'hébergement LWS, base sur Supabase Cloud
+Remplacez `mmcosmetiques.com` par votre domaine et `cpaneluser` par votre identifiant cPanel partout dans ce guide.
 
-**1. Créer la base de données (une seule fois)**
+> **Le Laravel installé avec l'installateur automatique de LWS** confirme que PHP fonctionne, mais ce n'est qu'un projet vide : il est remplacé par le backend de ce dépôt. S'il a créé une base de données, vous pouvez la réutiliser (ses identifiants sont dans son fichier `.env`) ; sinon supprimez cette installation depuis l'installateur pour éviter la confusion.
 
-1. Créez un compte et un projet sur [supabase.com](https://supabase.com). Choisissez une région proche (ex. *West EU*) et notez le **mot de passe de la base**.
-2. Dans *Project Settings → API*, notez l'**URL du projet** et la clé **anon public**.
-3. Sur votre ordinateur, avec le [CLI Supabase](https://supabase.com/docs/guides/cli) installé :
-   ```bash
-   cd backend
-   supabase login
-   supabase link --project-ref <ref-du-projet>     # le <ref> est dans l'URL du projet
-   supabase db push --remote                       # crée tables, fonctions et règles de sécurité
-   psql "<chaîne de connexion>" -f supabase/seed.sql   # boutiques, catégories, fournisseurs, produits
-   supabase functions deploy admin-users
-   supabase functions deploy verify-supervisor
-   ```
-   La chaîne de connexion est dans *Project Settings → Database → Connection string*. Ne lancez `seed.sql` qu'**une seule fois**, sur une base vide.
+### 1. Préparer les archives
 
-   > **Important :** depuis la version 3 du CLI, `supabase db push` et `supabase db dump` visent la base **locale** par défaut. Ajoutez toujours `--remote` pour agir sur le projet en ligne (`supabase functions deploy` vise déjà le projet lié).
-4. Créez le premier Super Admin : *Authentication → Users → Add user* (email + mot de passe, cochez *Auto Confirm User*), puis dans *SQL Editor* :
-   ```sql
-   update public.users
-      set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom'
-    where email = 'vous@mmcosmetiques.com';
-   ```
-   Les autres comptes se créent ensuite depuis l'écran **Utilisateurs** de l'application.
-5. Dans *Authentication → URL Configuration*, mettez **Site URL** = `https://mmcosmetiques.com` et ajoutez `https://mmcosmetiques.com/reset-password` aux *Redirect URLs* (lien « mot de passe oublié »).
+Deux fichiers ZIP sont à téléverser : `mm-api.zip` (l'API, dépendances `vendor/` incluses, donc **pas besoin de Composer sur le serveur**) et `mm-frontend.zip` (l'application compilée pour l'adresse de votre API).
 
-**2. Construire le site**
+- **Depuis GitHub, sans rien installer** : onglet **Actions** → **Archives LWS** → **Run workflow**, saisissez l'adresse de l'API (`https://api.mmcosmetiques.com`), lancez. À la fin, téléchargez `mm-api` et `mm-frontend` en bas de la page de l'exécution (GitHub les livre chacun dans un ZIP : décompressez-le une fois pour obtenir `mm-api.zip` et `mm-frontend.zip`).
+- **Depuis un ordinateur** avec PHP 8.2, Composer, Node 20+ et `zip` :
+  ```bash
+  scripts/build-lws.sh https://api.mmcosmetiques.com
+  ```
+  Les archives sont créées dans `deploy/`.
 
-Les clés Supabase sont intégrées au moment du build : construisez sur votre ordinateur, pas sur le serveur.
+### 2. Régler PHP
 
-```bash
-cd frontend
-cp .env.example .env      # puis renseignez VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY
-npm ci
-npm run build             # produit frontend/dist/
-```
+cPanel → **Sélectionner une version de PHP** (*Select PHP Version*) :
 
-La clé *anon* peut être publique : la sécurité repose sur les règles RLS de la base. Ne mettez **jamais** la clé *service_role* dans `.env`.
+1. Version **8.2 ou plus récente** (8.3 conseillé).
+2. Extensions cochées : `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `fileinfo`, `bcmath`, `intl`, `zip` (la plupart le sont déjà).
+3. Onglet **Options** : `upload_max_filesize` et `post_max_size` à **8M** au moins (images produits jusqu'à 2 Mo), `memory_limit` à **256M**.
 
-**3. Mettre en ligne sur l'hébergement LWS**
+### 3. Créer la base de données
 
-1. Dans l'espace client LWS, ouvrez le **cPanel** de votre hébergement et activez le **certificat SSL** (Let's Encrypt) du domaine.
-2. Ouvrez le **Gestionnaire de fichiers** et allez dans `public_html/` (ou le dossier racine du domaine / sous-domaine choisi). Videz-le s'il contient la page par défaut.
-3. Déposez **le contenu** de `frontend/dist/` : `index.html`, le dossier `assets/`, les logos **et le fichier caché `.htaccess`** (activez *Afficher les fichiers cachés* dans les paramètres du gestionnaire). Le plus simple : compressez le contenu de `dist/` en `.zip`, envoyez-le, puis *Extraire*.
-   - Avec un client FTP (FileZilla, identifiants FTP de l'espace client) : copiez le contenu de `dist/` dans `public_html/`.
-4. Ouvrez `https://mmcosmetiques.com` et connectez-vous avec le Super Admin.
+cPanel → **Bases de données MySQL** :
 
-Le `.htaccess` (dans `frontend/public/`, copié à chaque build) force le HTTPS et renvoie les URL de l'application (`/pos`, `/stores`…) vers `index.html`. **Sans lui, recharger une page autre que l'accueil donne une erreur 404.**
+1. **Créer une base** : `mmstock` → cPanel la nomme `cpaneluser_mmstock`.
+2. **Ajouter un utilisateur** : `mmstock` avec un mot de passe fort (générateur cPanel) → `cpaneluser_mmstock`. **Notez le mot de passe.**
+3. **Ajouter l'utilisateur à la base** → cochez **TOUS LES PRIVILÈGES**.
 
-**4. Opérations courantes (option A)**
+Les tables sont créées à l'étape 7 par Laravel : n'importez rien dans phpMyAdmin.
 
-| Opération | Commande / action |
+### 4. Créer les sous-domaines
+
+cPanel → **Domaines** (ou **Sous-domaines**) :
+
+| Sous-domaine | Racine du document (*Document Root*) |
 |---|---|
-| Publier une nouvelle version | `cd frontend && npm run build`, puis remplacer le contenu de `public_html/` par celui de `dist/` (gardez le `.htaccess`) |
-| Appliquer une nouvelle migration | `cd backend && supabase db push --remote` (à faire **avant** de publier le frontend qui en dépend ; `--dry-run` pour prévisualiser) |
-| Mettre à jour une Edge Function | `cd backend && supabase functions deploy <nom>` |
-| Sauvegarder la base | Automatique côté Supabase (*Database → Backups*, selon l'offre). Copie manuelle (Docker requis sur votre poste), voir ci-dessous |
-| Restaurer une sauvegarde manuelle | Voir ci-dessous |
-| Voir les erreurs | Supabase : *Logs* (API, Auth, Postgres, Edge Functions). Navigateur : console (F12) |
+| `api.mmcosmetiques.com` | `mm-api/public` |
+| `stock.mmcosmetiques.com` | `stock` |
 
-Sauvegarde manuelle avec le CLI (rôles, structure et données dans trois fichiers) :
+La racine de l'API doit être le dossier **`public`** de Laravel : le reste (`.env`, code, `vendor/`) reste ainsi inaccessible depuis le web.
 
-```bash
-cd backend
-supabase db dump --remote --role-only -f roles.sql
-supabase db dump --remote -f schema.sql
-supabase db dump --remote --data-only --use-copy -f data.sql
+> Si cPanel refuse une racine hors de `public_html`, créez le sous-domaine avec la racine `public_html/api`, puis remplacez ce dossier par un lien vers `mm-api/public` depuis le terminal SSH (étape 6) :
+> ```bash
+> rm -rf ~/public_html/api && ln -s ~/mm-api/public ~/public_html/api
+> ```
+
+Puis cPanel → **SSL/TLS Status** (ou **Let's Encrypt**) : générez un certificat pour les deux sous-domaines. Comptez quelques minutes après la création des sous-domaines (propagation DNS).
+
+### 5. Téléverser les fichiers
+
+cPanel → **Gestionnaire de fichiers** :
+
+1. Dans votre dossier personnel (au-dessus de `public_html`), **Téléverser** `mm-api.zip`, puis clic droit → **Extract** : vous obtenez `~/mm-api/` (avec `app/`, `public/`, `vendor/`…). Supprimez le ZIP.
+2. Ouvrez `~/stock/` (créé avec le sous-domaine), supprimez son contenu par défaut, téléversez `mm-frontend.zip` et extrayez-le **dans** ce dossier : `index.html`, `assets/` et `.htaccess` doivent être directement dans `~/stock/`. Supprimez le ZIP.
+
+Le fichier `.htaccess` est caché par défaut : *Paramètres* (en haut à droite) → **Afficher les fichiers cachés**.
+
+### 6. Configurer l'API (`.env`)
+
+Dans `~/mm-api/`, copiez `.env.example` en `.env` (clic droit → *Copy*), puis **Edit** :
+
+```dotenv
+APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://api.mmcosmetiques.com
+FRONTEND_URL=https://stock.mmcosmetiques.com
+
+DB_DATABASE=cpaneluser_mmstock
+DB_USERNAME=cpaneluser_mmstock
+DB_PASSWORD=le-mot-de-passe-de-l-etape-3
+
+MAIL_HOST=mail.mmcosmetiques.com
+MAIL_USERNAME=contact@mmcosmetiques.com
+MAIL_PASSWORD=le-mot-de-passe-de-la-boite-email
+MAIL_FROM_ADDRESS=contact@mmcosmetiques.com
 ```
 
-Restauration dans un projet vide (chaîne de connexion du projet cible) :
+- `FRONTEND_URL` sert aux liens « mot de passe oublié » et autorise l'application à appeler l'API (CORS). Une adresse fausse = « Failed to fetch » dans l'application.
+- La boîte email se crée dans cPanel → **Comptes de messagerie** ; les paramètres SMTP exacts sont dans *Connect Devices* (port 465, SSL).
+- `APP_DEBUG` doit rester à `false` : sinon une erreur afficherait vos mots de passe à l'écran.
+
+### 7. Installer la base et le premier compte
+
+Ouvrez un terminal : dans l'espace client LWS, **Gestion du service** de votre hébergement → **Terminal SSH** (ou cPanel → **Terminal**). Puis :
 
 ```bash
-psql "<chaîne de connexion>" --single-transaction --variable ON_ERROR_STOP=1 \
-  --file roles.sql --file schema.sql \
-  --command 'SET session_replication_role = replica' --file data.sql
+cd ~/mm-api
+php -v                               # doit afficher 8.2 ou plus
+php artisan key:generate --force     # clé de chiffrement (une seule fois)
+php artisan migrate --force          # crée toutes les tables
+php artisan db:seed --force          # rôles + boutiques Agbalépédo et Cacaveli + catégories
+php artisan mm:create-admin direction@mmcosmetiques.com --first=Prénom --last=Nom
+php artisan optimize                 # met la configuration en cache (à relancer après chaque modification du .env)
+chmod -R 775 storage bootstrap/cache public/uploads
 ```
 
-### Option B — Tout sur un VPS LWS (Supabase auto-hébergé)
+`mm:create-admin` demande le mot de passe du premier **Super Admin** (8 caractères minimum). Les autres comptes se créent ensuite depuis l'écran **Utilisateurs** de l'application.
 
-À réserver si les données doivent rester sur vos serveurs. Supabase auto-hébergé est maintenu par la communauté : sauvegardes, mises à jour et sécurité sont à votre charge.
+> Si `php -v` affiche une version trop ancienne alors que cPanel indique 8.2+, utilisez le binaire complet, par exemple `/opt/alt/php83/usr/bin/php artisan …` (ou `ea-php83`, selon le serveur).
 
-**Prérequis :** un **VPS LWS** sous Ubuntu, de préférence le modèle **Docker** (Docker préinstallé, accès root SSH envoyé par email), 4 Go de RAM minimum ; un domaine avec deux enregistrements DNS de type A vers l'IP du VPS, par exemple `stock.mmcosmetiques.com` (application) et `api.mmcosmetiques.com` (Supabase).
+Catalogue de formation (facultatif, à **ne pas** lancer sur une base réelle déjà remplie) : `php artisan db:seed --class=DemoCatalogSeeder --force` ajoute 30 produits et 50 unités de stock par boutique.
 
-**1. Installer Supabase sur le VPS**
+### 8. Vérifier
 
-```bash
-ssh root@<ip-du-vps>
-apt update && apt upgrade -y
-apt install -y git postgresql-client
-# si le VPS n'a pas Docker : curl -fsSL https://get.docker.com | sh
+1. `https://api.mmcosmetiques.com/api/health` → `{"status":"ok",…}`.
+2. `https://stock.mmcosmetiques.com` → écran de connexion **sans** bandeau « Mode démo ». Connectez-vous avec le Super Admin.
+3. **Boutiques** : vérifiez adresses et téléphones ; **Catalogue** : créez un produit avec image ; **Utilisateurs** : créez les comptes du personnel.
+4. **Mot de passe oublié** depuis l'écran de connexion : l'email doit arriver avec un lien vers `stock.mmcosmetiques.com/reset-password`.
 
-git clone --depth 1 https://github.com/supabase/supabase /opt/supabase-src
-mkdir -p /opt/supabase && cp -r /opt/supabase-src/docker/. /opt/supabase/
-cd /opt/supabase
-cp .env.example .env
-sh utils/generate-keys.sh --update-env    # génère JWT_SECRET, ANON_KEY, SERVICE_ROLE_KEY, etc.
-nano .env
-```
-
-Dans `.env`, **avant le premier démarrage**, vérifiez ou modifiez au minimum :
-
-| Variable | Valeur |
+| Symptôme | Cause probable |
 |---|---|
-| `POSTGRES_PASSWORD` | long mot de passe aléatoire (notez-le) |
-| `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD` | identifiants du tableau de bord Studio |
-| `SUPABASE_PUBLIC_URL` | `https://api.mmcosmetiques.com` |
-| `API_EXTERNAL_URL` | `https://api.mmcosmetiques.com/auth/v1` |
-| `SITE_URL` | `https://stock.mmcosmetiques.com` |
-| `ADDITIONAL_REDIRECT_URLS` | `https://stock.mmcosmetiques.com/reset-password` |
-| `DISABLE_SIGNUP` | `true` (les comptes sont créés par le Super Admin, pas en libre inscription) |
-| `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_ADMIN_EMAIL`, `SMTP_SENDER_NAME` | paramètres d'une boîte email (ex. votre messagerie LWS) pour l'email « mot de passe oublié » |
+| Erreur 500 sur l'API | `.env` incomplet ou clé manquante : lire `~/mm-api/storage/logs/laravel-<date>.log` |
+| « Failed to fetch » à la connexion | `FRONTEND_URL` ne correspond pas exactement à l'adresse de l'application, ou certificat SSL absent sur l'API |
+| Bandeau « Mode démo » | `mm-frontend.zip` construit sans adresse d'API : relancer l'étape 1 avec la bonne adresse |
+| Page blanche ou 404 sur `/pos` après actualisation | `.htaccess` absent de `~/stock/` |
+| `SQLSTATE[HY000] [1045]` | identifiants MySQL faux, ou utilisateur non ajouté à la base (étape 3) |
+| Images produits non affichées | droits d'écriture sur `public/uploads` (`chmod -R 775`) |
+| Emails non reçus | identifiants SMTP, ou dossier spam ; tester la boîte dans *Webmail* |
+| Modification du `.env` sans effet | relancer `php artisan optimize` |
 
-Le fichier `.env.example` liste tous les secrets à changer en tête de fichier ; ne laissez **aucune** valeur par défaut. Puis :
+### Mises à jour, sauvegardes, maintenance
 
-```bash
-sh run.sh start       # docker compose up -d --wait
-sh run.sh status      # tous les services doivent être "healthy"
-```
-
-**2. Fermer les ports internes (important)**
-
-Par défaut, Docker publie sur Internet le port de l'API (`8000`) et ceux de PostgreSQL (`5432`, `6543`). Seuls 22 (SSH), 80 et 443 doivent être ouverts. Attention : **les règles `ufw` ne s'appliquent pas aux ports publiés par Docker** ; il faut passer par la chaîne `DOCKER-USER` :
-
-```bash
-ip route | grep default                     # repérez l'interface publique, ex. eth0 ou ens3
-iptables -I DOCKER-USER -i eth0 -p tcp -m multiport --dports 8000,5432,6543 -j DROP
-apt install -y iptables-persistent && netfilter-persistent save
-```
-
-Le proxy HTTPS ci-dessous accède à l'API en local (`localhost:8000`), il n'est donc pas bloqué.
-
-**3. HTTPS et site web avec Caddy**
-
-Caddy obtient et renouvelle automatiquement les certificats Let's Encrypt :
-
-```bash
-apt install -y caddy
-mkdir -p /var/www/mm-stock
-cat > /etc/caddy/Caddyfile <<'CADDY'
-api.mmcosmetiques.com {
-    reverse_proxy localhost:8000
-}
-
-stock.mmcosmetiques.com {
-    root * /var/www/mm-stock
-    encode gzip
-    try_files {path} /index.html
-    file_server
-}
-CADDY
-systemctl reload caddy
-```
-
-Le tableau de bord Studio est alors sur `https://api.mmcosmetiques.com` (identifiants `DASHBOARD_USERNAME` / `DASHBOARD_PASSWORD`).
-
-**4. Installer la base de l'application**
-
-Dans le conteneur, les connexions via `localhost` sont acceptées sans mot de passe : c'est pourquoi toutes les commandes ci-dessous passent `-h localhost`. Les migrations s'exécutent avec le rôle `postgres` (comme sur Supabase Cloud) ; les sauvegardes complètes avec le superutilisateur `supabase_admin`.
-
-Depuis le VPS, avec une copie du dépôt :
-
-```bash
-git clone https://github.com/siaoctawacta/gestiondestock /opt/gestiondestock
-cd /opt/gestiondestock/backend/supabase
-
-# Migrations, dans l'ordre (les noms de fichiers sont horodatés)
-for f in migrations/*.sql; do
-  echo "== $f"
-  docker exec -i supabase-db psql -h localhost -v ON_ERROR_STOP=1 -U postgres -d postgres < "$f" || break
-done
-
-# Données de départ : UNE SEULE FOIS, sur une base vide
-docker exec -i supabase-db psql -h localhost -v ON_ERROR_STOP=1 -U postgres -d postgres < seed.sql
-
-# Edge Functions : à côté du dossier "main" fourni par Supabase
-cp -r functions/admin-users functions/verify-supervisor /opt/supabase/volumes/functions/
-cd /opt/supabase && sh run.sh restart functions
-```
-
-Créez ensuite le premier Super Admin dans Studio (*Authentication → Add user*), puis :
-
-```bash
-docker exec -i supabase-db psql -h localhost -U postgres -d postgres -c \
-  "update public.users set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom' where email = 'vous@mmcosmetiques.com';"
-```
-
-**5. Construire et publier le frontend**
-
-Sur votre ordinateur, `frontend/.env` contient `VITE_SUPABASE_URL=https://api.mmcosmetiques.com` et `VITE_SUPABASE_ANON_KEY=<ANON_KEY du .env du VPS>`, puis :
-
-```bash
-cd frontend && npm ci && npm run build
-rsync -av --delete dist/ root@<ip-du-vps>:/var/www/mm-stock/
-```
-
-**6. Opérations courantes (option B)**
-
-| Opération | Commande (sur le VPS) |
+| Opération | Comment |
 |---|---|
-| État des services | `cd /opt/supabase && sh run.sh status` |
-| Journaux | `sh run.sh logs` ou `sh run.sh logs auth` (aussi : `rest`, `db`, `functions`, `storage`) |
-| Redémarrer | `sh run.sh restart` (ou un seul service : `sh run.sh restart functions`) |
-| Nouvelle version du frontend | sur votre poste : `npm run build` puis le `rsync` ci-dessus |
-| Nouvelle migration | `cd /opt/gestiondestock && git pull`, puis `docker exec -i supabase-db psql -h localhost -v ON_ERROR_STOP=1 -U postgres -d postgres < backend/supabase/migrations/<nouveau-fichier>.sql` |
-| Mettre à jour une Edge Function | recopier son dossier dans `/opt/supabase/volumes/functions/` puis `sh run.sh restart functions` |
-| Sauvegarde manuelle | `docker exec supabase-db pg_dump -h localhost -U supabase_admin -d postgres -Fc > /root/backups/mm-$(date +%F).dump` |
-| Restaurer | `docker exec -i supabase-db pg_restore -h localhost --clean --if-exists -U supabase_admin -d postgres < /root/backups/mm-AAAA-MM-JJ.dump` |
-| Mettre à jour Supabase | **après une sauvegarde** : `sh update.sh --dry-run`, `sh update.sh`, puis `sh run.sh pull && sh run.sh recreate` |
-
-Sauvegarde automatique chaque nuit à 2 h, avec 14 jours d'historique (`crontab -e`) :
-
-```bash
-mkdir -p /root/backups
-0 2 * * * docker exec supabase-db pg_dump -h localhost -U supabase_admin -d postgres -Fc > /root/backups/mm-$(date +\%F).dump && find /root/backups -name 'mm-*.dump' -mtime +14 -delete
-```
-
-Copiez régulièrement `/root/backups` **hors du VPS** (votre ordinateur, un stockage externe) : une sauvegarde restée sur le serveur disparaît avec lui.
-
-Pour aller plus loin : documentation officielle [Self-Hosting with Docker](https://supabase.com/docs/guides/self-hosting/docker) et [mise à jour](https://supabase.com/docs/guides/self-hosting/updating).
+| Mettre à jour l'application | Refaire l'étape 1 ; renommer `~/mm-api` en `~/mm-api-ancien`, extraire le nouveau `mm-api.zip`, y recopier l'ancien `.env` et le dossier `public/uploads`, puis `php artisan migrate --force && php artisan optimize`. Pour le frontend, remplacer le contenu de `~/stock/`. Supprimer `~/mm-api-ancien` une fois vérifié. |
+| Sauvegarde de la base | cPanel → **Sauvegarde** → *Télécharger une sauvegarde de base de données MySQL* (ou phpMyAdmin → Exporter). Au moins une fois par semaine, à conserver **hors** de l'hébergement. |
+| Sauvegarde automatique | cPanel → **Tâches Cron**, chaque nuit : `mysqldump --no-tablespaces -u cpaneluser_mmstock -p'MOTDEPASSE' cpaneluser_mmstock \| gzip > ~/sauvegardes/mm-$(date +\%F).sql.gz` (créer `~/sauvegardes` avant). |
+| Sauvegarde des images | dossier `~/mm-api/public/uploads` (Gestionnaire de fichiers → *Compress*). |
+| Restaurer | phpMyAdmin → base `cpaneluser_mmstock` → **Importer** le fichier `.sql`. |
+| Journaux d'erreurs | `~/mm-api/storage/logs/` (un fichier par jour, 14 jours conservés). |
+| Mettre l'API en maintenance | `php artisan down` puis `php artisan up`. |
+| Compte Super Admin perdu | `php artisan mm:create-admin email@… --first=… --last=…` (crée ou réinitialise le compte). |
 
 ## Architecture
 
 ```
 frontend/src/
-  data/          api.ts (contrat) · supabaseApi.ts (prod) · demoApi.ts (démo) · logic.ts (calculs métier) · seed.ts
+  data/          api.ts (contrat) · laravelApi.ts (prod) · supabaseApi.ts (alternative) · demoApi.ts (démo) · logic.ts · seed.ts
   lib/           permissions (RBAC) · analytics (KPI) · export (PDF/Excel) · receipt (ticket 80 mm)
   store/         Zustand : session, panier POS, préférences UI
-  hooks/         TanStack Query + invalidation temps réel
+  hooks/         TanStack Query + actualisation automatique (20 s)
   components/    ui/ (Shadcn) · layout/ · common/
   pages/         un fichier par module
-backend/supabase/
-  migrations/    schéma · fonctions/RPC/triggers · polices RLS
-  functions/     Edge Functions admin-users, verify-supervisor
-  tests/         tests pgTAP de sécurité RLS
+backend/                       API Laravel (voir backend/README.md)
+  app/Http/Controllers/Api/    une classe par domaine
+  app/Services/                ventes, stock, transferts, déclarations (transactions + verrous)
+  app/Support/Permissions.php  matrice des rôles, identique au frontend
+  database/migrations/         schéma MySQL
+  tests/Feature/               tests de sécurité et de règles métier
+backend-supabase/              variante Supabase (migrations, RLS, Edge Functions, pgTAP)
 ```
 
 ### Sécurité (Zero Trust)
 
-- **RLS activée sur toutes les tables.** Les fonctions `user_store_ids()` et `can_access_store()` limitent chaque lecture au périmètre de boutiques de l'utilisateur ; seuls `super_admin` et `stock_manager` ont une vue réseau.
-- **Aucune écriture directe sur les tables sensibles** (stock, mouvements, ventes, transferts, déclarations) : `INSERT/UPDATE/DELETE` sont révoqués et tout passe par des RPC `SECURITY DEFINER` qui vérifient rôle et boutique (`process_sale`, `stock_entry`, `adjust_stock`, `create_transfer`, `receive_transfer`, `save/submit/review_daily_report`).
-- **Totaux de vente recalculés côté serveur** depuis le catalogue. Le client n'envoie que produits et quantités.
-- Mouvements de stock verrouillés ligne par ligne (`FOR UPDATE`), transferts atomiques, `stock_movements` et `audit_logs` inaltérables (trigger).
-- Triggers d'audit sur produits, boutiques, utilisateurs, transferts et déclarations.
-- Seul le Super Admin ajoute, modifie ou supprime boutiques et utilisateurs et attribue les rôles (police RLS, RPC `delete_store` et Edge Function `admin-users`).
+- **Chaque requête est vérifiée par l'API** : jeton Sanctum valide, compte actif, droit du rôle (`app/Support/Permissions.php`) et périmètre de boutiques. Un caissier ou un responsable ne lit et n'écrit que sur sa boutique ; seuls `super_admin` et `stock_manager` ont une vue réseau.
+- **Aucune écriture directe sur les données sensibles** (stock, mouvements, ventes, transferts, déclarations) : tout passe par des services qui contrôlent rôle et boutique.
+- **Totaux de vente recalculés côté serveur** depuis le catalogue. Le client n'envoie que produits et quantités ; une remise > 15 % exige le mot de passe d'un responsable.
+- Mouvements de stock sous transaction avec verrou de ligne (`SELECT … FOR UPDATE`), transferts atomiques, `stock_movements` et `audit_logs` inaltérables.
+- Journal d'audit sur produits, boutiques, utilisateurs, transferts, remises et déclarations.
+- Seul le Super Admin ajoute, modifie ou supprime boutiques et utilisateurs et attribue les rôles.
 - Suppression **logique** (`deleted_at`) : l'élément disparaît des listes et un compte supprimé ne peut plus se connecter, mais ventes, mouvements et déclarations restent rattachés. Une boutique ne peut être supprimée qu'une fois ses transferts en transit traités et ses utilisateurs réaffectés.
+- Mots de passe hachés (bcrypt), connexions limitées à 10 tentatives par minute, CORS limité à l'adresse de l'application, `.env` hors du dossier public.
 
 ### Modules
 
@@ -345,13 +233,14 @@ backend/supabase/
 | 8 | Alertes (stock faible, rupture, déclaration, écart > 2 %) | cloche + `/notifications` |
 | 9 | Tableaux de bord par rôle | `/` |
 | 10 | Rapports ventes / stock / marges / employés, export PDF & Excel | `/reports` |
-| 11–12 | Schéma DDL, RLS, triggers | `backend/supabase/` |
+| 11–12 | Schéma de base de données, contrôles d'accès, audit | `backend/database/`, `backend/app/` |
 
 ## Qualité
 
 ```bash
 cd frontend && npm run typecheck && npm test && npm run build   # TypeScript strict, Vitest, build
-cd backend && supabase test db                                   # pgTAP : tests de sécurité RLS
+cd backend && php artisan test                                   # API Laravel : sécurité et règles métier
+cd backend-supabase && supabase test db                          # variante Supabase : tests pgTAP
 ```
 
-La CI GitHub Actions (`.github/workflows/ci.yml`) exécute ces étapes à chaque push et pull request, avec un job `frontend` et un job `backend`.
+La CI GitHub Actions (`.github/workflows/ci.yml`) exécute ces étapes à chaque push et pull request : jobs `frontend`, `backend` (PHP 8.2 + MySQL 8) et `backend-supabase`.

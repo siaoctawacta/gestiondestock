@@ -1,0 +1,44 @@
+# Fabrique les archives à téléverser sur LWS (onglet Actions → « Archives LWS » → Run workflow).
+# Les deux fichiers ZIP se téléchargent ensuite en bas de la page de l'exécution (« Artifacts »).
+name: Archives LWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: Adresse publique de l'API Laravel
+        default: https://api.mmcosmetiques.com
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql, mbstring, intl, zip
+          tools: composer:v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Construire les archives
+        env:
+          API_URL: ${{ inputs.api_url }}
+        run: scripts/build-lws.sh "$API_URL"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mm-api
+          path: deploy/mm-api.zip
+          retention-days: 30
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mm-frontend
+          path: deploy/mm-frontend.zip
+          retention-days: 30

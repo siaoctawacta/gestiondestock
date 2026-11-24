@@ -21,12 +21,13 @@ import type {
 } from '@/types'
 
 /**
- * Contrat d'accès aux données. Deux implémentations :
- *  - `supabaseApi` : production (PostgreSQL + RLS + fonctions RPC)
- *  - `demoApi`     : mode démo hors-ligne (localStorage, RLS émulée)
+ * Contrat d'accès aux données. Trois implémentations :
+ *  - `laravelApi`  : production sur l'API Laravel + MySQL (dossier backend/)
+ *  - `supabaseApi` : production sur Supabase (dossier backend-supabase/)
+ *  - `demoApi`     : mode démo hors-ligne (localStorage, droits émulés)
  */
 export interface DataApi {
-  mode: 'supabase' | 'demo'
+  mode: 'laravel' | 'supabase' | 'demo'
 
   // Auth
   signIn(email: string, password: string): Promise<Profile>
@@ -34,6 +35,8 @@ export interface DataApi {
   currentUser(): Promise<Profile | null>
   requestPasswordReset(email: string): Promise<void>
   updatePassword(password: string): Promise<void>
+  /** Nouveau mot de passe depuis le lien reçu par email (jeton + email dans l'URL). */
+  resetPasswordWithToken(token: string, email: string, password: string): Promise<void>
   verifySupervisor(email: string, password: string): Promise<Profile>
   updateOwnProfile(input: Pick<Profile, 'first_name' | 'last_name' | 'phone'>): Promise<Profile>
 
