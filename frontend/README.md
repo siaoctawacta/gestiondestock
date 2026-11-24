@@ -11,7 +11,7 @@ npm test
 npm run build
 ```
 
-Pour se connecter au backend, copier `.env.example` en `.env` et renseigner `VITE_API_URL` (API Laravel, ex. `https://api.mmcosmetiques.com`). Alternative : `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` pour le backend Supabase. Sans aucune variable, l'application tourne en mode démo.
+Pour se connecter au backend, copier `.env.example` en `.env` et renseigner `VITE_API_URL` (adresse du site Laravel, ex. `https://stockpro.mmconsultingtg.com` : l'API est appelée sur `/api`). Alternative : `VITE_SUPABASE_URL` et `VITE_SUPABASE_ANON_KEY` pour le backend Supabase. Sans aucune variable, l'application tourne en mode démo.
 
 ```
 src/

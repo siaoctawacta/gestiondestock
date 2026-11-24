@@ -24,8 +24,8 @@
   <ol>
     <li><span class="n">1</span>Objet du document et architecture<span class="d">ce qu'il faut héberger</span></li>
     <li><span class="n">2</span>Prérequis<span class="d">offre LWS, domaine, accès</span></li>
-    <li><span class="n">3</span>Préparer les archives<span class="d">API et application prêtes à téléverser</span></li>
-    <li><span class="n">4</span>Configurer cPanel<span class="d">PHP, base MySQL, sous-domaines, SSL, email</span></li>
+    <li><span class="n">3</span>Préparer l'archive<span class="d">API et application prêtes à téléverser</span></li>
+    <li><span class="n">4</span>Configurer cPanel<span class="d">PHP, base MySQL, sous-domaine, SSL, email</span></li>
     <li><span class="n">5</span>Téléverser et configurer l'API<span class="d">fichiers et fichier .env</span></li>
     <li><span class="n">6</span>Installer la base et le premier compte<span class="d">commandes artisan</span></li>
     <li><span class="n">7</span>Mise en service<span class="d">liste de contrôle</span></li>
@@ -34,7 +34,7 @@
     <li><span class="n">10</span>Dépannage et annexes<span class="d">symptôme → solution, aide-mémoire</span></li>
   </ol>
   <div class="box info" style="margin-top:8mm"><span class="t">Conventions</span>
-    Les exemples utilisent le domaine <code>mmcosmetiques.com</code>, avec les sous-domaines <code>api.mmcosmetiques.com</code> (API Laravel) et <code>stock.mmcosmetiques.com</code> (application) : adaptez-les à votre choix. Remplacez <code>cpaneluser</code> par votre identifiant cPanel. Les lignes commençant par <code>#</code> dans les blocs de commandes sont des commentaires.
+    L'application est installée sur le sous-domaine <code>stockpro.mmconsultingtg.com</code> : l'application s'ouvre à sa racine et l'API répond sous <code>/api</code>. Remplacez <code>cpaneluser</code> par votre identifiant cPanel. Les lignes commençant par <code>#</code> dans les blocs de commandes sont des commentaires.
   </div>
 </section>
 
@@ -45,14 +45,14 @@
 
 <h2>Les deux parties de l'application</h2>
 <table>
-  <thead><tr><th style="width:22%">Partie</th><th>Contenu</th><th style="width:30%">Hébergement LWS</th></tr></thead>
+  <thead><tr><th style="width:22%">Partie</th><th>Contenu</th><th style="width:30%">Adresse</th></tr></thead>
   <tbody>
-    <tr><td><b>API</b><br><code>backend/</code></td><td>Le serveur de l'application, écrit avec <b>Laravel</b> (PHP). Il gère la connexion des utilisateurs, vérifie les droits de chacun, enregistre ventes, stocks, transferts et déclarations dans la base <b>MySQL</b>, envoie les emails.</td><td>Dossier <code>~/mm-api</code>, sous-domaine <code>api.mmcosmetiques.com</code></td></tr>
-    <tr><td><b>Application</b><br><code>frontend/</code></td><td>L'interface que les utilisateurs ouvrent dans leur navigateur (React). Une fois construite, ce n'est qu'un dossier de fichiers statiques.</td><td>Dossier <code>~/stock</code>, sous-domaine <code>stock.mmcosmetiques.com</code></td></tr>
-    <tr><td><b>Base de données</b></td><td>Tables des boutiques, utilisateurs, produits, stocks, ventes, déclarations, journal d'audit.</td><td>MySQL / MariaDB de cPanel</td></tr>
+    <tr><td><b>Application</b><br><code>frontend/</code></td><td>L'interface que les utilisateurs ouvrent dans leur navigateur (React). Une fois construite, ce n'est qu'un ensemble de fichiers statiques.</td><td><code>https://stockpro.mmconsultingtg.com</code></td></tr>
+    <tr><td><b>API</b><br><code>backend/</code></td><td>Le serveur de l'application, écrit avec <b>Laravel</b> (PHP). Il gère la connexion des utilisateurs, vérifie les droits de chacun, enregistre ventes, stocks, transferts et déclarations dans la base <b>MySQL</b>, envoie les emails.</td><td><code>https://stockpro.mmconsultingtg.com/api</code></td></tr>
+    <tr><td><b>Base de données</b></td><td>Tables des boutiques, utilisateurs, produits, stocks, ventes, déclarations, journal d'audit.</td><td>MySQL / MariaDB de cPanel (<code>localhost</code>)</td></tr>
   </tbody>
 </table>
-<p>Tout tient dans une offre d'<b>hébergement web cPanel</b> : aucun serveur dédié ni VPS n'est nécessaire.</p>
+<p>Les deux parties sont livrées dans <b>une seule archive</b> et installées dans <b>un seul dossier</b>, servi par <b>un seul sous-domaine</b> : l'application compilée est placée dans le dossier <code>public/</code> de Laravel, et le fichier <code>public/.htaccess</code> envoie les adresses <code>/api/…</code> à Laravel et toutes les autres à l'application. Tout tient dans une offre d'<b>hébergement web cPanel</b>, sans serveur dédié ni VPS.</p>
 
 <h2>Schéma de fonctionnement</h2>
 <figure>
@@ -62,13 +62,13 @@
   <text x="83" y="128" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">Navigateur</text>
   <text x="83" y="148" text-anchor="middle" font-size="10.5" fill="#5d6b5c">PC, tablette, mobile</text>
   <rect x="215" y="18" width="250" height="84" rx="10" fill="#f1f6ea" stroke="#2c6b36" stroke-width="1.6"/>
-  <text x="340" y="44" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">Application (fichiers statiques)</text>
+  <text x="340" y="44" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">Application (React)</text>
   <text x="340" y="64" text-anchor="middle" font-size="10.5" fill="#5d6b5c">index.html · assets/ · .htaccess</text>
-  <text x="340" y="84" text-anchor="middle" font-size="10.5" fill="#2c6b36">stock.mmcosmetiques.com</text>
+  <text x="340" y="84" text-anchor="middle" font-size="10.5" fill="#2c6b36">stockpro.mmconsultingtg.com/</text>
   <rect x="215" y="160" width="250" height="90" rx="10" fill="#f1f6ea" stroke="#2c6b36" stroke-width="1.6"/>
   <text x="340" y="186" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">API Laravel (HTTPS)</text>
   <text x="340" y="206" text-anchor="middle" font-size="10.5" fill="#5d6b5c">connexion · droits · ventes · stocks</text>
-  <text x="340" y="226" text-anchor="middle" font-size="10.5" fill="#2c6b36">api.mmcosmetiques.com</text>
+  <text x="340" y="226" text-anchor="middle" font-size="10.5" fill="#2c6b36">stockpro.mmconsultingtg.com/api</text>
   <rect x="520" y="160" width="172" height="90" rx="10" fill="#184620"/>
   <text x="606" y="190" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">MySQL / MariaDB</text>
   <text x="606" y="210" text-anchor="middle" font-size="10.5" fill="#dfe9d3">base de cPanel,</text>
@@ -85,34 +85,34 @@
   <text x="520" y="88" font-size="10.5" fill="#5d6b5c">qui contrôle le rôle et la</text>
   <text x="520" y="104" font-size="10.5" fill="#5d6b5c">boutique de l'utilisateur.</text>
 </svg>
-<figcaption>Figure 1 — L'application est un site statique ; toutes les données passent par l'API Laravel.</figcaption>
+<figcaption>Figure 1 — Un seul sous-domaine : l'application à la racine, l'API Laravel sous /api ; toutes les données passent par l'API.</figcaption>
 </figure>
 
 <h2>Organisation sur le serveur</h2>
 <pre><code>/home/cpaneluser/
-├── mm-api/                 <span class="c"># API Laravel (hors de public_html)</span>
+├── mm-stockpro/            <span class="c"># application complète (hors de public_html)</span>
 │   ├── .env                <span class="c"># configuration et mots de passe : jamais accessible depuis le web</span>
 │   ├── app/  config/  database/  routes/  vendor/
 │   ├── storage/logs/       <span class="c"># journaux d'erreurs</span>
-│   └── public/             <span class="c"># SEUL dossier exposé : racine de api.mmcosmetiques.com</span>
-│       └── uploads/products/   <span class="c"># images des produits</span>
-├── stock/                  <span class="c"># racine de stock.mmcosmetiques.com</span>
-│   ├── index.html  .htaccess
-│   └── assets/
+│   └── public/             <span class="c"># SEUL dossier exposé : racine de stockpro.mmconsultingtg.com</span>
+│       ├── index.html  assets/       <span class="c"># application React</span>
+│       ├── index.php               <span class="c"># entrée de l'API Laravel</span>
+│       ├── .htaccess               <span class="c"># /api → Laravel, le reste → application</span>
+│       └── uploads/products/       <span class="c"># images des produits</span>
 └── public_html/            <span class="c"># site principal, non concerné</span></code></pre>
 
 <h2>Mode démo et mode production</h2>
 <p>L'application choisit son mode <b>au moment de sa construction</b> :</p>
 <ul>
-  <li>construite avec l'adresse de l'API (<code>VITE_API_URL</code>) : <b>production</b>, les données sont dans MySQL ;</li>
+  <li>construite avec l'adresse du site (<code>VITE_API_URL</code>, ici <code>https://stockpro.mmconsultingtg.com</code>) : <b>production</b>, les données sont dans MySQL ;</li>
   <li>construite sans adresse : <b>mode démo</b>, avec des données fictives stockées dans le navigateur et un bandeau jaune « Mode démo » en haut des pages.</li>
 </ul>
 <div class="box danger"><span class="t">À vérifier à chaque mise en ligne</span>
-Si le site de production affiche le bandeau <b>« Mode démo »</b>, il a été construit sans l'adresse de l'API : les ventes saisies resteraient dans le navigateur du poste et seraient perdues. Reconstruisez l'archive de l'application (chapitre 3) avant toute utilisation.
+Si le site de production affiche le bandeau <b>« Mode démo »</b>, il a été construit sans l'adresse de l'API : les ventes saisies resteraient dans le navigateur du poste et seraient perdues. Reconstruisez l'archive (chapitre 3) avant toute utilisation.
 </div>
 
 <div class="box info"><span class="t">Le Laravel installé par l'installateur automatique LWS</span>
-Il prouve que PHP fonctionne sur votre hébergement, mais ce n'est qu'un projet Laravel vide : il est <b>remplacé</b> par l'API de ce dépôt. S'il a créé une base de données, vous pouvez la réutiliser (ses identifiants figurent dans son fichier <code>.env</code>). Sinon, supprimez cette installation depuis l'installateur pour éviter toute confusion.
+Il prouve que PHP fonctionne sur votre hébergement, mais ce n'est qu'un projet Laravel vide : il est <b>remplacé</b> par l'API de ce dépôt. S'il a créé une base de données, vous pouvez la réutiliser (ses identifiants figurent dans son fichier <code>.env</code>). Sinon, supprimez cette installation depuis l'installateur pour éviter toute confusion — en particulier si elle occupe déjà le sous-domaine <code>stockpro</code>.
 </div>
 
 <!-- ===================================================== 2 -->
@@ -122,10 +122,10 @@ Il prouve que PHP fonctionne sur votre hébergement, mais ce n'est qu'un projet 
 
 <ul class="check">
   <li>Une offre d'<b>hébergement web LWS avec cPanel</b> (PHP 8.2 ou plus récent disponible, bases MySQL, accès SSH ou Terminal).</li>
-  <li>Un <b>nom de domaine</b> rattaché à cet hébergement (ici <code>mmcosmetiques.com</code>).</li>
+  <li>Le domaine <code>mmconsultingtg.com</code> rattaché à cet hébergement, pour créer le sous-domaine <code>stockpro</code>.</li>
   <li>Les accès à l'<b>espace client LWS</b> et à <b>cPanel</b>.</li>
   <li>Un accès au dépôt GitHub <code>siaoctawacta/gestiondestock</code> (pour fabriquer les archives).</li>
-  <li>Une adresse email de l'hébergement pour l'envoi des emails, par exemple <code>contact@mmcosmetiques.com</code>.</li>
+  <li>Une adresse email de l'hébergement pour l'envoi des emails, par exemple <code>stockpro@mmconsultingtg.com</code>.</li>
   <li>Un <b>gestionnaire de mots de passe</b> pour conserver les mots de passe créés (base, email, Super Admin).</li>
 </ul>
 
@@ -143,14 +143,15 @@ Il prouve que PHP fonctionne sur votre hébergement, mais ce n'est qu'un projet 
 
 <!-- ===================================================== 3 -->
 <span class="chapter-no">Chapitre 3</span>
-<h1 class="chapter">Préparer les archives</h1>
-<p class="lead">Deux fichiers ZIP sont à déposer sur l'hébergement. Ils contiennent tout le nécessaire : aucun outil de développement n'est requis sur le serveur.</p>
+<h1 class="chapter">Préparer l'archive</h1>
+<p class="lead">Un seul fichier ZIP est à déposer sur l'hébergement : <code>mm-stockpro.zip</code>. Il contient tout le nécessaire ; aucun outil de développement n'est requis sur le serveur.</p>
 
 <table>
-  <thead><tr><th style="width:26%">Archive</th><th>Contenu</th></tr></thead>
+  <thead><tr><th style="width:26%">Contenu de l'archive</th><th>Détail</th></tr></thead>
   <tbody>
-    <tr><td><code>mm-api.zip</code></td><td>L'API Laravel complète, <b>dépendances incluses</b> (dossier <code>vendor/</code>) : Composer n'est pas nécessaire sur le serveur. Ne contient pas de fichier <code>.env</code>.</td></tr>
-    <tr><td><code>mm-frontend.zip</code></td><td>L'application compilée pour l'adresse de votre API, avec son fichier <code>.htaccess</code>.</td></tr>
+    <tr><td>API Laravel</td><td>Code, migrations de la base, <b>dépendances incluses</b> (dossier <code>vendor/</code>) : Composer n'est pas nécessaire sur le serveur. Pas de fichier <code>.env</code> : il se crée sur le serveur.</td></tr>
+    <tr><td>Application</td><td>Compilée pour <code>https://stockpro.mmconsultingtg.com</code> et placée dans <code>public/</code>.</td></tr>
+    <tr><td><code>public/.htaccess</code></td><td>Aiguillage : <code>/api/…</code> vers Laravel, le reste vers l'application ; HTTPS forcé ; fichiers sensibles bloqués.</td></tr>
   </tbody>
 </table>
 
@@ -158,25 +159,25 @@ Il prouve que PHP fonctionne sur votre hébergement, mais ce n'est qu'un projet 
 <ol class="steps">
   <li>Sur GitHub, ouvrez le dépôt puis l'onglet <b>Actions</b>.</li>
   <li>Dans la liste de gauche, choisissez <b>Archives LWS</b>, puis <b>Run workflow</b>.</li>
-  <li>Saisissez l'adresse publique de l'API, par exemple <code>https://api.mmcosmetiques.com</code>, et lancez.</li>
-  <li>Après 2 à 3 minutes, ouvrez l'exécution terminée : en bas de page, section <b>Artifacts</b>, téléchargez <code>mm-api</code> et <code>mm-frontend</code>.</li>
-  <li>GitHub livre chaque fichier dans un ZIP : décompressez-les une fois sur votre ordinateur pour obtenir <code>mm-api.zip</code> et <code>mm-frontend.zip</code>.</li>
+  <li>L'adresse proposée est déjà <code>https://stockpro.mmconsultingtg.com</code> : lancez.</li>
+  <li>Après 2 à 3 minutes, ouvrez l'exécution terminée : en bas de page, section <b>Artifacts</b>, téléchargez <code>mm-stockpro</code>.</li>
+  <li>GitHub livre le fichier dans un ZIP : décompressez-le une fois sur votre ordinateur pour obtenir <code>mm-stockpro.zip</code>.</li>
 </ol>
 
 <h2>3.2 Depuis un ordinateur de développement</h2>
 <p>Avec PHP 8.2+, Composer, Node.js 20+ et <code>zip</code> installés :</p>
 <pre><code>git clone https://github.com/siaoctawacta/gestiondestock
 cd gestiondestock
-scripts/build-lws.sh https://api.mmcosmetiques.com   <span class="c"># archives créées dans deploy/</span></code></pre>
+scripts/build-lws.sh https://stockpro.mmconsultingtg.com   <span class="c"># archive créée dans deploy/</span></code></pre>
 
-<div class="box warn"><span class="t">Adresse de l'API</span>
-L'adresse saisie est inscrite dans l'application au moment de la construction. Si vous changez plus tard le sous-domaine de l'API, il faut refabriquer <code>mm-frontend.zip</code>.
+<div class="box warn"><span class="t">Adresse du site</span>
+L'adresse est inscrite dans l'application au moment de la construction. Si vous changez plus tard de sous-domaine, il faut refabriquer l'archive.
 </div>
 
 <!-- ===================================================== 4 -->
 <span class="chapter-no">Chapitre 4</span>
 <h1 class="chapter">Configurer cPanel</h1>
-<p class="lead">Cinq réglages, tous depuis cPanel : version de PHP, base de données, sous-domaines, certificats SSL et boîte email.</p>
+<p class="lead">Cinq réglages, tous depuis cPanel : version de PHP, base de données, sous-domaine, certificat SSL et boîte email.</p>
 
 <h2>4.1 Version de PHP</h2>
 <ol class="steps">
@@ -197,50 +198,50 @@ L'adresse saisie est inscrite dans l'application au moment de la construction. S
 Les tables sont créées automatiquement par Laravel au chapitre 6. N'importez aucun fichier dans phpMyAdmin.
 </div>
 
-<h2>4.3 Sous-domaines</h2>
+<h2>4.3 Sous-domaine</h2>
 <p>cPanel → <b>Domaines</b> (ou <b>Sous-domaines</b> selon la version) → <b>Créer un nouveau domaine</b> :</p>
 <table>
   <thead><tr><th>Sous-domaine</th><th>Racine du document (<i>Document Root</i>)</th></tr></thead>
   <tbody>
-    <tr><td><code>api.mmcosmetiques.com</code></td><td><code>mm-api/public</code></td></tr>
-    <tr><td><code>stock.mmcosmetiques.com</code></td><td><code>stock</code></td></tr>
+    <tr><td><code>stockpro.mmconsultingtg.com</code></td><td><code>mm-stockpro/public</code></td></tr>
   </tbody>
 </table>
-<div class="box danger"><span class="t">Racine de l'API</span>
-La racine de l'API doit être le dossier <b><code>public</code></b> de Laravel, et non <code>mm-api</code> lui-même : sinon le fichier <code>.env</code>, qui contient les mots de passe, serait téléchargeable depuis Internet.
+<p>Si le sous-domaine existe déjà (par exemple créé par l'installateur Laravel), modifiez sa racine dans <b>Domaines</b> (icône crayon).</p>
+<div class="box danger"><span class="t">Racine du sous-domaine</span>
+La racine doit être le dossier <b><code>public</code></b>, et non <code>mm-stockpro</code> lui-même : sinon le fichier <code>.env</code>, qui contient les mots de passe, serait téléchargeable depuis Internet.
 </div>
-<p>Si cPanel refuse une racine située hors de <code>public_html</code>, créez le sous-domaine avec la racine <code>public_html/api</code>, puis, une fois les fichiers en place (chapitre 5), remplacez ce dossier par un lien vers <code>mm-api/public</code> depuis le terminal :</p>
-<pre><code>rm -rf ~/public_html/api &amp;&amp; ln -s ~/mm-api/public ~/public_html/api</code></pre>
+<p>Si cPanel refuse une racine située hors de <code>public_html</code>, gardez la racine qu'il propose (par exemple <code>public_html/stockpro</code>), puis, une fois les fichiers en place (chapitre 5), remplacez ce dossier par un lien vers <code>mm-stockpro/public</code> depuis le terminal :</p>
+<pre><code>rm -rf ~/public_html/stockpro &amp;&amp; ln -s ~/mm-stockpro/public ~/public_html/stockpro</code></pre>
 
-<h2>4.4 Certificats SSL (HTTPS)</h2>
-<p>cPanel → <b>SSL/TLS Status</b> (ou <b>Let's Encrypt SSL</b>) : sélectionnez les deux sous-domaines et lancez l'émission des certificats. Comptez quelques minutes après la création des sous-domaines, le temps que le DNS se propage. Les deux sites redirigent ensuite automatiquement vers HTTPS.</p>
+<h2>4.4 Certificat SSL (HTTPS)</h2>
+<p>cPanel → <b>SSL/TLS Status</b> (ou <b>Let's Encrypt SSL</b>) : sélectionnez <code>stockpro.mmconsultingtg.com</code> et lancez l'émission du certificat. Comptez quelques minutes après la création du sous-domaine, le temps que le DNS se propage. Le site redirige ensuite automatiquement vers HTTPS.</p>
 
 <h2>4.5 Boîte email d'envoi</h2>
 <ol class="steps">
-  <li>cPanel → <b>Comptes de messagerie</b> → créez <code>contact@mmcosmetiques.com</code> (ou utilisez une boîte existante).</li>
-  <li>Sur la ligne de la boîte, <b>Connect Devices</b> : relevez le <b>serveur sortant (SMTP)</b>, en général <code>mail.mmcosmetiques.com</code>, port <b>465</b> (SSL).</li>
+  <li>cPanel → <b>Comptes de messagerie</b> → créez par exemple <code>stockpro@mmconsultingtg.com</code> (ou utilisez une boîte existante).</li>
+  <li>Sur la ligne de la boîte, <b>Connect Devices</b> : relevez le <b>serveur sortant (SMTP)</b>, en général <code>mail.mmconsultingtg.com</code>, port <b>465</b> (SSL).</li>
 </ol>
 <p>Cette boîte envoie les emails « mot de passe oublié ».</p>
 
 <!-- ===================================================== 5 -->
 <span class="chapter-no">Chapitre 5</span>
 <h1 class="chapter">Téléverser et configurer l'API</h1>
-<p class="lead">Dépôt des deux archives avec le Gestionnaire de fichiers, puis création du fichier de configuration <code>.env</code>.</p>
+<p class="lead">Dépôt de l'archive avec le Gestionnaire de fichiers, puis création du fichier de configuration <code>.env</code>.</p>
 
 <h2>5.1 Téléverser les fichiers</h2>
 <ol class="steps">
   <li>cPanel → <b>Gestionnaire de fichiers</b>. En haut à droite, <b>Paramètres</b> → cochez <b>Afficher les fichiers cachés</b> (pour voir <code>.env</code> et <code>.htaccess</code>).</li>
-  <li>Placez-vous dans votre dossier personnel (<code>/home/cpaneluser</code>, au-dessus de <code>public_html</code>). <b>Téléverser</b> → <code>mm-api.zip</code>.</li>
-  <li>Clic droit sur <code>mm-api.zip</code> → <b>Extract</b> → dossier <code>/home/cpaneluser</code>. Vous obtenez <code>mm-api/</code> avec <code>app/</code>, <code>public/</code>, <code>vendor/</code>… Supprimez ensuite le ZIP.</li>
-  <li>Ouvrez le dossier <code>stock/</code> créé avec le sous-domaine et supprimez son contenu par défaut. Téléversez <code>mm-frontend.zip</code> et extrayez-le <b>dans ce dossier</b> : <code>index.html</code>, <code>assets/</code> et <code>.htaccess</code> doivent être directement dans <code>stock/</code>. Supprimez le ZIP.</li>
+  <li>Placez-vous dans votre dossier personnel (<code>/home/cpaneluser</code>, au-dessus de <code>public_html</code>). <b>Téléverser</b> → <code>mm-stockpro.zip</code>.</li>
+  <li>Clic droit sur <code>mm-stockpro.zip</code> → <b>Extract</b> → dossier <code>/home/cpaneluser</code>. Vous obtenez <code>mm-stockpro/</code> avec <code>app/</code>, <code>public/</code>, <code>vendor/</code>… Supprimez ensuite le ZIP.</li>
+  <li>Vérifiez que <code>mm-stockpro/public/</code> contient <code>index.html</code>, <code>index.php</code>, <code>assets/</code> et <code>.htaccess</code>.</li>
 </ol>
 
 <h2>5.2 Fichier de configuration <code>.env</code></h2>
-<p>Dans <code>mm-api/</code>, clic droit sur <code>.env.example</code> → <b>Copy</b> → nommez la copie <code>.env</code>. Puis clic droit sur <code>.env</code> → <b>Edit</b>, et renseignez :</p>
+<p>Dans <code>mm-stockpro/</code>, clic droit sur <code>.env.example</code> → <b>Copy</b> → nommez la copie <code>.env</code>. Puis clic droit sur <code>.env</code> → <b>Edit</b>, et renseignez :</p>
 <pre><code>APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://api.mmcosmetiques.com
-FRONTEND_URL=https://stock.mmcosmetiques.com
+APP_URL=https://stockpro.mmconsultingtg.com
+FRONTEND_URL=https://stockpro.mmconsultingtg.com
 
 DB_CONNECTION=mysql
 DB_HOST=localhost
@@ -251,18 +252,18 @@ DB_PASSWORD=<span class="c">le mot de passe de l'étape 4.2</span>
 
 MAIL_MAILER=smtp
 MAIL_SCHEME=smtps
-MAIL_HOST=mail.mmcosmetiques.com
+MAIL_HOST=mail.mmconsultingtg.com
 MAIL_PORT=465
-MAIL_USERNAME=contact@mmcosmetiques.com
+MAIL_USERNAME=stockpro@mmconsultingtg.com
 MAIL_PASSWORD=<span class="c">le mot de passe de la boîte email</span>
-MAIL_FROM_ADDRESS=contact@mmcosmetiques.com
+MAIL_FROM_ADDRESS=stockpro@mmconsultingtg.com
 MAIL_FROM_NAME="MM Cosmétiques"</code></pre>
 <table>
   <thead><tr><th style="width:30%">Variable</th><th>Rôle</th></tr></thead>
   <tbody>
     <tr><td><code>APP_DEBUG</code></td><td>Toujours <code>false</code> en production : sinon une erreur afficherait la configuration, mots de passe compris.</td></tr>
-    <tr><td><code>APP_URL</code></td><td>Adresse publique de l'API (sert aussi à l'adresse des images produits).</td></tr>
-    <tr><td><code>FRONTEND_URL</code></td><td>Adresse exacte de l'application : seule autorisée à appeler l'API (CORS), et utilisée dans les liens « mot de passe oublié ». Plusieurs adresses possibles, séparées par des virgules.</td></tr>
+    <tr><td><code>APP_URL</code></td><td>Adresse du site, sans <code>/</code> final (sert aussi à l'adresse des images produits).</td></tr>
+    <tr><td><code>FRONTEND_URL</code></td><td>Adresse de l'application, ici identique à <code>APP_URL</code> : utilisée dans les liens « mot de passe oublié » et seule autorisée à appeler l'API.</td></tr>
     <tr><td><code>TOKEN_DAYS</code></td><td>Durée d'une connexion avant de devoir se reconnecter (30 jours par défaut).</td></tr>
     <tr><td><code>APP_KEY</code></td><td>Laissée vide : générée au chapitre 6.</td></tr>
   </tbody>
@@ -280,12 +281,12 @@ L'API fonctionne en temps universel (UTC), identique à l'heure de Lomé toute l
 <p>Dans l'<b>espace client LWS</b>, ouvrez la <b>gestion du service</b> de votre hébergement puis <b>Terminal SSH</b>. À défaut : cPanel → <b>Terminal</b>, ou un client SSH (PuTTY, Terminal) avec les identifiants SSH fournis par LWS.</p>
 
 <h2>6.2 Commandes d'installation</h2>
-<pre><code>cd ~/mm-api
+<pre><code>cd ~/mm-stockpro
 php -v                               <span class="c"># doit afficher 8.2 ou plus</span>
 php artisan key:generate --force     <span class="c"># clé de chiffrement, UNE SEULE FOIS</span>
 php artisan migrate --force          <span class="c"># crée toutes les tables</span>
 php artisan db:seed --force          <span class="c"># rôles, boutiques Agbalépédo et Cacaveli, catégories</span>
-php artisan mm:create-admin direction@mmcosmetiques.com --first=Prénom --last=Nom
+php artisan mm:create-admin votre.email@mmconsultingtg.com --first=Prénom --last=Nom
 php artisan optimize                 <span class="c"># met la configuration en cache</span>
 chmod -R 775 storage bootstrap/cache public/uploads</code></pre>
 <p><code>mm:create-admin</code> demande le mot de passe du premier <b>Super Admin</b> (8 caractères minimum, non affiché à la saisie). Tous les autres comptes se créent ensuite depuis l'écran <b>Utilisateurs</b> de l'application.</p>
@@ -306,14 +307,14 @@ Ne relancez jamais <code>key:generate</code> sur une installation en service : t
 <h1 class="chapter">Mise en service</h1>
 <p class="lead">Liste de contrôle à dérouler avant d'ouvrir l'application au personnel.</p>
 <ul class="check">
-  <li><code>https://api.mmcosmetiques.com/api/health</code> affiche <code>{"status":"ok", …}</code>.</li>
-  <li><code>https://api.mmcosmetiques.com/.env</code> ne s'affiche <b>pas</b> (erreur 403 ou 404).</li>
-  <li><code>https://stock.mmcosmetiques.com</code> affiche l'écran de connexion <b>sans</b> bandeau « Mode démo », avec le cadenas HTTPS.</li>
+  <li><code>https://stockpro.mmconsultingtg.com/api/health</code> affiche <code>{"status":"ok", …}</code>.</li>
+  <li><code>https://stockpro.mmconsultingtg.com/.env</code> ne s'affiche <b>pas</b> (erreur 403 ou 404).</li>
+  <li><code>https://stockpro.mmconsultingtg.com</code> affiche l'écran de connexion <b>sans</b> bandeau « Mode démo », avec le cadenas HTTPS.</li>
   <li>Connexion avec le Super Admin réussie ; actualiser une page (F5) sur <code>/pos</code> ne donne pas d'erreur 404.</li>
   <li><b>Boutiques</b> : adresses et téléphones d'Agbalépédo et de Cacaveli vérifiés.</li>
   <li><b>Catalogue</b> : un produit créé avec une image, l'image s'affiche.</li>
   <li><b>Utilisateurs</b> : comptes du personnel créés, chacun rattaché à sa boutique et à son rôle.</li>
-  <li><b>Mot de passe oublié</b> testé depuis l'écran de connexion : l'email arrive, le lien ouvre <code>stock.mmcosmetiques.com/reset-password</code>.</li>
+  <li><b>Mot de passe oublié</b> testé depuis l'écran de connexion : l'email arrive, le lien ouvre <code>stockpro.mmconsultingtg.com/reset-password</code>.</li>
   <li>Une vente test encaissée en caisse, visible dans l'historique et dans le stock, puis une déclaration du jour envoyée et validée.</li>
   <li>Première sauvegarde de la base effectuée (chapitre 8).</li>
 </ul>
@@ -327,15 +328,14 @@ Ne relancez jamais <code>key:generate</code> sur une installation en service : t
 <ol class="steps">
   <li>Fabriquez de nouvelles archives (chapitre 3).</li>
   <li>Sauvegardez la base (8.2).</li>
-  <li>Dans le Gestionnaire de fichiers, renommez <code>mm-api</code> en <code>mm-api-ancien</code>, puis extrayez le nouveau <code>mm-api.zip</code>.</li>
-  <li>Recopiez dans le nouveau <code>mm-api/</code> le fichier <code>.env</code> et le dossier <code>public/uploads</code> de <code>mm-api-ancien</code>.</li>
+  <li>Dans le Gestionnaire de fichiers, renommez <code>mm-stockpro</code> en <code>mm-stockpro-ancien</code>, puis extrayez le nouveau <code>mm-stockpro.zip</code>.</li>
+  <li>Recopiez dans le nouveau <code>mm-stockpro/</code> le fichier <code>.env</code> et le dossier <code>public/uploads</code> de <code>mm-stockpro-ancien</code>.</li>
   <li>Dans le terminal :
-<pre><code>cd ~/mm-api
+<pre><code>cd ~/mm-stockpro
 php artisan migrate --force
 php artisan optimize
 chmod -R 775 storage bootstrap/cache public/uploads</code></pre></li>
-  <li>Remplacez le contenu de <code>stock/</code> par celui du nouveau <code>mm-frontend.zip</code>.</li>
-  <li>Vérifiez l'application, puis supprimez <code>mm-api-ancien</code>.</li>
+  <li>Vérifiez l'application, puis supprimez <code>mm-stockpro-ancien</code>.</li>
 </ol>
 <p>Pendant l'opération, <code>php artisan down</code> affiche un message de maintenance ; <code>php artisan up</code> rouvre l'accès.</p>
 
@@ -345,8 +345,8 @@ chmod -R 775 storage bootstrap/cache public/uploads</code></pre></li>
   <tbody>
     <tr><td>Base (manuel)</td><td>cPanel → <b>Sauvegarde</b> → <i>Télécharger une sauvegarde de base de données MySQL</i>, ou phpMyAdmin → <b>Exporter</b>.</td></tr>
     <tr><td>Base (automatique)</td><td>Voir la tâche Cron ci-dessous.</td></tr>
-    <tr><td>Images produits</td><td>Dossier <code>mm-api/public/uploads</code> : Gestionnaire de fichiers → <b>Compress</b>, puis téléchargement.</td></tr>
-    <tr><td>Configuration</td><td>Fichier <code>mm-api/.env</code>, dans le gestionnaire de mots de passe.</td></tr>
+    <tr><td>Images produits</td><td>Dossier <code>mm-stockpro/public/uploads</code> : Gestionnaire de fichiers → <b>Compress</b>, puis téléchargement.</td></tr>
+    <tr><td>Configuration</td><td>Fichier <code>mm-stockpro/.env</code>, dans le gestionnaire de mots de passe.</td></tr>
   </tbody>
 </table>
 <p>Sauvegarde automatique chaque nuit : créez le dossier <code>~/sauvegardes</code>, puis cPanel → <b>Tâches Cron</b>, réglage « une fois par jour », commande :</p>
@@ -358,13 +358,13 @@ Téléchargez régulièrement (au moins chaque semaine) une sauvegarde sur un au
 
 <h2>8.3 Journaux</h2>
 <ul>
-  <li>Erreurs de l'API : <code>mm-api/storage/logs/laravel-AAAA-MM-JJ.log</code> (un fichier par jour, 14 jours conservés).</li>
+  <li>Erreurs de l'API : <code>mm-stockpro/storage/logs/laravel-AAAA-MM-JJ.log</code> (un fichier par jour, 14 jours conservés).</li>
   <li>Actions des utilisateurs (créations, modifications, remises, validations) : écran <b>Journal d'audit</b> de l'application, réservé au Super Admin.</li>
 </ul>
 
 <h2>8.4 Opérations courantes</h2>
 <table>
-  <thead><tr><th style="width:40%">Besoin</th><th>Commande (depuis <code>~/mm-api</code>)</th></tr></thead>
+  <thead><tr><th style="width:40%">Besoin</th><th>Commande (depuis <code>~/mm-stockpro</code>)</th></tr></thead>
   <tbody>
     <tr><td>Super Admin oublié ou bloqué</td><td><code>php artisan mm:create-admin email --first=… --last=…</code> (crée le compte ou redéfinit son mot de passe)</td></tr>
     <tr><td>Prise en compte d'une modification du <code>.env</code></td><td><code>php artisan optimize</code></td></tr>
@@ -390,8 +390,8 @@ Téléchargez régulièrement (au moins chaque semaine) une sauvegarde sur un au
 
 <h2>À votre charge</h2>
 <ul class="check">
-  <li><code>APP_DEBUG=false</code> et racine de l'API sur <code>mm-api/public</code>.</li>
-  <li>HTTPS actif sur les deux sous-domaines.</li>
+  <li><code>APP_DEBUG=false</code> et racine du sous-domaine sur <code>mm-stockpro/public</code>.</li>
+  <li>HTTPS actif sur <code>stockpro.mmconsultingtg.com</code>.</li>
   <li>Mots de passe forts et différents pour cPanel, la base, l'email et le Super Admin ; double authentification activée sur l'espace client LWS et sur cPanel si proposée.</li>
   <li>Un compte nominatif par personne : jamais de compte partagé en caisse.</li>
   <li>Désactivation immédiate du compte d'un employé qui quitte l'entreprise (écran <b>Utilisateurs</b>).</li>
@@ -408,11 +408,11 @@ Téléchargez régulièrement (au moins chaque semaine) une sauvegarde sur un au
   <thead><tr><th style="width:34%">Symptôme</th><th style="width:33%">Cause probable</th><th>Solution</th></tr></thead>
   <tbody>
     <tr><td>Erreur 500 sur l'API</td><td><code>.env</code> incomplet, clé absente, droits des dossiers</td><td>Lire le dernier fichier de <code>storage/logs/</code> ; vérifier <code>key:generate</code> et <code>chmod</code> (chapitre 6)</td></tr>
-    <tr><td>« Failed to fetch » ou erreur réseau à la connexion</td><td><code>FRONTEND_URL</code> différent de l'adresse réelle, ou SSL absent sur l'API</td><td>Corriger <code>FRONTEND_URL</code> (avec <code>https://</code>, sans <code>/</code> final) puis <code>php artisan optimize</code></td></tr>
-    <tr><td>Bandeau « Mode démo » en production</td><td>Archive de l'application construite sans adresse d'API</td><td>Refabriquer <code>mm-frontend.zip</code> (chapitre 3)</td></tr>
-    <tr><td>Erreur 404 en actualisant une page</td><td><code>.htaccess</code> absent de <code>stock/</code></td><td>Afficher les fichiers cachés et réextraire l'archive</td></tr>
+    <tr><td>« Failed to fetch » ou erreur réseau à la connexion</td><td>Archive construite pour une autre adresse, ou certificat SSL absent</td><td>Refabriquer l'archive avec <code>https://stockpro.mmconsultingtg.com</code> ; activer le SSL (4.4)</td></tr>
+    <tr><td>Bandeau « Mode démo » en production</td><td>Archive construite sans adresse du site</td><td>Refabriquer <code>mm-stockpro.zip</code> (chapitre 3)</td></tr>
+    <tr><td>Erreur 404 en actualisant une page</td><td><code>.htaccess</code> absent de <code>mm-stockpro/public/</code></td><td>Afficher les fichiers cachés et réextraire l'archive</td></tr>
     <tr><td><code>SQLSTATE[HY000] [1045]</code> ou <code>[1044]</code></td><td>Identifiants MySQL faux ou utilisateur non rattaché à la base</td><td>Vérifier le <code>.env</code> et l'étape 4.2</td></tr>
-    <tr><td>La page de l'API liste des fichiers ou affiche du code</td><td>Racine du sous-domaine mal réglée</td><td>Racine = <code>mm-api/public</code> (4.3)</td></tr>
+    <tr><td>Le site liste des fichiers (« Index of ») ou affiche du code</td><td>Racine du sous-domaine mal réglée</td><td>Racine = <code>mm-stockpro/public</code> (4.3)</td></tr>
     <tr><td>Images produits non affichées</td><td>Droits d'écriture ou <code>APP_URL</code> erroné</td><td><code>chmod -R 775 public/uploads</code> ; vérifier <code>APP_URL</code></td></tr>
     <tr><td>Emails non reçus</td><td>Identifiants SMTP, port, spam</td><td>Tester la boîte dans le Webmail ; vérifier <code>MAIL_*</code> puis <code>php artisan optimize</code></td></tr>
     <tr><td>« Session expirée » fréquente</td><td>Durée de connexion courte</td><td>Augmenter <code>TOKEN_DAYS</code></td></tr>
@@ -424,13 +424,14 @@ Téléchargez régulièrement (au moins chaque semaine) une sauvegarde sur un au
 <table>
   <thead><tr><th style="width:40%">Élément</th><th>Valeur</th></tr></thead>
   <tbody>
-    <tr><td>Application</td><td><code>https://stock.mmcosmetiques.com</code> → dossier <code>~/stock</code></td></tr>
-    <tr><td>API</td><td><code>https://api.mmcosmetiques.com</code> → dossier <code>~/mm-api/public</code></td></tr>
+    <tr><td>Application</td><td><code>https://stockpro.mmconsultingtg.com</code></td></tr>
+    <tr><td>API</td><td><code>https://stockpro.mmconsultingtg.com/api</code></td></tr>
+    <tr><td>Dossier sur le serveur</td><td><code>~/mm-stockpro</code> (racine du sous-domaine : <code>~/mm-stockpro/public</code>)</td></tr>
     <tr><td>Test de l'API</td><td><code>/api/health</code></td></tr>
     <tr><td>Base</td><td><code>cpaneluser_mmstock</code> sur <code>localhost</code></td></tr>
-    <tr><td>Configuration</td><td><code>~/mm-api/.env</code></td></tr>
-    <tr><td>Journaux</td><td><code>~/mm-api/storage/logs/</code></td></tr>
-    <tr><td>Images produits</td><td><code>~/mm-api/public/uploads/products/</code></td></tr>
+    <tr><td>Configuration</td><td><code>~/mm-stockpro/.env</code></td></tr>
+    <tr><td>Journaux</td><td><code>~/mm-stockpro/storage/logs/</code></td></tr>
+    <tr><td>Images produits</td><td><code>~/mm-stockpro/public/uploads/products/</code></td></tr>
     <tr><td>Boutiques créées à l'installation</td><td>MM Cosmétiques Agbalépédo (<code>BTQ-AGB</code>) et MM Cosmétiques Cacaveli (<code>BTQ-CAC</code>), Lomé, (+228) 93 65 53 41</td></tr>
   </tbody>
 </table>

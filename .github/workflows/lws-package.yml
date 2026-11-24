@@ -1,13 +1,13 @@
-# Fabrique les archives à téléverser sur LWS (onglet Actions → « Archives LWS » → Run workflow).
-# Les deux fichiers ZIP se téléchargent ensuite en bas de la page de l'exécution (« Artifacts »).
+# Fabrique l'archive à téléverser sur LWS (onglet Actions → « Archives LWS » → Run workflow).
+# Le fichier ZIP se télécharge ensuite en bas de la page de l'exécution (« Artifacts »).
 name: Archives LWS
 
 on:
   workflow_dispatch:
     inputs:
       api_url:
-        description: Adresse publique de l'API Laravel
-        default: https://api.mmcosmetiques.com
+        description: Adresse du sous-domaine (application + API)
+        default: https://stockpro.mmconsultingtg.com
         required: true
 
 permissions:
@@ -30,15 +30,10 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: Construire les archives
         env:
-          API_URL: ${{ inputs.api_url }}
-        run: scripts/build-lws.sh "$API_URL"
+          SITE_URL: ${{ inputs.api_url }}
+        run: scripts/build-lws.sh "$SITE_URL"
       - uses: actions/upload-artifact@v4
         with:
-          name: mm-api
-          path: deploy/mm-api.zip
-          retention-days: 30
-      - uses: actions/upload-artifact@v4
-        with:
-          name: mm-frontend
-          path: deploy/mm-frontend.zip
+          name: mm-stockpro
+          path: deploy/mm-stockpro.zip
           retention-days: 30

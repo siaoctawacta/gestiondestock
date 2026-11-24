@@ -13,7 +13,7 @@ cp .env.example .env          # puis : APP_ENV=local, APP_DEBUG=true, APP_URL=ht
 php artisan key:generate
 php artisan migrate --seed    # rôles, 2 boutiques, 7 catégories
 php artisan db:seed --class=DemoCatalogSeeder   # facultatif : 30 produits + stock de formation
-php artisan mm:create-admin vous@mmcosmetiques.com --first=Prénom --last=Nom
+php artisan mm:create-admin vous@mmconsultingtg.com --first=Prénom --last=Nom
 php artisan serve             # http://127.0.0.1:8000/api/health
 ```
 

@@ -11,7 +11,7 @@ ERP SaaS de gestion de stock, caisse POS multi-boutiques et business intelligenc
 | [`frontend/`](frontend/) | Application React (interface, mode démo, exports) | [frontend/README.md](frontend/README.md) |
 | [`backend/`](backend/) | **API Laravel + MySQL** : backend de production (hébergement cPanel LWS) | [backend/README.md](backend/README.md) |
 | [`backend-supabase/`](backend-supabase/) | Variante Supabase du backend (PostgreSQL, RLS), conservée comme alternative | [backend-supabase/README.md](backend-supabase/README.md) |
-| [`scripts/build-lws.sh`](scripts/build-lws.sh) | Fabrique les archives à téléverser sur LWS | voir le guide ci-dessous |
+| [`scripts/build-lws.sh`](scripts/build-lws.sh) | Fabrique l'archive à téléverser sur LWS | voir le guide ci-dessous |
 
 Mise en ligne : [Déploiement sur LWS (cPanel + Laravel + MySQL)](#déploiement-sur-lws-cpanel--laravel--mysql).
 
@@ -44,29 +44,29 @@ Les données démo se réinitialisent depuis **Paramètres → Données de démo
 
 ## Déploiement sur LWS (cPanel + Laravel + MySQL)
 
-Tout s'installe sur l'hébergement web **cPanel** de LWS, sans serveur dédié :
+Tout s'installe sur l'hébergement web **cPanel** de LWS, sur **un seul sous-domaine** :
 
-| Élément | Où | Adresse (exemple) |
-|---|---|---|
-| API Laravel (`backend/`) | dossier `~/mm-api`, hors de `public_html` | `https://api.mmcosmetiques.com` |
-| Base de données | MySQL / MariaDB de cPanel | `localhost` |
-| Application React (`frontend/`) | dossier `~/stock` | `https://stock.mmcosmetiques.com` |
-| Emails « mot de passe oublié » | boîte email cPanel | `contact@mmcosmetiques.com` |
+| Adresse | Ce qui répond |
+|---|---|
+| `https://stockpro.mmconsultingtg.com` | l'application (écran de connexion, caisse, stocks…) |
+| `https://stockpro.mmconsultingtg.com/api/…` | l'API Laravel, qui lit et écrit dans la base MySQL |
 
-Remplacez `mmcosmetiques.com` par votre domaine et `cpaneluser` par votre identifiant cPanel partout dans ce guide.
+Sur le serveur, un seul dossier `~/mm-stockpro` (hors de `public_html`) contient l'API ; l'application compilée est dans son sous-dossier `public/`, qui est la racine du sous-domaine. Le fichier `public/.htaccess` envoie `/api/…` à Laravel et toutes les autres adresses à l'application.
 
-> **Le Laravel installé avec l'installateur automatique de LWS** confirme que PHP fonctionne, mais ce n'est qu'un projet vide : il est remplacé par le backend de ce dépôt. S'il a créé une base de données, vous pouvez la réutiliser (ses identifiants sont dans son fichier `.env`) ; sinon supprimez cette installation depuis l'installateur pour éviter la confusion.
+Remplacez `cpaneluser` par votre identifiant cPanel partout dans ce guide.
 
-### 1. Préparer les archives
+> **Le Laravel installé avec l'installateur automatique de LWS** confirme que PHP fonctionne, mais ce n'est qu'un projet vide : il est remplacé par celui de ce dépôt. S'il a créé une base de données, vous pouvez la réutiliser (ses identifiants sont dans son fichier `.env`) ; sinon supprimez cette installation depuis l'installateur pour éviter la confusion. Si cette installation occupe déjà le sous-domaine `stockpro`, supprimez-la avant l'étape 5.
 
-Deux fichiers ZIP sont à téléverser : `mm-api.zip` (l'API, dépendances `vendor/` incluses, donc **pas besoin de Composer sur le serveur**) et `mm-frontend.zip` (l'application compilée pour l'adresse de votre API).
+### 1. Préparer l'archive
 
-- **Depuis GitHub, sans rien installer** : onglet **Actions** → **Archives LWS** → **Run workflow**, saisissez l'adresse de l'API (`https://api.mmcosmetiques.com`), lancez. À la fin, téléchargez `mm-api` et `mm-frontend` en bas de la page de l'exécution (GitHub les livre chacun dans un ZIP : décompressez-le une fois pour obtenir `mm-api.zip` et `mm-frontend.zip`).
+Un seul fichier ZIP est à téléverser : `mm-stockpro.zip` (API avec ses dépendances `vendor/`, donc **pas besoin de Composer sur le serveur**, et application compilée pour `stockpro.mmconsultingtg.com`).
+
+- **Depuis GitHub, sans rien installer** : onglet **Actions** → **Archives LWS** → **Run workflow** ; l'adresse proposée est déjà `https://stockpro.mmconsultingtg.com`. À la fin, téléchargez `mm-stockpro` en bas de la page de l'exécution (GitHub le livre dans un ZIP : décompressez-le une fois pour obtenir `mm-stockpro.zip`).
 - **Depuis un ordinateur** avec PHP 8.2, Composer, Node 20+ et `zip` :
   ```bash
-  scripts/build-lws.sh https://api.mmcosmetiques.com
+  scripts/build-lws.sh https://stockpro.mmconsultingtg.com
   ```
-  Les archives sont créées dans `deploy/`.
+  L'archive est créée dans `deploy/`.
 
 ### 2. Régler PHP
 
@@ -86,55 +86,49 @@ cPanel → **Bases de données MySQL** :
 
 Les tables sont créées à l'étape 7 par Laravel : n'importez rien dans phpMyAdmin.
 
-### 4. Créer les sous-domaines
+### 4. Créer le sous-domaine
 
-cPanel → **Domaines** (ou **Sous-domaines**) :
+cPanel → **Domaines** (ou **Sous-domaines**) → `stockpro.mmconsultingtg.com` avec la **racine du document** (*Document Root*) : **`mm-stockpro/public`**.
 
-| Sous-domaine | Racine du document (*Document Root*) |
-|---|---|
-| `api.mmcosmetiques.com` | `mm-api/public` |
-| `stock.mmcosmetiques.com` | `stock` |
+La racine doit être le dossier **`public`** : le reste (`.env` avec les mots de passe, code, `vendor/`) reste ainsi inaccessible depuis le web. Si le sous-domaine existe déjà avec une autre racine, modifiez-la (icône crayon dans *Domaines*).
 
-La racine de l'API doit être le dossier **`public`** de Laravel : le reste (`.env`, code, `vendor/`) reste ainsi inaccessible depuis le web.
-
-> Si cPanel refuse une racine hors de `public_html`, créez le sous-domaine avec la racine `public_html/api`, puis remplacez ce dossier par un lien vers `mm-api/public` depuis le terminal SSH (étape 6) :
+> Si cPanel refuse une racine hors de `public_html`, gardez la racine qu'il propose (par exemple `public_html/stockpro`), puis, après l'étape 5, remplacez ce dossier par un lien vers `mm-stockpro/public` depuis le terminal SSH :
 > ```bash
-> rm -rf ~/public_html/api && ln -s ~/mm-api/public ~/public_html/api
+> rm -rf ~/public_html/stockpro && ln -s ~/mm-stockpro/public ~/public_html/stockpro
 > ```
 
-Puis cPanel → **SSL/TLS Status** (ou **Let's Encrypt**) : générez un certificat pour les deux sous-domaines. Comptez quelques minutes après la création des sous-domaines (propagation DNS).
+Puis cPanel → **SSL/TLS Status** (ou **Let's Encrypt**) : générez un certificat pour `stockpro.mmconsultingtg.com`.
 
 ### 5. Téléverser les fichiers
 
-cPanel → **Gestionnaire de fichiers** :
+cPanel → **Gestionnaire de fichiers** (*Paramètres* → cochez **Afficher les fichiers cachés**) :
 
-1. Dans votre dossier personnel (au-dessus de `public_html`), **Téléverser** `mm-api.zip`, puis clic droit → **Extract** : vous obtenez `~/mm-api/` (avec `app/`, `public/`, `vendor/`…). Supprimez le ZIP.
-2. Ouvrez `~/stock/` (créé avec le sous-domaine), supprimez son contenu par défaut, téléversez `mm-frontend.zip` et extrayez-le **dans** ce dossier : `index.html`, `assets/` et `.htaccess` doivent être directement dans `~/stock/`. Supprimez le ZIP.
-
-Le fichier `.htaccess` est caché par défaut : *Paramètres* (en haut à droite) → **Afficher les fichiers cachés**.
+1. Dans votre dossier personnel (`/home/cpaneluser`, au-dessus de `public_html`), **Téléverser** `mm-stockpro.zip`.
+2. Clic droit → **Extract** : vous obtenez `~/mm-stockpro/` (avec `app/`, `public/`, `vendor/`…). Supprimez le ZIP.
+3. Vérifiez que `~/mm-stockpro/public/` contient `index.html`, `index.php`, `assets/` et `.htaccess`.
 
 ### 6. Configurer l'API (`.env`)
 
-Dans `~/mm-api/`, copiez `.env.example` en `.env` (clic droit → *Copy*), puis **Edit** :
+Dans `~/mm-stockpro/`, copiez `.env.example` en `.env` (clic droit → *Copy*), puis **Edit** :
 
 ```dotenv
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://api.mmcosmetiques.com
-FRONTEND_URL=https://stock.mmcosmetiques.com
+APP_URL=https://stockpro.mmconsultingtg.com
+FRONTEND_URL=https://stockpro.mmconsultingtg.com
 
 DB_DATABASE=cpaneluser_mmstock
 DB_USERNAME=cpaneluser_mmstock
 DB_PASSWORD=le-mot-de-passe-de-l-etape-3
 
-MAIL_HOST=mail.mmcosmetiques.com
-MAIL_USERNAME=contact@mmcosmetiques.com
+MAIL_HOST=mail.mmconsultingtg.com
+MAIL_USERNAME=stockpro@mmconsultingtg.com
 MAIL_PASSWORD=le-mot-de-passe-de-la-boite-email
-MAIL_FROM_ADDRESS=contact@mmcosmetiques.com
+MAIL_FROM_ADDRESS=stockpro@mmconsultingtg.com
 ```
 
-- `FRONTEND_URL` sert aux liens « mot de passe oublié » et autorise l'application à appeler l'API (CORS). Une adresse fausse = « Failed to fetch » dans l'application.
-- La boîte email se crée dans cPanel → **Comptes de messagerie** ; les paramètres SMTP exacts sont dans *Connect Devices* (port 465, SSL).
+- `APP_URL` et `FRONTEND_URL` sont la même adresse, sans `/` à la fin.
+- La boîte email d'envoi (« mot de passe oublié ») se crée dans cPanel → **Comptes de messagerie** ; `stockpro@mmconsultingtg.com` est un exemple, utilisez la boîte de votre choix. Paramètres SMTP exacts dans *Connect Devices* (port 465, SSL).
 - `APP_DEBUG` doit rester à `false` : sinon une erreur afficherait vos mots de passe à l'écran.
 
 ### 7. Installer la base et le premier compte
@@ -142,36 +136,38 @@ MAIL_FROM_ADDRESS=contact@mmcosmetiques.com
 Ouvrez un terminal : dans l'espace client LWS, **Gestion du service** de votre hébergement → **Terminal SSH** (ou cPanel → **Terminal**). Puis :
 
 ```bash
-cd ~/mm-api
+cd ~/mm-stockpro
 php -v                               # doit afficher 8.2 ou plus
 php artisan key:generate --force     # clé de chiffrement (une seule fois)
 php artisan migrate --force          # crée toutes les tables
 php artisan db:seed --force          # rôles + boutiques Agbalépédo et Cacaveli + catégories
-php artisan mm:create-admin direction@mmcosmetiques.com --first=Prénom --last=Nom
+php artisan mm:create-admin votre.email@mmconsultingtg.com --first=Prénom --last=Nom
 php artisan optimize                 # met la configuration en cache (à relancer après chaque modification du .env)
 chmod -R 775 storage bootstrap/cache public/uploads
 ```
 
 `mm:create-admin` demande le mot de passe du premier **Super Admin** (8 caractères minimum). Les autres comptes se créent ensuite depuis l'écran **Utilisateurs** de l'application.
 
-> Si `php -v` affiche une version trop ancienne alors que cPanel indique 8.2+, utilisez le binaire complet, par exemple `/opt/alt/php83/usr/bin/php artisan …` (ou `ea-php83`, selon le serveur).
+> Si `php -v` affiche une version trop ancienne alors que cPanel indique 8.2+, utilisez le binaire complet, par exemple `/opt/alt/php83/usr/bin/php artisan …` (ou `/opt/cpanel/ea-php83/root/usr/bin/php`, selon le serveur).
 
 Catalogue de formation (facultatif, à **ne pas** lancer sur une base réelle déjà remplie) : `php artisan db:seed --class=DemoCatalogSeeder --force` ajoute 30 produits et 50 unités de stock par boutique.
 
 ### 8. Vérifier
 
-1. `https://api.mmcosmetiques.com/api/health` → `{"status":"ok",…}`.
-2. `https://stock.mmcosmetiques.com` → écran de connexion **sans** bandeau « Mode démo ». Connectez-vous avec le Super Admin.
-3. **Boutiques** : vérifiez adresses et téléphones ; **Catalogue** : créez un produit avec image ; **Utilisateurs** : créez les comptes du personnel.
-4. **Mot de passe oublié** depuis l'écran de connexion : l'email doit arriver avec un lien vers `stock.mmcosmetiques.com/reset-password`.
+1. `https://stockpro.mmconsultingtg.com/api/health` → `{"status":"ok",…}`.
+2. `https://stockpro.mmconsultingtg.com/.env` → refusé (erreur 403 ou 404).
+3. `https://stockpro.mmconsultingtg.com` → écran de connexion **sans** bandeau « Mode démo ». Connectez-vous avec le Super Admin.
+4. **Boutiques** : vérifiez adresses et téléphones ; **Catalogue** : créez un produit avec image ; **Utilisateurs** : créez les comptes du personnel.
+5. **Mot de passe oublié** depuis l'écran de connexion : l'email doit arriver avec un lien vers `stockpro.mmconsultingtg.com/reset-password`.
 
 | Symptôme | Cause probable |
 |---|---|
-| Erreur 500 sur l'API | `.env` incomplet ou clé manquante : lire `~/mm-api/storage/logs/laravel-<date>.log` |
-| « Failed to fetch » à la connexion | `FRONTEND_URL` ne correspond pas exactement à l'adresse de l'application, ou certificat SSL absent sur l'API |
-| Bandeau « Mode démo » | `mm-frontend.zip` construit sans adresse d'API : relancer l'étape 1 avec la bonne adresse |
-| Page blanche ou 404 sur `/pos` après actualisation | `.htaccess` absent de `~/stock/` |
-| `SQLSTATE[HY000] [1045]` | identifiants MySQL faux, ou utilisateur non ajouté à la base (étape 3) |
+| Erreur 500 | `.env` incomplet ou clé manquante : lire `~/mm-stockpro/storage/logs/laravel-<date>.log` |
+| La page liste des fichiers, ou affiche « Index of » | racine du sous-domaine différente de `mm-stockpro/public` |
+| « Failed to fetch » à la connexion | archive construite pour une autre adresse, ou certificat SSL absent |
+| Bandeau « Mode démo » | archive construite sans adresse : refaire l'étape 1 |
+| Page blanche ou 404 sur `/pos` après actualisation | `public/.htaccess` absent (fichier caché non extrait) |
+| `SQLSTATE[HY000] [1045]` ou `[1044]` | identifiants MySQL faux, ou utilisateur non ajouté à la base (étape 3) |
 | Images produits non affichées | droits d'écriture sur `public/uploads` (`chmod -R 775`) |
 | Emails non reçus | identifiants SMTP, ou dossier spam ; tester la boîte dans *Webmail* |
 | Modification du `.env` sans effet | relancer `php artisan optimize` |
@@ -180,12 +176,12 @@ Catalogue de formation (facultatif, à **ne pas** lancer sur une base réelle d�
 
 | Opération | Comment |
 |---|---|
-| Mettre à jour l'application | Refaire l'étape 1 ; renommer `~/mm-api` en `~/mm-api-ancien`, extraire le nouveau `mm-api.zip`, y recopier l'ancien `.env` et le dossier `public/uploads`, puis `php artisan migrate --force && php artisan optimize`. Pour le frontend, remplacer le contenu de `~/stock/`. Supprimer `~/mm-api-ancien` une fois vérifié. |
+| Mettre à jour l'application | Refaire l'étape 1 ; renommer `~/mm-stockpro` en `~/mm-stockpro-ancien`, extraire le nouveau `mm-stockpro.zip`, y recopier l'ancien `.env` et le dossier `public/uploads`, puis `php artisan migrate --force && php artisan optimize && chmod -R 775 storage bootstrap/cache public/uploads`. Supprimer `~/mm-stockpro-ancien` une fois vérifié. |
 | Sauvegarde de la base | cPanel → **Sauvegarde** → *Télécharger une sauvegarde de base de données MySQL* (ou phpMyAdmin → Exporter). Au moins une fois par semaine, à conserver **hors** de l'hébergement. |
 | Sauvegarde automatique | cPanel → **Tâches Cron**, chaque nuit : `mysqldump --no-tablespaces -u cpaneluser_mmstock -p'MOTDEPASSE' cpaneluser_mmstock \| gzip > ~/sauvegardes/mm-$(date +\%F).sql.gz` (créer `~/sauvegardes` avant). |
-| Sauvegarde des images | dossier `~/mm-api/public/uploads` (Gestionnaire de fichiers → *Compress*). |
+| Sauvegarde des images | dossier `~/mm-stockpro/public/uploads` (Gestionnaire de fichiers → *Compress*). |
 | Restaurer | phpMyAdmin → base `cpaneluser_mmstock` → **Importer** le fichier `.sql`. |
-| Journaux d'erreurs | `~/mm-api/storage/logs/` (un fichier par jour, 14 jours conservés). |
+| Journaux d'erreurs | `~/mm-stockpro/storage/logs/` (un fichier par jour, 14 jours conservés). |
 | Mettre l'API en maintenance | `php artisan down` puis `php artisan up`. |
 | Compte Super Admin perdu | `php artisan mm:create-admin email@… --first=… --last=…` (crée ou réinitialise le compte). |
 
