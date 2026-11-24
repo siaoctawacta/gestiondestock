@@ -11,7 +11,7 @@ ERP SaaS de gestion de stock, caisse POS multi-boutiques et business intelligenc
 | [`frontend/`](frontend/) | Application React (interface, mode démo, exports) | [frontend/README.md](frontend/README.md) |
 | [`backend/`](backend/) | **API Laravel + MySQL** : backend de production (hébergement cPanel LWS) | [backend/README.md](backend/README.md) |
 | [`backend-supabase/`](backend-supabase/) | Variante Supabase du backend (PostgreSQL, RLS), conservée comme alternative | [backend-supabase/README.md](backend-supabase/README.md) |
-| [`scripts/build-lws.sh`](scripts/build-lws.sh) | Fabrique l'archive à téléverser sur LWS | voir le guide ci-dessous |
+| [`scripts/build-lws.sh`](scripts/build-lws.sh) | Fabrique `mm-stockpro.zip`, l'archive à téléverser sur LWS | voir le guide ci-dessous |
 
 Mise en ligne : [Déploiement sur LWS (cPanel + Laravel + MySQL)](#déploiement-sur-lws-cpanel--laravel--mysql).
 
@@ -61,7 +61,7 @@ Remplacez `cpaneluser` par votre identifiant cPanel partout dans ce guide.
 
 Un seul fichier ZIP est à téléverser : `mm-stockpro.zip` (API avec ses dépendances `vendor/`, donc **pas besoin de Composer sur le serveur**, et application compilée pour `stockpro.mmconsultingtg.com`).
 
-- **Depuis GitHub, sans rien installer** : onglet **Actions** → **Archives LWS** → **Run workflow** ; l'adresse proposée est déjà `https://stockpro.mmconsultingtg.com`. À la fin, téléchargez `mm-stockpro` en bas de la page de l'exécution (GitHub le livre dans un ZIP : décompressez-le une fois pour obtenir `mm-stockpro.zip`).
+- **Depuis GitHub, sans rien installer** : onglet **Actions** → **Archive LWS** → **Run workflow** ; l'adresse proposée est déjà `https://stockpro.mmconsultingtg.com`. À la fin, en bas de la page de l'exécution (section *Artifacts*), cliquez sur **mm-stockpro** : le fichier téléchargé est `mm-stockpro.zip`, à téléverser tel quel (ne le décompressez pas sur votre ordinateur).
 - **Depuis un ordinateur** avec PHP 8.2, Composer, Node 20+ et `zip` :
   ```bash
   scripts/build-lws.sh https://stockpro.mmconsultingtg.com
