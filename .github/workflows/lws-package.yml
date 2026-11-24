@@ -1,0 +1,39 @@
+# Fabrique l'archive à téléverser sur LWS (onglet Actions → « Archives LWS » → Run workflow).
+# Le fichier ZIP se télécharge ensuite en bas de la page de l'exécution (« Artifacts »).
+name: Archives LWS
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: Adresse du sous-domaine (application + API)
+        default: https://stockpro.mmconsultingtg.com
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo_mysql, mbstring, intl, zip
+          tools: composer:v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Construire les archives
+        env:
+          SITE_URL: ${{ inputs.api_url }}
+        run: scripts/build-lws.sh "$SITE_URL"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mm-stockpro
+          path: deploy/mm-stockpro.zip
+          retention-days: 30

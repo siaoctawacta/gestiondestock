@@ -217,6 +217,9 @@ export const demoApi: DataApi = {
     u.password = password
     commit('users')
   },
+  async resetPasswordWithToken() {
+    throw new Error('La réinitialisation par email n’est pas disponible en mode démo.')
+  },
   async verifySupervisor(email, password) {
     const u = load().users.find((x) => !x.deleted_at && x.email.toLowerCase() === email.trim().toLowerCase())
     if (!u || u.password !== password || !u.is_active) throw new Error('Identifiants superviseur invalides.')

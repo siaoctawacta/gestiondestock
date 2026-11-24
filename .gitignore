@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 .env
+
+# Laravel : le dossier des journaux doit exister sur le serveur
+!backend/storage/logs/
+deploy/

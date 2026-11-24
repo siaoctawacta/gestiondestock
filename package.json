@@ -1,7 +1,7 @@
 {
   "name": "mm-cosmetiques-stock-pro",
   "private": true,
-  "description": "Raccourcis : le frontend (frontend/) et le backend Supabase (backend/) sont deux projets indépendants.",
+  "description": "Raccourcis : frontend React (frontend/), API Laravel (backend/), variante Supabase (backend-supabase/).",
   "scripts": {
     "setup": "npm --prefix frontend install",
     "dev": "npm --prefix frontend run dev",
@@ -9,7 +9,9 @@
     "test": "npm --prefix frontend test",
     "typecheck": "npm --prefix frontend run typecheck",
     "seed:sql": "npm --prefix frontend run seed:sql",
-    "db:start": "cd backend && supabase start",
-    "db:test": "cd backend && supabase test db"
+    "db:start": "cd backend-supabase && supabase start",
+    "db:test": "cd backend-supabase && supabase test db",
+    "api:test": "cd backend && php artisan test",
+    "package:lws": "scripts/build-lws.sh"
   }
 }

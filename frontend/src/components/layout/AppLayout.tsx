@@ -41,7 +41,7 @@ export function AppLayout() {
             <FlaskConical className="size-3.5" />
             <span className="sm:hidden">Mode démo — données locales</span>
             <span className="hidden sm:inline">
-              Mode démo — données locales simulées. Configurez Supabase dans <code className="font-mono">.env</code> pour la production.
+              Mode démo — données locales simulées. Renseignez <code className="font-mono">VITE_API_URL</code> dans <code className="font-mono">.env</code> pour la production.
             </span>
           </div>
         )}

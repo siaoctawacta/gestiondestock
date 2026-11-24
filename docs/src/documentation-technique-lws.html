@@ -11,9 +11,9 @@
   <img class="logo" src="../../frontend/public/logo-white.png" alt="MM Cosmétiques" />
   <div class="kicker">Documentation technique</div>
   <h1>Hébergement de MM Cosmétiques Stock Pro sur LWS</h1>
-  <div class="subtitle">Mise en ligne de l'application, installation de la base de données, exploitation quotidienne, sauvegardes et dépannage.</div>
+  <div class="subtitle">Installation de l'API Laravel et de la base MySQL sur l'hébergement cPanel LWS, mise en ligne de l'application, exploitation quotidienne, sauvegardes et dépannage.</div>
   <div class="meta">
-    <div><b>Version</b>1.0 — novembre 2026</div>
+    <div><b>Version</b>2.0 — novembre 2026</div>
     <div><b>Public</b>Responsable technique, prestataire</div>
     <div><b>Dépôt</b>github.com/siaoctawacta/gestiondestock</div>
   </div>
@@ -23,527 +23,433 @@
   <h1>Sommaire</h1>
   <ol>
     <li><span class="n">1</span>Objet du document et architecture<span class="d">ce qu'il faut héberger</span></li>
-    <li><span class="n">2</span>Choisir son option d'hébergement<span class="d">A : LWS + Supabase Cloud — B : tout sur un VPS LWS</span></li>
-    <li><span class="n">3</span>Prérequis<span class="d">comptes, outils, nom de domaine</span></li>
-    <li><span class="n">4</span>Option A — Hébergement web LWS + Supabase Cloud<span class="d">recommandée</span></li>
-    <li><span class="n">5</span>Option B — Tout sur un VPS LWS<span class="d">Supabase auto-hébergé</span></li>
-    <li><span class="n">6</span>Mise en service : vérifications finales<span class="d">liste de contrôle</span></li>
-    <li><span class="n">7</span>Exploitation courante<span class="d">mises à jour, sauvegardes, journaux</span></li>
-    <li><span class="n">8</span>Sécurité<span class="d">secrets, accès, bonnes pratiques</span></li>
-    <li><span class="n">9</span>Dépannage<span class="d">symptôme → cause → solution</span></li>
-    <li><span class="n">10</span>Annexes<span class="d">variables, arborescence, aide-mémoire</span></li>
+    <li><span class="n">2</span>Prérequis<span class="d">offre LWS, domaine, accès</span></li>
+    <li><span class="n">3</span>Préparer l'archive<span class="d">API et application prêtes à téléverser</span></li>
+    <li><span class="n">4</span>Configurer cPanel<span class="d">PHP, base MySQL, sous-domaine, SSL, email</span></li>
+    <li><span class="n">5</span>Téléverser et configurer l'API<span class="d">fichiers et fichier .env</span></li>
+    <li><span class="n">6</span>Installer la base et le premier compte<span class="d">commandes artisan</span></li>
+    <li><span class="n">7</span>Mise en service<span class="d">liste de contrôle</span></li>
+    <li><span class="n">8</span>Exploitation courante<span class="d">mises à jour, sauvegardes, journaux</span></li>
+    <li><span class="n">9</span>Sécurité<span class="d">secrets, accès, bonnes pratiques</span></li>
+    <li><span class="n">10</span>Dépannage et annexes<span class="d">symptôme → solution, aide-mémoire</span></li>
   </ol>
   <div class="box info" style="margin-top:8mm"><span class="t">Conventions</span>
-    Dans les commandes, remplacez les valeurs entre chevrons : <code>&lt;ref-du-projet&gt;</code>, <code>&lt;ip-du-vps&gt;</code>… Les exemples utilisent le domaine <code>mmcosmetiques.com</code>, avec les sous-domaines proposés <code>stock.mmcosmetiques.com</code> (application) et <code>api.mmcosmetiques.com</code> (Supabase) : adaptez-les à votre choix. Les lignes commençant par <code>#</code> dans les blocs de commandes sont des commentaires.
+    L'application est installée sur le sous-domaine <code>stockpro.mmconsultingtg.com</code> : l'application s'ouvre à sa racine et l'API répond sous <code>/api</code>. Remplacez <code>cpaneluser</code> par votre identifiant cPanel. Les lignes commençant par <code>#</code> dans les blocs de commandes sont des commentaires.
   </div>
 </section>
 
 <!-- ===================================================== 1 -->
 <span class="chapter-no">Chapitre 1</span>
 <h1 class="chapter">Objet du document et architecture</h1>
-<p class="lead">Ce document décrit pas à pas la mise en ligne de l'application de gestion de stock MM Cosmétiques chez l'hébergeur LWS, puis son exploitation au quotidien.</p>
+<p class="lead">Ce document décrit pas à pas la mise en ligne de l'application de gestion de stock MM Cosmétiques sur l'hébergement web cPanel de LWS, puis son exploitation au quotidien.</p>
 
 <h2>Les deux parties de l'application</h2>
-<p>Le dépôt contient deux projets indépendants, qui s'hébergent différemment :</p>
 <table>
-  <thead><tr><th style="width:22%">Partie</th><th>Contenu</th><th style="width:30%">Hébergement</th></tr></thead>
+  <thead><tr><th style="width:22%">Partie</th><th>Contenu</th><th style="width:30%">Adresse</th></tr></thead>
   <tbody>
-    <tr><td><b>Frontend</b><br><code>frontend/</code></td><td>L'application que les utilisateurs ouvrent dans leur navigateur (React). Une fois construite, ce n'est qu'un dossier de fichiers statiques : <code>frontend/dist/</code>.</td><td>N'importe quel hébergement web : l'hébergement LWS cPanel suffit.</td></tr>
-    <tr><td><b>Backend</b><br><code>backend/</code></td><td>Un projet <b>Supabase</b> : base PostgreSQL, authentification des utilisateurs, API REST, temps réel, stockage des images, fonctions serveur (<i>Edge Functions</i>), règles de sécurité par boutique (RLS).</td><td>Supabase Cloud, ou Supabase installé sur un VPS (Docker).</td></tr>
+    <tr><td><b>Application</b><br><code>frontend/</code></td><td>L'interface que les utilisateurs ouvrent dans leur navigateur (React). Une fois construite, ce n'est qu'un ensemble de fichiers statiques.</td><td><code>https://stockpro.mmconsultingtg.com</code></td></tr>
+    <tr><td><b>API</b><br><code>backend/</code></td><td>Le serveur de l'application, écrit avec <b>Laravel</b> (PHP). Il gère la connexion des utilisateurs, vérifie les droits de chacun, enregistre ventes, stocks, transferts et déclarations dans la base <b>MySQL</b>, envoie les emails.</td><td><code>https://stockpro.mmconsultingtg.com/api</code></td></tr>
+    <tr><td><b>Base de données</b></td><td>Tables des boutiques, utilisateurs, produits, stocks, ventes, déclarations, journal d'audit.</td><td>MySQL / MariaDB de cPanel (<code>localhost</code>)</td></tr>
   </tbody>
 </table>
-
-<div class="box warn"><span class="t">Point essentiel</span>
-L'hébergement web mutualisé de LWS fournit une base PostgreSQL, mais <b>une base seule ne suffit pas</b> : l'application a besoin de toute la plateforme Supabase (connexion des utilisateurs, API, temps réel, fonctions serveur). C'est pourquoi la base est soit sur <b>Supabase Cloud</b>, soit sur un <b>VPS LWS</b> qui fait tourner Supabase.
-</div>
+<p>Les deux parties sont livrées dans <b>une seule archive</b> et installées dans <b>un seul dossier</b>, servi par <b>un seul sous-domaine</b> : l'application compilée est placée dans le dossier <code>public/</code> de Laravel, et le fichier <code>public/.htaccess</code> envoie les adresses <code>/api/…</code> à Laravel et toutes les autres à l'application. Tout tient dans une offre d'<b>hébergement web cPanel</b>, sans serveur dédié ni VPS.</p>
 
 <h2>Schéma de fonctionnement</h2>
 <figure>
 <svg viewBox="0 0 700 265" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="Inter, sans-serif">
   <defs><marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#2c6b36"/></marker></defs>
-  <!-- Navigateur -->
   <rect x="8" y="100" width="150" height="66" rx="10" fill="#fff" stroke="#b2cd8a" stroke-width="1.6"/>
   <text x="83" y="128" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">Navigateur</text>
   <text x="83" y="148" text-anchor="middle" font-size="10.5" fill="#5d6b5c">PC, tablette, mobile</text>
-  <!-- Frontend -->
   <rect x="215" y="18" width="250" height="84" rx="10" fill="#f1f6ea" stroke="#2c6b36" stroke-width="1.6"/>
-  <text x="340" y="44" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">Frontend (fichiers statiques)</text>
+  <text x="340" y="44" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">Application (React)</text>
   <text x="340" y="64" text-anchor="middle" font-size="10.5" fill="#5d6b5c">index.html · assets/ · .htaccess</text>
-  <text x="340" y="84" text-anchor="middle" font-size="10.5" fill="#2c6b36">Hébergement LWS ou VPS</text>
-  <!-- API -->
+  <text x="340" y="84" text-anchor="middle" font-size="10.5" fill="#2c6b36">stockpro.mmconsultingtg.com/</text>
   <rect x="215" y="160" width="250" height="90" rx="10" fill="#f1f6ea" stroke="#2c6b36" stroke-width="1.6"/>
-  <text x="340" y="186" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">API Supabase (HTTPS)</text>
-  <text x="340" y="206" text-anchor="middle" font-size="10.5" fill="#5d6b5c">Auth · REST · Temps réel · Fonctions</text>
-  <text x="340" y="226" text-anchor="middle" font-size="10.5" fill="#2c6b36">Supabase Cloud ou VPS (Docker)</text>
-  <!-- PostgreSQL -->
+  <text x="340" y="186" text-anchor="middle" font-size="13" font-weight="600" fill="#184620">API Laravel (HTTPS)</text>
+  <text x="340" y="206" text-anchor="middle" font-size="10.5" fill="#5d6b5c">connexion · droits · ventes · stocks</text>
+  <text x="340" y="226" text-anchor="middle" font-size="10.5" fill="#2c6b36">stockpro.mmconsultingtg.com/api</text>
   <rect x="520" y="160" width="172" height="90" rx="10" fill="#184620"/>
-  <text x="606" y="190" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">PostgreSQL</text>
-  <text x="606" y="210" text-anchor="middle" font-size="10.5" fill="#dfe9d3">tables, fonctions, audit,</text>
-  <text x="606" y="227" text-anchor="middle" font-size="10.5" fill="#dfe9d3">règles RLS par boutique</text>
-  <!-- Flèches -->
+  <text x="606" y="190" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">MySQL / MariaDB</text>
+  <text x="606" y="210" text-anchor="middle" font-size="10.5" fill="#dfe9d3">base de cPanel,</text>
+  <text x="606" y="227" text-anchor="middle" font-size="10.5" fill="#dfe9d3">accessible en local</text>
   <path d="M158,118 C185,110 190,62 213,60" fill="none" stroke="#2c6b36" stroke-width="1.7" marker-end="url(#a)"/>
   <path d="M158,150 C185,158 190,203 213,205" fill="none" stroke="#2c6b36" stroke-width="1.7" marker-end="url(#a)"/>
   <path d="M465,205 L518,205" fill="none" stroke="#2c6b36" stroke-width="1.7" marker-end="url(#a)"/>
-  <!-- Légendes -->
   <text x="10" y="70" font-size="10.5" fill="#184620" font-weight="600">1. charge le site</text>
   <text x="10" y="205" font-size="10.5" fill="#184620" font-weight="600">2. lit / écrit</text>
   <text x="10" y="220" font-size="10.5" fill="#184620" font-weight="600">les données</text>
   <text x="520" y="40" font-size="10.5" fill="#5d6b5c">Le navigateur ne parle jamais</text>
-  <text x="520" y="56" font-size="10.5" fill="#5d6b5c">directement à PostgreSQL :</text>
+  <text x="520" y="56" font-size="10.5" fill="#5d6b5c">directement à la base :</text>
   <text x="520" y="72" font-size="10.5" fill="#5d6b5c">chaque requête passe par l'API,</text>
-  <text x="520" y="88" font-size="10.5" fill="#5d6b5c">qui applique les règles de</text>
-  <text x="520" y="104" font-size="10.5" fill="#5d6b5c">sécurité de la base.</text>
+  <text x="520" y="88" font-size="10.5" fill="#5d6b5c">qui contrôle le rôle et la</text>
+  <text x="520" y="104" font-size="10.5" fill="#5d6b5c">boutique de l'utilisateur.</text>
 </svg>
-<figcaption>Figure 1 — Le frontend est un site statique ; toutes les données passent par l'API Supabase.</figcaption>
+<figcaption>Figure 1 — Un seul sous-domaine : l'application à la racine, l'API Laravel sous /api ; toutes les données passent par l'API.</figcaption>
 </figure>
 
+<h2>Organisation sur le serveur</h2>
+<pre><code>/home/cpaneluser/
+├── mm-stockpro/            <span class="c"># application complète (hors de public_html)</span>
+│   ├── .env                <span class="c"># configuration et mots de passe : jamais accessible depuis le web</span>
+│   ├── app/  config/  database/  routes/  vendor/
+│   ├── storage/logs/       <span class="c"># journaux d'erreurs</span>
+│   └── public/             <span class="c"># SEUL dossier exposé : racine de stockpro.mmconsultingtg.com</span>
+│       ├── index.html  assets/       <span class="c"># application React</span>
+│       ├── index.php               <span class="c"># entrée de l'API Laravel</span>
+│       ├── .htaccess               <span class="c"># /api → Laravel, le reste → application</span>
+│       └── uploads/products/       <span class="c"># images des produits</span>
+└── public_html/            <span class="c"># site principal, non concerné</span></code></pre>
+
 <h2>Mode démo et mode production</h2>
-<p>Le frontend choisit son mode <b>au moment du build</b>, selon le fichier <code>frontend/.env</code> :</p>
+<p>L'application choisit son mode <b>au moment de sa construction</b> :</p>
 <ul>
-  <li>avec <code>VITE_SUPABASE_URL</code> et <code>VITE_SUPABASE_ANON_KEY</code> renseignées : <b>production</b>, les données sont dans Supabase ;</li>
-  <li>sans ces variables : <b>mode démo</b>, avec des données fictives stockées dans le navigateur et un bandeau jaune « Mode démo » en haut des pages.</li>
+  <li>construite avec l'adresse du site (<code>VITE_API_URL</code>, ici <code>https://stockpro.mmconsultingtg.com</code>) : <b>production</b>, les données sont dans MySQL ;</li>
+  <li>construite sans adresse : <b>mode démo</b>, avec des données fictives stockées dans le navigateur et un bandeau jaune « Mode démo » en haut des pages.</li>
 </ul>
 <div class="box danger"><span class="t">À vérifier à chaque mise en ligne</span>
-Si le site de production affiche le bandeau <b>« Mode démo »</b>, il a été construit sans les variables Supabase : les ventes saisies resteraient dans le navigateur du poste et seraient perdues. Reconstruisez le site avec le bon <code>.env</code> avant toute utilisation.
+Si le site de production affiche le bandeau <b>« Mode démo »</b>, il a été construit sans l'adresse de l'API : les ventes saisies resteraient dans le navigateur du poste et seraient perdues. Reconstruisez l'archive (chapitre 3) avant toute utilisation.
+</div>
+
+<div class="box info"><span class="t">Le Laravel installé par l'installateur automatique LWS</span>
+Il prouve que PHP fonctionne sur votre hébergement, mais ce n'est qu'un projet Laravel vide : il est <b>remplacé</b> par l'API de ce dépôt. S'il a créé une base de données, vous pouvez la réutiliser (ses identifiants figurent dans son fichier <code>.env</code>). Sinon, supprimez cette installation depuis l'installateur pour éviter toute confusion — en particulier si elle occupe déjà le sous-domaine <code>stockpro</code>.
 </div>
 
 <!-- ===================================================== 2 -->
 <span class="chapter-no">Chapitre 2</span>
-<h1 class="chapter">Choisir son option d'hébergement</h1>
-<p class="lead">Deux options possibles. L'option A est recommandée pour démarrer : elle ne demande aucune administration de serveur.</p>
-
-<table>
-  <thead><tr><th style="width:26%"></th><th>Option A — recommandée</th><th>Option B — tout chez LWS</th></tr></thead>
-  <tbody>
-    <tr><td><b>Frontend</b></td><td>Hébergement web LWS (cPanel)</td><td>VPS LWS (serveur web Caddy)</td></tr>
-    <tr><td><b>Base de données</b></td><td>Supabase Cloud (supabase.com)</td><td>Supabase installé sur le même VPS, avec Docker</td></tr>
-    <tr><td><b>Mise en place</b></td><td>≈ 30 minutes</td><td>≈ 2 heures</td></tr>
-    <tr><td><b>Compétences</b></td><td>Utiliser cPanel, lancer quelques commandes</td><td>Administration Linux, Docker, pare-feu</td></tr>
-    <tr><td><b>Sauvegardes de la base</b></td><td>Gérées par Supabase (selon l'offre) + copie manuelle possible</td><td><b>À votre charge</b> (script fourni)</td></tr>
-    <tr><td><b>Mises à jour de sécurité</b></td><td>Gérées par Supabase</td><td><b>À votre charge</b> (système et Supabase)</td></tr>
-    <tr><td><b>Localisation des données</b></td><td>Région Supabase choisie (ex. Europe de l'Ouest)</td><td>Sur votre VPS LWS</td></tr>
-    <tr><td><b>Coût</b></td><td>Hébergement LWS + offre Supabase (gratuite pour démarrer, payante pour plus de capacité et les sauvegardes avancées)</td><td>Un VPS LWS d'au moins 4 Go de RAM</td></tr>
-  </tbody>
-</table>
-
-<div class="box tip"><span class="t">Recommandation</span>
-Commencez par l'<b>option A</b>. Si vous devez plus tard rapatrier les données chez LWS, la base peut être exportée de Supabase Cloud et restaurée sur un VPS (chapitre 7), sans modifier l'application.
-</div>
-
-<!-- ===================================================== 3 -->
-<span class="chapter-no">Chapitre 3</span>
 <h1 class="chapter">Prérequis</h1>
 <p class="lead">À réunir avant de commencer.</p>
 
-<h2>Comptes et services</h2>
 <ul class="check">
-  <li>Un <b>nom de domaine</b> géré chez LWS (ou ailleurs), avec accès à sa zone DNS.</li>
-  <li><b>Option A :</b> un <b>hébergement web LWS</b> avec cPanel, et un compte <b>Supabase</b> (supabase.com).</li>
-  <li><b>Option B :</b> un <b>VPS LWS</b> sous Ubuntu, de préférence le modèle « VPS Docker » (Docker préinstallé). Les identifiants root SSH arrivent par email à l'activation.</li>
-  <li>Une <b>boîte email</b> pour envoyer les emails « mot de passe oublié » (par exemple une adresse de votre messagerie LWS), avec ses paramètres SMTP.</li>
-  <li>L'accès au <b>dépôt GitHub</b> du projet.</li>
+  <li>Une offre d'<b>hébergement web LWS avec cPanel</b> (PHP 8.2 ou plus récent disponible, bases MySQL, accès SSH ou Terminal).</li>
+  <li>Le domaine <code>mmconsultingtg.com</code> rattaché à cet hébergement, pour créer le sous-domaine <code>stockpro</code>.</li>
+  <li>Les accès à l'<b>espace client LWS</b> et à <b>cPanel</b>.</li>
+  <li>Un accès au dépôt GitHub <code>siaoctawacta/gestiondestock</code> (pour fabriquer les archives).</li>
+  <li>Une adresse email de l'hébergement pour l'envoi des emails, par exemple <code>stockpro@mmconsultingtg.com</code>.</li>
+  <li>Un <b>gestionnaire de mots de passe</b> pour conserver les mots de passe créés (base, email, Super Admin).</li>
 </ul>
 
-<h2>Outils sur le poste de travail</h2>
+<h2>Configuration technique requise</h2>
 <table>
-  <thead><tr><th style="width:30%">Outil</th><th>Usage</th><th style="width:22%">Option</th></tr></thead>
+  <thead><tr><th style="width:32%">Élément</th><th>Valeur</th></tr></thead>
   <tbody>
-    <tr><td><b>Git</b></td><td>Récupérer le code du dépôt</td><td>A et B</td></tr>
-    <tr><td><b>Node.js 22</b> (avec npm)</td><td>Construire le frontend (<code>npm run build</code>)</td><td>A et B</td></tr>
-    <tr><td><b>CLI Supabase</b> version 3 ou plus</td><td>Appliquer les migrations, déployer les fonctions, sauvegarder</td><td>A</td></tr>
-    <tr><td><b>psql</b> (client PostgreSQL)</td><td>Charger les données de départ</td><td>A</td></tr>
-    <tr><td><b>Docker Desktop</b></td><td>Nécessaire à <code>supabase db dump</code> (sauvegarde manuelle)</td><td>A</td></tr>
-    <tr><td>Client <b>SSH</b> (terminal, PuTTY) et <b>rsync</b></td><td>Administrer le VPS et y envoyer le site</td><td>B</td></tr>
-    <tr><td>Client <b>FTP</b> (FileZilla) — facultatif</td><td>Envoyer le site sur l'hébergement cPanel</td><td>A</td></tr>
+    <tr><td>PHP</td><td>8.2 minimum (8.3 conseillé)</td></tr>
+    <tr><td>Extensions PHP</td><td><code>pdo_mysql</code>, <code>mbstring</code>, <code>openssl</code>, <code>tokenizer</code>, <code>xml</code>, <code>ctype</code>, <code>fileinfo</code>, <code>bcmath</code>, <code>intl</code>, <code>zip</code></td></tr>
+    <tr><td>Base de données</td><td>MySQL 8 ou MariaDB 10.4+</td></tr>
+    <tr><td>Espace disque</td><td>≈ 100 Mo pour l'application, plus les images produits et la base</td></tr>
+    <tr><td>Navigateurs des utilisateurs</td><td>Chrome, Edge, Firefox ou Safari récents ; tablettes et mobiles acceptés</td></tr>
   </tbody>
 </table>
 
-<h2>Récupérer le code</h2>
-<pre><code>git clone https://github.com/siaoctawacta/gestiondestock.git
-cd gestiondestock</code></pre>
+<!-- ===================================================== 3 -->
+<span class="chapter-no">Chapitre 3</span>
+<h1 class="chapter">Préparer l'archive</h1>
+<p class="lead">Un seul fichier ZIP est à déposer sur l'hébergement : <code>mm-stockpro.zip</code>. Il contient tout le nécessaire ; aucun outil de développement n'est requis sur le serveur.</p>
 
+<table>
+  <thead><tr><th style="width:26%">Contenu de l'archive</th><th>Détail</th></tr></thead>
+  <tbody>
+    <tr><td>API Laravel</td><td>Code, migrations de la base, <b>dépendances incluses</b> (dossier <code>vendor/</code>) : Composer n'est pas nécessaire sur le serveur. Pas de fichier <code>.env</code> : il se crée sur le serveur.</td></tr>
+    <tr><td>Application</td><td>Compilée pour <code>https://stockpro.mmconsultingtg.com</code> et placée dans <code>public/</code>.</td></tr>
+    <tr><td><code>public/.htaccess</code></td><td>Aiguillage : <code>/api/…</code> vers Laravel, le reste vers l'application ; HTTPS forcé ; fichiers sensibles bloqués.</td></tr>
+  </tbody>
+</table>
 
+<h2>3.1 Depuis GitHub (recommandé, rien à installer)</h2>
+<ol class="steps">
+  <li>Sur GitHub, ouvrez le dépôt puis l'onglet <b>Actions</b>.</li>
+  <li>Dans la liste de gauche, choisissez <b>Archives LWS</b>, puis <b>Run workflow</b>.</li>
+  <li>L'adresse proposée est déjà <code>https://stockpro.mmconsultingtg.com</code> : lancez.</li>
+  <li>Après 2 à 3 minutes, ouvrez l'exécution terminée : en bas de page, section <b>Artifacts</b>, téléchargez <code>mm-stockpro</code>.</li>
+  <li>GitHub livre le fichier dans un ZIP : décompressez-le une fois sur votre ordinateur pour obtenir <code>mm-stockpro.zip</code>.</li>
+</ol>
+
+<h2>3.2 Depuis un ordinateur de développement</h2>
+<p>Avec PHP 8.2+, Composer, Node.js 20+ et <code>zip</code> installés :</p>
+<pre><code>git clone https://github.com/siaoctawacta/gestiondestock
+cd gestiondestock
+scripts/build-lws.sh https://stockpro.mmconsultingtg.com   <span class="c"># archive créée dans deploy/</span></code></pre>
+
+<div class="box warn"><span class="t">Adresse du site</span>
+L'adresse est inscrite dans l'application au moment de la construction. Si vous changez plus tard de sous-domaine, il faut refabriquer l'archive.
+</div>
 
 <!-- ===================================================== 4 -->
 <span class="chapter-no">Chapitre 4</span>
-<h1 class="chapter">Option A — Hébergement web LWS + Supabase Cloud</h1>
-<p class="lead">Le site est hébergé par LWS ; la base de données et l'authentification sont fournies par Supabase Cloud.</p>
+<h1 class="chapter">Configurer cPanel</h1>
+<p class="lead">Cinq réglages, tous depuis cPanel : version de PHP, base de données, sous-domaine, certificat SSL et boîte email.</p>
 
-<h2>4.1 Créer le projet Supabase</h2>
+<h2>4.1 Version de PHP</h2>
 <ol class="steps">
-  <li>Créez un compte sur <b>supabase.com</b>, puis un <b>nouveau projet</b>. Choisissez une région proche (par exemple <i>West EU</i>) et un <b>mot de passe de base</b> robuste : notez-le dans un gestionnaire de mots de passe.</li>
-  <li>Dans <i>Project Settings → API</i>, notez l'<b>URL du projet</b> (<code>https://&lt;ref&gt;.supabase.co</code>) et la clé <b>anon public</b>. Le <code>&lt;ref&gt;</code> est l'identifiant de 20 lettres dans l'URL.</li>
-  <li>Dans <i>Project Settings → Database → Connection string</i>, copiez la <b>chaîne de connexion</b> (format URI) : elle sert à charger les données de départ et aux sauvegardes.</li>
+  <li>cPanel → <b>Sélectionner une version de PHP</b> (<i>Select PHP Version</i>).</li>
+  <li>Choisissez <b>8.2 ou plus récente</b> (8.3 conseillé) puis <b>Définir comme actuelle</b>.</li>
+  <li>Vérifiez que les extensions du chapitre 2 sont cochées (la plupart le sont déjà).</li>
+  <li>Onglet <b>Options</b> : <code>upload_max_filesize</code> et <code>post_max_size</code> à <b>8M</b> au moins, <code>memory_limit</code> à <b>256M</b>.</li>
 </ol>
 
-<h2>4.2 Installer la base de l'application</h2>
-<div class="box warn"><span class="t">CLI Supabase version 3</span>
-Depuis la version 3, <code>supabase db push</code> et <code>supabase db dump</code> agissent sur une base <b>locale</b> par défaut. Pour agir sur le projet en ligne, ajoutez <b>toujours</b> <code>--remote</code>. Sans cette option, la commande ne modifie rien sur votre base de production.
-</div>
-<p>Depuis le dossier du dépôt, sur votre poste :</p>
-<pre><code>cd backend
-supabase login
-supabase link --project-ref &lt;ref-du-projet&gt;
-
-<span class="c"># Crée les tables, fonctions, déclencheurs et règles de sécurité (dans l'ordre des migrations)</span>
-supabase db push --remote
-
-<span class="c"># Données de départ : boutiques, catégories, fournisseurs, produits — UNE SEULE FOIS, sur une base vide</span>
-psql "&lt;chaîne de connexion&gt;" -f supabase/seed.sql
-
-<span class="c"># Fonctions serveur : gestion des comptes, validation superviseur des remises</span>
-supabase functions deploy admin-users
-supabase functions deploy verify-supervisor</code></pre>
-
-<div class="box info"><span class="t">Ce que contient la base</span>
-Les migrations (<code>backend/supabase/migrations/</code>) créent les 19 tables, les fonctions métier (vente, transferts, déclarations…), les déclencheurs d'audit et d'alertes, et active la sécurité par boutique (RLS) sur toutes les tables. Le fichier <code>seed.sql</code> ne contient que les référentiels : <b>aucun utilisateur, aucune vente</b>. Adaptez-le à vos boutiques et produits réels avant de le charger, ou créez-les ensuite depuis l'application.
-</div>
-
-<h2>4.3 Créer le premier Super Admin</h2>
+<h2>4.2 Base de données MySQL</h2>
 <ol class="steps">
-  <li>Dans Supabase : <i>Authentication → Users → Add user</i>. Saisissez l'email et un mot de passe, et cochez <b>Auto Confirm User</b>.</li>
-  <li>Dans <i>SQL Editor</i>, donnez-lui le rôle Super Admin :
-<pre><code>update public.users
-   set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom'
- where email = 'vous@mmcosmetiques.com';</code></pre></li>
-  <li>Tous les autres comptes se créent ensuite depuis l'écran <b>Utilisateurs</b> de l'application, par ce Super Admin.</li>
+  <li>cPanel → <b>Bases de données MySQL</b>.</li>
+  <li><b>Créer une base</b> : saisissez <code>mmstock</code>. cPanel ajoute votre identifiant devant : <code>cpaneluser_mmstock</code>.</li>
+  <li><b>Ajouter un utilisateur</b> : <code>mmstock</code>, avec un mot de passe fort (bouton <i>Générateur de mot de passe</i>). Nom final : <code>cpaneluser_mmstock</code>. <b>Notez le mot de passe.</b></li>
+  <li><b>Ajouter l'utilisateur à la base</b> : choisissez l'utilisateur et la base, puis cochez <b>TOUS LES PRIVILÈGES</b>.</li>
 </ol>
+<div class="box tip"><span class="t">Rien à importer</span>
+Les tables sont créées automatiquement par Laravel au chapitre 6. N'importez aucun fichier dans phpMyAdmin.
+</div>
 
-<h2>4.4 Configurer l'authentification</h2>
-<p>Dans <i>Authentication → URL Configuration</i> :</p>
+<h2>4.3 Sous-domaine</h2>
+<p>cPanel → <b>Domaines</b> (ou <b>Sous-domaines</b> selon la version) → <b>Créer un nouveau domaine</b> :</p>
 <table>
-  <thead><tr><th style="width:35%">Réglage</th><th>Valeur</th></tr></thead>
+  <thead><tr><th>Sous-domaine</th><th>Racine du document (<i>Document Root</i>)</th></tr></thead>
   <tbody>
-    <tr><td>Site URL</td><td><code>https://stock.mmcosmetiques.com</code></td></tr>
-    <tr><td>Redirect URLs</td><td><code>https://stock.mmcosmetiques.com/reset-password</code> (lien « mot de passe oublié »)</td></tr>
+    <tr><td><code>stockpro.mmconsultingtg.com</code></td><td><code>mm-stockpro/public</code></td></tr>
   </tbody>
 </table>
-<p>Pour que les emails de réinitialisation partent de votre domaine, renseignez votre serveur SMTP dans <i>Authentication → SMTP Settings</i> (l'envoi par défaut de Supabase est limité). Désactivez l'inscription libre (<i>Allow new users to sign up</i>) : les comptes sont créés par le Super Admin.</p>
-
-<h2>4.5 Construire le site</h2>
-<p>Les clés Supabase sont intégrées au site <b>au moment du build</b> : construisez sur votre poste, pas sur le serveur.</p>
-<pre><code>cd frontend
-cp .env.example .env
-<span class="c"># Éditez .env :</span>
-<span class="c">#   VITE_SUPABASE_URL=https://&lt;ref&gt;.supabase.co</span>
-<span class="c">#   VITE_SUPABASE_ANON_KEY=&lt;clé anon public&gt;</span>
-npm ci
-npm run build          <span class="c"># produit le dossier frontend/dist/</span></code></pre>
-<div class="box danger"><span class="t">Ne jamais publier la clé service_role</span>
-Seule la clé <b>anon</b> va dans <code>.env</code> : elle est publique par nature, la sécurité reposant sur les règles RLS de la base. La clé <b>service_role</b> contourne toutes les règles : elle ne doit jamais apparaître dans le frontend, un email ou le dépôt.
+<p>Si le sous-domaine existe déjà (par exemple créé par l'installateur Laravel), modifiez sa racine dans <b>Domaines</b> (icône crayon).</p>
+<div class="box danger"><span class="t">Racine du sous-domaine</span>
+La racine doit être le dossier <b><code>public</code></b>, et non <code>mm-stockpro</code> lui-même : sinon le fichier <code>.env</code>, qui contient les mots de passe, serait téléchargeable depuis Internet.
 </div>
+<p>Si cPanel refuse une racine située hors de <code>public_html</code>, gardez la racine qu'il propose (par exemple <code>public_html/stockpro</code>), puis, une fois les fichiers en place (chapitre 5), remplacez ce dossier par un lien vers <code>mm-stockpro/public</code> depuis le terminal :</p>
+<pre><code>rm -rf ~/public_html/stockpro &amp;&amp; ln -s ~/mm-stockpro/public ~/public_html/stockpro</code></pre>
 
-<h2>4.6 Publier sur l'hébergement LWS</h2>
+<h2>4.4 Certificat SSL (HTTPS)</h2>
+<p>cPanel → <b>SSL/TLS Status</b> (ou <b>Let's Encrypt SSL</b>) : sélectionnez <code>stockpro.mmconsultingtg.com</code> et lancez l'émission du certificat. Comptez quelques minutes après la création du sous-domaine, le temps que le DNS se propage. Le site redirige ensuite automatiquement vers HTTPS.</p>
+
+<h2>4.5 Boîte email d'envoi</h2>
 <ol class="steps">
-  <li>Dans l'espace client LWS, ouvrez le <b>cPanel</b> de l'hébergement. Si vous utilisez un sous-domaine (<code>stock.mmcosmetiques.com</code>), créez-le dans <i>Domaines</i> et notez son dossier racine.</li>
-  <li>Activez le <b>certificat SSL</b> (Let's Encrypt) pour ce domaine dans cPanel.</li>
-  <li>Ouvrez le <b>Gestionnaire de fichiers</b> et allez dans le dossier racine du domaine (souvent <code>public_html/</code>). Dans <i>Paramètres</i>, cochez <b>Afficher les fichiers cachés</b>. Videz le dossier s'il contient une page par défaut.</li>
-  <li>Compressez <b>le contenu</b> de <code>frontend/dist/</code> en <code>.zip</code> (pas le dossier lui-même), envoyez l'archive, puis <b>Extraire</b>. Vérifiez la présence de <code>index.html</code>, du dossier <code>assets/</code>, des logos et du fichier <b><code>.htaccess</code></b>. Supprimez ensuite l'archive.</li>
-  <li>Variante FTP : avec les identifiants FTP de l'espace client, copiez le contenu de <code>dist/</code> dans le dossier racine (afficher les fichiers cachés dans FileZilla : <i>Serveur → Forcer l'affichage des fichiers cachés</i>).</li>
+  <li>cPanel → <b>Comptes de messagerie</b> → créez par exemple <code>stockpro@mmconsultingtg.com</code> (ou utilisez une boîte existante).</li>
+  <li>Sur la ligne de la boîte, <b>Connect Devices</b> : relevez le <b>serveur sortant (SMTP)</b>, en général <code>mail.mmconsultingtg.com</code>, port <b>465</b> (SSL).</li>
 </ol>
-
-<h3>Rôle du fichier .htaccess</h3>
-<p>Le fichier <code>frontend/public/.htaccess</code> est copié dans <code>dist/</code> à chaque build. Il :</p>
-<ul>
-  <li>force le <b>HTTPS</b> ;</li>
-  <li>renvoie les adresses de l'application (<code>/pos</code>, <code>/stores</code>…) vers <code>index.html</code>. <b>Sans lui, recharger une page autre que l'accueil donne une erreur 404</b> ;</li>
-  <li>ajoute des en-têtes de sécurité et règle le cache : <code>index.html</code> n'est jamais mis en cache, pour que chaque mise à jour soit prise en compte.</li>
-</ul>
+<p>Cette boîte envoie les emails « mot de passe oublié ».</p>
 
 <!-- ===================================================== 5 -->
 <span class="chapter-no">Chapitre 5</span>
-<h1 class="chapter">Option B — Tout sur un VPS LWS</h1>
-<p class="lead">Supabase est installé sur votre VPS avec Docker ; le même serveur publie le site. Réservez cette option à une équipe à l'aise avec l'administration Linux.</p>
+<h1 class="chapter">Téléverser et configurer l'API</h1>
+<p class="lead">Dépôt de l'archive avec le Gestionnaire de fichiers, puis création du fichier de configuration <code>.env</code>.</p>
 
-<div class="box warn"><span class="t">Responsabilités</span>
-Supabase auto-hébergé est maintenu par la communauté. La <b>sécurité du serveur, les mises à jour et les sauvegardes</b> sont entièrement à votre charge. La configuration par défaut de Supabase <b>n'est pas sûre</b> pour la production : suivez toutes les étapes de ce chapitre.
-</div>
+<h2>5.1 Téléverser les fichiers</h2>
+<ol class="steps">
+  <li>cPanel → <b>Gestionnaire de fichiers</b>. En haut à droite, <b>Paramètres</b> → cochez <b>Afficher les fichiers cachés</b> (pour voir <code>.env</code> et <code>.htaccess</code>).</li>
+  <li>Placez-vous dans votre dossier personnel (<code>/home/cpaneluser</code>, au-dessus de <code>public_html</code>). <b>Téléverser</b> → <code>mm-stockpro.zip</code>.</li>
+  <li>Clic droit sur <code>mm-stockpro.zip</code> → <b>Extract</b> → dossier <code>/home/cpaneluser</code>. Vous obtenez <code>mm-stockpro/</code> avec <code>app/</code>, <code>public/</code>, <code>vendor/</code>… Supprimez ensuite le ZIP.</li>
+  <li>Vérifiez que <code>mm-stockpro/public/</code> contient <code>index.html</code>, <code>index.php</code>, <code>assets/</code> et <code>.htaccess</code>.</li>
+</ol>
 
-<h2>5.1 Préparer le serveur et le DNS</h2>
-<ul class="check">
-  <li>VPS LWS sous <b>Ubuntu</b>, 4 Go de RAM minimum (modèle « VPS Docker » de préférence).</li>
-  <li>Deux enregistrements DNS de type <b>A</b> vers l'IP du VPS : <code>stock.mmcosmetiques.com</code> (application) et <code>api.mmcosmetiques.com</code> (Supabase).</li>
-</ul>
-<pre><code>ssh root@&lt;ip-du-vps&gt;
-apt update &amp;&amp; apt upgrade -y
-apt install -y git postgresql-client
-<span class="c"># Uniquement si Docker n'est pas préinstallé :</span>
-curl -fsSL https://get.docker.com | sh</code></pre>
+<h2>5.2 Fichier de configuration <code>.env</code></h2>
+<p>Dans <code>mm-stockpro/</code>, clic droit sur <code>.env.example</code> → <b>Copy</b> → nommez la copie <code>.env</code>. Puis clic droit sur <code>.env</code> → <b>Edit</b>, et renseignez :</p>
+<pre><code>APP_ENV=production
+APP_DEBUG=false
+APP_URL=https://stockpro.mmconsultingtg.com
+FRONTEND_URL=https://stockpro.mmconsultingtg.com
 
-<h2>5.2 Installer Supabase</h2>
-<pre><code>git clone --depth 1 https://github.com/supabase/supabase /opt/supabase-src
-mkdir -p /opt/supabase &amp;&amp; cp -r /opt/supabase-src/docker/. /opt/supabase/
-cd /opt/supabase
-cp .env.example .env
-sh utils/generate-keys.sh --update-env     <span class="c"># génère JWT_SECRET, ANON_KEY, SERVICE_ROLE_KEY, etc.</span>
-nano .env</code></pre>
+DB_CONNECTION=mysql
+DB_HOST=localhost
+DB_PORT=3306
+DB_DATABASE=cpaneluser_mmstock
+DB_USERNAME=cpaneluser_mmstock
+DB_PASSWORD=<span class="c">le mot de passe de l'étape 4.2</span>
 
-<p>Dans <code>.env</code>, <b>avant le premier démarrage</b>, vérifiez ou modifiez au minimum :</p>
+MAIL_MAILER=smtp
+MAIL_SCHEME=smtps
+MAIL_HOST=mail.mmconsultingtg.com
+MAIL_PORT=465
+MAIL_USERNAME=stockpro@mmconsultingtg.com
+MAIL_PASSWORD=<span class="c">le mot de passe de la boîte email</span>
+MAIL_FROM_ADDRESS=stockpro@mmconsultingtg.com
+MAIL_FROM_NAME="MM Cosmétiques"</code></pre>
 <table>
-  <thead><tr><th style="width:42%">Variable</th><th>Valeur</th></tr></thead>
+  <thead><tr><th style="width:30%">Variable</th><th>Rôle</th></tr></thead>
   <tbody>
-    <tr><td><code>POSTGRES_PASSWORD</code></td><td>Long mot de passe aléatoire (à conserver dans un coffre)</td></tr>
-    <tr><td><code>DASHBOARD_USERNAME</code>, <code>DASHBOARD_PASSWORD</code></td><td>Identifiants du tableau de bord Supabase Studio</td></tr>
-    <tr><td><code>SUPABASE_PUBLIC_URL</code></td><td><code>https://api.mmcosmetiques.com</code></td></tr>
-    <tr><td><code>API_EXTERNAL_URL</code></td><td><code>https://api.mmcosmetiques.com/auth/v1</code></td></tr>
-    <tr><td><code>SITE_URL</code></td><td><code>https://stock.mmcosmetiques.com</code></td></tr>
-    <tr><td><code>ADDITIONAL_REDIRECT_URLS</code></td><td><code>https://stock.mmcosmetiques.com/reset-password</code></td></tr>
-    <tr><td><code>DISABLE_SIGNUP</code></td><td><code>true</code> — les comptes sont créés par le Super Admin</td></tr>
-    <tr><td><code>SMTP_HOST</code>, <code>SMTP_PORT</code>, <code>SMTP_USER</code>, <code>SMTP_PASS</code>, <code>SMTP_ADMIN_EMAIL</code>, <code>SMTP_SENDER_NAME</code></td><td>Paramètres de la boîte email d'envoi (emails « mot de passe oublié »)</td></tr>
+    <tr><td><code>APP_DEBUG</code></td><td>Toujours <code>false</code> en production : sinon une erreur afficherait la configuration, mots de passe compris.</td></tr>
+    <tr><td><code>APP_URL</code></td><td>Adresse du site, sans <code>/</code> final (sert aussi à l'adresse des images produits).</td></tr>
+    <tr><td><code>FRONTEND_URL</code></td><td>Adresse de l'application, ici identique à <code>APP_URL</code> : utilisée dans les liens « mot de passe oublié » et seule autorisée à appeler l'API.</td></tr>
+    <tr><td><code>TOKEN_DAYS</code></td><td>Durée d'une connexion avant de devoir se reconnecter (30 jours par défaut).</td></tr>
+    <tr><td><code>APP_KEY</code></td><td>Laissée vide : générée au chapitre 6.</td></tr>
   </tbody>
 </table>
-<p>Le haut du fichier <code>.env.example</code> liste tous les secrets : n'en laissez <b>aucun</b> à sa valeur par défaut. Démarrez ensuite :</p>
-<pre><code>sh run.sh start        <span class="c"># équivaut à docker compose up -d --wait</span>
-sh run.sh status       <span class="c"># tous les services doivent être « healthy »</span></code></pre>
-
-<h2>5.3 Fermer les ports internes</h2>
-<p>Par défaut, Docker publie sur Internet le port de l'API (<code>8000</code>) et ceux de PostgreSQL (<code>5432</code>, <code>6543</code>). Seuls les ports <b>22</b> (SSH), <b>80</b> et <b>443</b> doivent être ouverts.</p>
-<div class="box danger"><span class="t">Piège courant</span>
-Le pare-feu <code>ufw</code> <b>ne s'applique pas</b> aux ports publiés par Docker. Il faut ajouter la règle dans la chaîne <code>DOCKER-USER</code> :
+<div class="box info"><span class="t">Fuseau horaire</span>
+L'API fonctionne en temps universel (UTC), identique à l'heure de Lomé toute l'année : les heures des ventes et des déclarations sont donc justes sans réglage.
 </div>
-<pre><code>ip route | grep default          <span class="c"># repérez l'interface publique, par exemple eth0 ou ens3</span>
-iptables -I DOCKER-USER -i eth0 -p tcp -m multiport --dports 8000,5432,6543 -j DROP
-apt install -y iptables-persistent &amp;&amp; netfilter-persistent save</code></pre>
-<p>Le serveur web installé à l'étape suivante accède à l'API en local (<code>localhost:8000</code>) : il n'est pas concerné par ce blocage. Vérifiez depuis un autre ordinateur que <code>http://&lt;ip-du-vps&gt;:8000</code> ne répond plus.</p>
-
-<h2>5.4 HTTPS et site web avec Caddy</h2>
-<p>Caddy obtient et renouvelle automatiquement les certificats Let's Encrypt.</p>
-<pre><code>apt install -y caddy
-mkdir -p /var/www/mm-stock
-cat &gt; /etc/caddy/Caddyfile &lt;&lt;'CADDY'
-api.mmcosmetiques.com {
-    reverse_proxy localhost:8000
-}
-
-stock.mmcosmetiques.com {
-    root * /var/www/mm-stock
-    encode gzip
-    try_files {path} /index.html
-    file_server
-}
-CADDY
-systemctl reload caddy</code></pre>
-<p>Supabase Studio est alors accessible sur <code>https://api.mmcosmetiques.com</code>, protégé par <code>DASHBOARD_USERNAME</code> / <code>DASHBOARD_PASSWORD</code>.</p>
-
-<h2>5.5 Installer la base de l'application</h2>
-<p>Dans le conteneur de la base, les connexions via <code>localhost</code> sont acceptées sans mot de passe : c'est pourquoi les commandes passent <code>-h localhost</code>. Les migrations s'exécutent avec le rôle <code>postgres</code>, comme sur Supabase Cloud.</p>
-<pre><code>git clone https://github.com/siaoctawacta/gestiondestock /opt/gestiondestock
-cd /opt/gestiondestock/backend/supabase
-
-<span class="c"># Migrations, dans l'ordre (les noms de fichiers sont horodatés)</span>
-for f in migrations/*.sql; do
-  echo "== $f"
-  docker exec -i supabase-db psql -h localhost -v ON_ERROR_STOP=1 -U postgres -d postgres &lt; "$f" || break
-done
-
-<span class="c"># Données de départ : UNE SEULE FOIS, sur une base vide</span>
-docker exec -i supabase-db psql -h localhost -v ON_ERROR_STOP=1 -U postgres -d postgres &lt; seed.sql
-
-<span class="c"># Fonctions serveur : à côté du dossier « main » fourni par Supabase</span>
-cp -r functions/admin-users functions/verify-supervisor /opt/supabase/volumes/functions/
-cd /opt/supabase &amp;&amp; sh run.sh restart functions</code></pre>
-
-<p>Créez le premier Super Admin dans Studio (<i>Authentication → Add user</i>), puis :</p>
-<pre><code>docker exec -i supabase-db psql -h localhost -U postgres -d postgres -c \
-  "update public.users set role_id = 'super_admin', first_name = 'Prénom', last_name = 'Nom' where email = 'vous@mmcosmetiques.com';"</code></pre>
-
-<h2>5.6 Construire et publier le frontend</h2>
-<p>Sur votre poste, <code>frontend/.env</code> contient :</p>
-<pre><code>VITE_SUPABASE_URL=https://api.mmcosmetiques.com
-VITE_SUPABASE_ANON_KEY=&lt;ANON_KEY du fichier /opt/supabase/.env&gt;</code></pre>
-<pre><code>cd frontend &amp;&amp; npm ci &amp;&amp; npm run build
-rsync -av --delete dist/ root@&lt;ip-du-vps&gt;:/var/www/mm-stock/</code></pre>
-<p>Avec Caddy, le fichier <code>.htaccess</code> n'est pas utilisé : la directive <code>try_files</code> du Caddyfile joue le même rôle.</p>
 
 <!-- ===================================================== 6 -->
 <span class="chapter-no">Chapitre 6</span>
-<h1 class="chapter">Mise en service : vérifications finales</h1>
-<p class="lead">À dérouler avant d'ouvrir l'application aux utilisateurs, quelle que soit l'option.</p>
+<h1 class="chapter">Installer la base et le premier compte</h1>
+<p class="lead">Quelques commandes Laravel (<i>artisan</i>) créent les tables, les boutiques et le compte Super Admin.</p>
 
-<h2>Liste de contrôle technique</h2>
-<ul class="check">
-  <li>Le site s'ouvre en <b>HTTPS</b>, avec un cadenas valide, et <code>http://</code> redirige vers <code>https://</code>.</li>
-  <li><b>Aucun bandeau « Mode démo »</b> n'apparaît en haut des pages.</li>
-  <li>Recharger directement <code>/pos</code> ou <code>/stores</code> affiche la page (pas d'erreur 404).</li>
-  <li>Le Super Admin se connecte ; un compte inconnu ou un mauvais mot de passe est refusé.</li>
-  <li>Le lien « Mot de passe oublié » envoie bien un email, et le lien reçu ouvre la page de nouveau mot de passe.</li>
-  <li>Création d'un utilisateur depuis l'écran <b>Utilisateurs</b> : fonctionne (cela valide la fonction <code>admin-users</code>).</li>
-  <li>Une vente test en caisse avec remise de plus de 15 % demande bien la validation d'un superviseur (fonction <code>verify-supervisor</code>).</li>
-  <li>La vente test apparaît dans l'historique et le stock de la boutique a diminué.</li>
-  <li>Un caissier d'une boutique A ne voit <b>ni les ventes ni le stock</b> d'une boutique B.</li>
-  <li>Le ticket PDF et un export PDF / Excel se génèrent correctement.</li>
-  <li><b>Option B :</b> les ports 8000, 5432 et 6543 ne répondent pas depuis l'extérieur ; une première sauvegarde a été faite <b>et restaurée avec succès</b> sur une base de test.</li>
-</ul>
+<h2>6.1 Ouvrir un terminal</h2>
+<p>Dans l'<b>espace client LWS</b>, ouvrez la <b>gestion du service</b> de votre hébergement puis <b>Terminal SSH</b>. À défaut : cPanel → <b>Terminal</b>, ou un client SSH (PuTTY, Terminal) avec les identifiants SSH fournis par LWS.</p>
 
-<h2>Liste de contrôle des données</h2>
-<ul class="check">
-  <li>Les boutiques réelles sont créées (codes, adresses, responsables) et les boutiques d'exemple inutiles supprimées.</li>
-  <li>Le catalogue réel est saisi : prix d'achat HT, prix de vente TTC, taux de TVA, codes-barres EAN13, seuils minimum.</li>
-  <li>Le stock initial de chaque boutique est saisi par des <b>entrées de stock</b> (avec numéro de lot et date de péremption).</li>
-  <li>Les comptes utilisateurs sont créés avec le bon rôle et la bonne boutique.</li>
-  <li>Les ventes de test sont identifiées, ou faites sur un environnement séparé.</li>
-</ul>
+<h2>6.2 Commandes d'installation</h2>
+<pre><code>cd ~/mm-stockpro
+php -v                               <span class="c"># doit afficher 8.2 ou plus</span>
+php artisan key:generate --force     <span class="c"># clé de chiffrement, UNE SEULE FOIS</span>
+php artisan migrate --force          <span class="c"># crée toutes les tables</span>
+php artisan db:seed --force          <span class="c"># rôles, boutiques Agbalépédo et Cacaveli, catégories</span>
+php artisan mm:create-admin votre.email@mmconsultingtg.com --first=Prénom --last=Nom
+php artisan optimize                 <span class="c"># met la configuration en cache</span>
+chmod -R 775 storage bootstrap/cache public/uploads</code></pre>
+<p><code>mm:create-admin</code> demande le mot de passe du premier <b>Super Admin</b> (8 caractères minimum, non affiché à la saisie). Tous les autres comptes se créent ensuite depuis l'écran <b>Utilisateurs</b> de l'application.</p>
+<div class="box warn"><span class="t">Version de PHP dans le terminal</span>
+Le terminal peut utiliser une autre version de PHP que celle choisie dans cPanel. Si <code>php -v</code> affiche une version inférieure à 8.2, utilisez le chemin complet, par exemple <code>/opt/alt/php83/usr/bin/php artisan …</code> (ou <code>/opt/cpanel/ea-php83/root/usr/bin/php</code> selon le serveur).
+</div>
+<div class="box danger"><span class="t">La clé APP_KEY</span>
+Ne relancez jamais <code>key:generate</code> sur une installation en service : toutes les connexions en cours seraient invalidées. Conservez une copie du fichier <code>.env</code> dans votre gestionnaire de mots de passe.
+</div>
+
+<h2>6.3 Catalogue de formation (facultatif)</h2>
+<p>Pour former le personnel sur le serveur avant le démarrage réel, la commande suivante ajoute 30 produits de démonstration et 50 unités de stock par boutique :</p>
+<pre><code>php artisan db:seed --class=DemoCatalogSeeder --force</code></pre>
+<p>À <b>ne pas</b> lancer sur une base contenant déjà le vrai catalogue. Pour repartir d'une base vierge après la formation : <code>php artisan migrate:fresh --seed --force</code> puis de nouveau <code>mm:create-admin</code> (<b>efface toutes les données</b>).</p>
 
 <!-- ===================================================== 7 -->
 <span class="chapter-no">Chapitre 7</span>
-<h1 class="chapter">Exploitation courante</h1>
-<p class="lead">Mises à jour, sauvegardes, restauration et consultation des journaux.</p>
-
-<h2>7.1 Publier une nouvelle version</h2>
-<p>Ordre à respecter quand une version modifie aussi la base : <b>migrations d'abord, frontend ensuite</b>.</p>
-<pre><code>git pull                                   <span class="c"># récupérer la nouvelle version</span>
-
-<span class="c"># 1. Base de données — option A</span>
-cd backend &amp;&amp; supabase db push --remote --dry-run     <span class="c"># prévisualiser</span>
-supabase db push --remote
-
-<span class="c"># 1. Base de données — option B (sur le VPS, pour chaque nouvelle migration)</span>
-docker exec -i supabase-db psql -h localhost -v ON_ERROR_STOP=1 -U postgres -d postgres \
-  &lt; backend/supabase/migrations/&lt;nouveau-fichier&gt;.sql
-
-<span class="c"># 2. Frontend</span>
-cd frontend &amp;&amp; npm ci &amp;&amp; npm run build
-<span class="c"># option A : remplacer le contenu du dossier racine cPanel par celui de dist/ (garder .htaccess)</span>
-<span class="c"># option B : rsync -av --delete dist/ root@&lt;ip-du-vps&gt;:/var/www/mm-stock/</span></code></pre>
-<p>Si une fonction serveur a changé : <code>supabase functions deploy &lt;nom&gt;</code> (option A), ou recopier son dossier dans <code>/opt/supabase/volumes/functions/</code> puis <code>sh run.sh restart functions</code> (option B).</p>
-
-<h2>7.2 Sauvegardes</h2>
-<h3>Option A — Supabase Cloud</h3>
-<p>Supabase sauvegarde automatiquement la base selon l'offre souscrite (<i>Database → Backups</i>). Pour une copie complète sous votre contrôle (Docker Desktop requis sur le poste) :</p>
-<pre><code>cd backend
-supabase db dump --remote --role-only -f roles.sql
-supabase db dump --remote -f schema.sql
-supabase db dump --remote --data-only --use-copy -f data.sql</code></pre>
-
-<h3>Option B — VPS</h3>
-<p>Les sauvegardes complètes se font avec le superutilisateur <code>supabase_admin</code>. Sauvegarde automatique chaque nuit à 2 h, avec 14 jours d'historique (<code>crontab -e</code>) :</p>
-<pre><code>mkdir -p /root/backups
-0 2 * * * docker exec supabase-db pg_dump -h localhost -U supabase_admin -d postgres -Fc &gt; /root/backups/mm-$(date +\%F).dump &amp;&amp; find /root/backups -name 'mm-*.dump' -mtime +14 -delete</code></pre>
-<div class="box warn"><span class="t">Copier hors du serveur</span>
-Une sauvegarde qui reste sur le VPS disparaît avec lui. Copiez régulièrement <code>/root/backups</code> ailleurs (poste local, stockage externe), par exemple : <code>rsync -av root@&lt;ip-du-vps&gt;:/root/backups/ ./sauvegardes-mm/</code>.
-</div>
-
-<h2>7.3 Restaurer</h2>
-<p><b>Option A</b>, dans un projet vide (chaîne de connexion du projet cible) :</p>
-<pre><code>psql "&lt;chaîne de connexion&gt;" --single-transaction --variable ON_ERROR_STOP=1 \
-  --file roles.sql --file schema.sql \
-  --command 'SET session_replication_role = replica' --file data.sql</code></pre>
-<p><b>Option B</b> :</p>
-<pre><code>docker exec -i supabase-db pg_restore -h localhost --clean --if-exists -U supabase_admin -d postgres &lt; /root/backups/mm-AAAA-MM-JJ.dump</code></pre>
-<div class="box tip"><span class="t">Tester ses sauvegardes</span>
-Une sauvegarde n'a de valeur que si sa restauration a été testée. Faites l'essai une fois par trimestre sur un projet ou un serveur de test, jamais directement sur la production.
-</div>
-
-<h2>7.4 Surveillance et commandes du quotidien</h2>
-<table>
-  <thead><tr><th style="width:28%">Besoin</th><th>Option A (Supabase Cloud)</th><th>Option B (VPS, dans <code>/opt/supabase</code>)</th></tr></thead>
-  <tbody>
-    <tr><td>État des services</td><td>Tableau de bord Supabase</td><td><code>sh run.sh status</code></td></tr>
-    <tr><td>Journaux</td><td><i>Logs</i> : API, Auth, Postgres, Edge Functions</td><td><code>sh run.sh logs</code> ou <code>sh run.sh logs auth</code> (aussi <code>rest</code>, <code>db</code>, <code>functions</code>, <code>storage</code>)</td></tr>
-    <tr><td>Redémarrer</td><td>Non nécessaire</td><td><code>sh run.sh restart</code>, ou un service : <code>sh run.sh restart functions</code></td></tr>
-    <tr><td>Mettre à jour Supabase</td><td>Automatique</td><td>Après une sauvegarde : <code>sh update.sh --dry-run</code>, <code>sh update.sh</code>, puis <code>sh run.sh pull &amp;&amp; sh run.sh recreate</code></td></tr>
-    <tr><td>Mises à jour du système</td><td>—</td><td><code>apt update &amp;&amp; apt upgrade</code> chaque mois</td></tr>
-    <tr><td>Espace disque</td><td>Quotas du tableau de bord</td><td><code>df -h</code> et <code>docker system df</code></td></tr>
-  </tbody>
-</table>
+<h1 class="chapter">Mise en service</h1>
+<p class="lead">Liste de contrôle à dérouler avant d'ouvrir l'application au personnel.</p>
+<ul class="check">
+  <li><code>https://stockpro.mmconsultingtg.com/api/health</code> affiche <code>{"status":"ok", …}</code>.</li>
+  <li><code>https://stockpro.mmconsultingtg.com/.env</code> ne s'affiche <b>pas</b> (erreur 403 ou 404).</li>
+  <li><code>https://stockpro.mmconsultingtg.com</code> affiche l'écran de connexion <b>sans</b> bandeau « Mode démo », avec le cadenas HTTPS.</li>
+  <li>Connexion avec le Super Admin réussie ; actualiser une page (F5) sur <code>/pos</code> ne donne pas d'erreur 404.</li>
+  <li><b>Boutiques</b> : adresses et téléphones d'Agbalépédo et de Cacaveli vérifiés.</li>
+  <li><b>Catalogue</b> : un produit créé avec une image, l'image s'affiche.</li>
+  <li><b>Utilisateurs</b> : comptes du personnel créés, chacun rattaché à sa boutique et à son rôle.</li>
+  <li><b>Mot de passe oublié</b> testé depuis l'écran de connexion : l'email arrive, le lien ouvre <code>stockpro.mmconsultingtg.com/reset-password</code>.</li>
+  <li>Une vente test encaissée en caisse, visible dans l'historique et dans le stock, puis une déclaration du jour envoyée et validée.</li>
+  <li>Première sauvegarde de la base effectuée (chapitre 8).</li>
+</ul>
 
 <!-- ===================================================== 8 -->
 <span class="chapter-no">Chapitre 8</span>
-<h1 class="chapter">Sécurité</h1>
-<p class="lead">Principes intégrés à l'application, et règles à respecter côté hébergement.</p>
+<h1 class="chapter">Exploitation courante</h1>
+<p class="lead">Mettre à jour l'application, sauvegarder, consulter les journaux.</p>
 
-<h2>Ce que l'application garantit</h2>
+<h2>8.1 Mettre à jour l'application</h2>
+<ol class="steps">
+  <li>Fabriquez de nouvelles archives (chapitre 3).</li>
+  <li>Sauvegardez la base (8.2).</li>
+  <li>Dans le Gestionnaire de fichiers, renommez <code>mm-stockpro</code> en <code>mm-stockpro-ancien</code>, puis extrayez le nouveau <code>mm-stockpro.zip</code>.</li>
+  <li>Recopiez dans le nouveau <code>mm-stockpro/</code> le fichier <code>.env</code> et le dossier <code>public/uploads</code> de <code>mm-stockpro-ancien</code>.</li>
+  <li>Dans le terminal :
+<pre><code>cd ~/mm-stockpro
+php artisan migrate --force
+php artisan optimize
+chmod -R 775 storage bootstrap/cache public/uploads</code></pre></li>
+  <li>Vérifiez l'application, puis supprimez <code>mm-stockpro-ancien</code>.</li>
+</ol>
+<p>Pendant l'opération, <code>php artisan down</code> affiche un message de maintenance ; <code>php artisan up</code> rouvre l'accès.</p>
+
+<h2>8.2 Sauvegardes</h2>
+<table>
+  <thead><tr><th style="width:28%">Quoi</th><th>Comment</th></tr></thead>
+  <tbody>
+    <tr><td>Base (manuel)</td><td>cPanel → <b>Sauvegarde</b> → <i>Télécharger une sauvegarde de base de données MySQL</i>, ou phpMyAdmin → <b>Exporter</b>.</td></tr>
+    <tr><td>Base (automatique)</td><td>Voir la tâche Cron ci-dessous.</td></tr>
+    <tr><td>Images produits</td><td>Dossier <code>mm-stockpro/public/uploads</code> : Gestionnaire de fichiers → <b>Compress</b>, puis téléchargement.</td></tr>
+    <tr><td>Configuration</td><td>Fichier <code>mm-stockpro/.env</code>, dans le gestionnaire de mots de passe.</td></tr>
+  </tbody>
+</table>
+<p>Sauvegarde automatique chaque nuit : créez le dossier <code>~/sauvegardes</code>, puis cPanel → <b>Tâches Cron</b>, réglage « une fois par jour », commande :</p>
+<pre><code>mysqldump --no-tablespaces -u cpaneluser_mmstock -p'MOTDEPASSE' cpaneluser_mmstock | gzip &gt; ~/sauvegardes/mm-$(date +\%F).sql.gz &amp;&amp; find ~/sauvegardes -name 'mm-*.sql.gz' -mtime +14 -delete</code></pre>
+<div class="box warn"><span class="t">Copie hors de l'hébergement</span>
+Téléchargez régulièrement (au moins chaque semaine) une sauvegarde sur un autre support : une sauvegarde restée sur l'hébergement disparaît avec lui.
+</div>
+<p><b>Restaurer</b> : phpMyAdmin → base <code>cpaneluser_mmstock</code> → <b>Importer</b> le fichier <code>.sql</code> (décompressé).</p>
+
+<h2>8.3 Journaux</h2>
 <ul>
-  <li><b>Sécurité par boutique (RLS)</b> activée sur toutes les tables : un utilisateur ne lit et n'écrit que les données de ses boutiques, même en appelant l'API directement.</li>
-  <li><b>Aucune écriture directe</b> sur le stock, les ventes, les transferts ou les déclarations : tout passe par des fonctions de la base qui vérifient le rôle et la boutique.</li>
-  <li>Les <b>totaux de vente sont recalculés</b> par la base à partir des prix du catalogue : un poste modifié ne peut pas changer un prix.</li>
-  <li>Le journal des mouvements de stock et le journal d'audit sont <b>inaltérables</b>.</li>
-  <li>Seul le <b>Super Admin</b> crée, modifie ou supprime des boutiques et des comptes et attribue les rôles.</li>
+  <li>Erreurs de l'API : <code>mm-stockpro/storage/logs/laravel-AAAA-MM-JJ.log</code> (un fichier par jour, 14 jours conservés).</li>
+  <li>Actions des utilisateurs (créations, modifications, remises, validations) : écran <b>Journal d'audit</b> de l'application, réservé au Super Admin.</li>
 </ul>
 
-<h2>Règles d'exploitation</h2>
+<h2>8.4 Opérations courantes</h2>
 <table>
-  <thead><tr><th style="width:32%">Élément</th><th>Règle</th></tr></thead>
+  <thead><tr><th style="width:40%">Besoin</th><th>Commande (depuis <code>~/mm-stockpro</code>)</th></tr></thead>
   <tbody>
-    <tr><td>Clé <code>service_role</code> / <code>SERVICE_ROLE_KEY</code></td><td>Jamais dans le frontend, un email, une capture ou le dépôt Git. À régénérer si elle a fuité.</td></tr>
-    <tr><td>Fichier <code>.env</code></td><td>Jamais dans le dépôt (déjà exclu par <code>.gitignore</code>). Sur le VPS : <code>chmod 600 /opt/supabase/.env</code>.</td></tr>
-    <tr><td>Mots de passe</td><td>Gestionnaire de mots de passe ; un compte par personne, jamais de compte partagé en caisse.</td></tr>
-    <tr><td>Départ d'un employé</td><td>Désactiver ou supprimer son compte le jour même (écran Utilisateurs).</td></tr>
-    <tr><td>Accès SSH (option B)</td><td>Connexion par clé SSH, puis désactiver la connexion root par mot de passe.</td></tr>
-    <tr><td>Super Admins</td><td>En limiter le nombre (deux personnes de confiance) ; l'application empêche de retirer le dernier.</td></tr>
-    <tr><td>Sauvegardes</td><td>Quotidiennes, copiées hors du serveur, restauration testée chaque trimestre.</td></tr>
+    <tr><td>Super Admin oublié ou bloqué</td><td><code>php artisan mm:create-admin email --first=… --last=…</code> (crée le compte ou redéfinit son mot de passe)</td></tr>
+    <tr><td>Prise en compte d'une modification du <code>.env</code></td><td><code>php artisan optimize</code></td></tr>
+    <tr><td>Maintenance</td><td><code>php artisan down</code> / <code>php artisan up</code></td></tr>
+    <tr><td>État des migrations</td><td><code>php artisan migrate:status</code></td></tr>
   </tbody>
 </table>
 
 <!-- ===================================================== 9 -->
 <span class="chapter-no">Chapitre 9</span>
-<h1 class="chapter">Dépannage</h1>
-<p class="lead">Problèmes les plus probables lors de la mise en ligne, et leur solution.</p>
+<h1 class="chapter">Sécurité</h1>
+<p class="lead">Ce que l'application garantit, et ce qui reste à votre charge.</p>
 
-<table>
-  <thead><tr><th style="width:28%">Symptôme</th><th style="width:30%">Cause probable</th><th>Solution</th></tr></thead>
-  <tbody>
-    <tr><td>Erreur 404 en rechargeant <code>/pos</code> ou une autre page</td><td>Fichier <code>.htaccess</code> absent (fichier caché non envoyé)</td><td>Afficher les fichiers cachés dans le gestionnaire de fichiers ou FTP, et envoyer <code>.htaccess</code> depuis <code>dist/</code>.</td></tr>
-    <tr><td>Bandeau « Mode démo » en production</td><td>Build fait sans <code>frontend/.env</code></td><td>Renseigner <code>VITE_SUPABASE_URL</code> et <code>VITE_SUPABASE_ANON_KEY</code>, reconstruire, republier.</td></tr>
-    <tr><td>Page blanche après une mise à jour</td><td>Ancien <code>index.html</code> en cache, ou dossier <code>assets/</code> incomplet</td><td>Republier tout le contenu de <code>dist/</code> ; vider le cache du navigateur (<kbd>Ctrl</kbd>+<kbd>F5</kbd>).</td></tr>
-    <tr><td>« Invalid API key » à la connexion</td><td>Clé anon erronée, ou clé d'un autre projet</td><td>Recopier la clé <b>anon</b> du bon projet dans <code>.env</code> et reconstruire.</td></tr>
-    <tr><td>« Profil utilisateur introuvable »</td><td>Compte créé dans Auth avant l'application des migrations</td><td>Appliquer les migrations, puis recréer le compte (ou insérer sa ligne dans <code>public.users</code>).</td></tr>
-    <tr><td>Erreurs « permission denied » ou fonctions introuvables</td><td>Migrations non appliquées au projet en ligne (<code>--remote</code> oublié)</td><td><code>supabase db push --remote</code> ; vérifier dans <i>Database → Migrations</i>.</td></tr>
-    <tr><td>Création d'utilisateur impossible</td><td>Fonction <code>admin-users</code> non déployée, ou compte non Super Admin</td><td>Déployer la fonction ; vérifier le rôle du compte connecté.</td></tr>
-    <tr><td>Remise &gt; 15 % : validation superviseur en échec</td><td>Fonction <code>verify-supervisor</code> non déployée</td><td>Déployer la fonction (option A) ou la copier dans <code>volumes/functions</code> (option B).</td></tr>
-    <tr><td>Email « mot de passe oublié » non reçu</td><td>SMTP non configuré, ou URL de redirection absente</td><td>Configurer le SMTP ; ajouter <code>…/reset-password</code> aux URL de redirection ; vérifier les spams.</td></tr>
-    <tr><td>Site en HTTPS mais erreurs « mixed content »</td><td>URL de l'API en <code>http://</code></td><td>Utiliser <code>https://</code> dans <code>VITE_SUPABASE_URL</code> et dans le <code>.env</code> Supabase.</td></tr>
-    <tr><td>Option B : un service reste « unhealthy »</td><td>Secret mal renseigné, mémoire insuffisante</td><td><code>sh run.sh logs &lt;service&gt;</code> ; vérifier <code>.env</code> ; VPS de 4 Go minimum.</td></tr>
-    <tr><td>Option B : disque plein</td><td>Sauvegardes ou journaux accumulés</td><td><code>df -h</code> ; purger les anciennes sauvegardes copiées ailleurs ; <code>docker system prune</code> (images inutilisées).</td></tr>
-  </tbody>
-</table>
+<h2>Garanties de l'application</h2>
+<ul>
+  <li><b>Chaque requête est contrôlée par l'API</b> : connexion valide, compte actif, droit du rôle et boutique de l'utilisateur. Un caissier ou un responsable ne voit et ne modifie que sa boutique.</li>
+  <li><b>Totaux de vente recalculés par le serveur</b> à partir du catalogue ; une remise supérieure à 15 % exige le mot de passe d'un responsable.</li>
+  <li>Stock jamais négatif (verrouillage des lignes pendant chaque vente ou transfert), transferts atomiques.</li>
+  <li>Mouvements de stock et journal d'audit <b>non modifiables</b>.</li>
+  <li>Seul le Super Admin crée, modifie ou supprime boutiques et comptes ; les suppressions sont logiques (l'historique est conservé).</li>
+  <li>Mots de passe chiffrés (bcrypt), 10 tentatives de connexion par minute au maximum, API accessible uniquement depuis l'adresse de l'application.</li>
+</ul>
+
+<h2>À votre charge</h2>
+<ul class="check">
+  <li><code>APP_DEBUG=false</code> et racine du sous-domaine sur <code>mm-stockpro/public</code>.</li>
+  <li>HTTPS actif sur <code>stockpro.mmconsultingtg.com</code>.</li>
+  <li>Mots de passe forts et différents pour cPanel, la base, l'email et le Super Admin ; double authentification activée sur l'espace client LWS et sur cPanel si proposée.</li>
+  <li>Un compte nominatif par personne : jamais de compte partagé en caisse.</li>
+  <li>Désactivation immédiate du compte d'un employé qui quitte l'entreprise (écran <b>Utilisateurs</b>).</li>
+  <li>Sauvegardes testées : restaurez une sauvegarde sur une base de test au moins une fois.</li>
+  <li>Mises à jour de l'application appliquées (chapitre 8).</li>
+</ul>
 
 <!-- ===================================================== 10 -->
 <span class="chapter-no">Chapitre 10</span>
-<h1 class="chapter">Annexes</h1>
+<h1 class="chapter">Dépannage et annexes</h1>
+<p class="lead">Les problèmes les plus fréquents et leur solution.</p>
 
-<h2>A. Arborescence du dépôt</h2>
-<pre><code>frontend/                 application React (interface, exports, ticket de caisse)
-  public/.htaccess        règles Apache pour l'hébergement LWS
-  .env.example            modèle des variables VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY
-  scripts/                générateur de backend/supabase/seed.sql
-backend/supabase/
-  migrations/             schéma, fonctions, déclencheurs, règles RLS (ordre chronologique)
-  functions/              admin-users, verify-supervisor (Edge Functions)
-  tests/                  tests de sécurité RLS (pgTAP)
-  seed.sql                référentiels de départ
-.github/workflows/ci.yml  vérifications automatiques (frontend + backend)</code></pre>
-
-<h2>B. Variables du frontend</h2>
 <table>
-  <thead><tr><th style="width:35%">Variable</th><th>Option A</th><th>Option B</th></tr></thead>
+  <thead><tr><th style="width:34%">Symptôme</th><th style="width:33%">Cause probable</th><th>Solution</th></tr></thead>
   <tbody>
-    <tr><td><code>VITE_SUPABASE_URL</code></td><td><code>https://&lt;ref&gt;.supabase.co</code></td><td><code>https://api.mmcosmetiques.com</code></td></tr>
-    <tr><td><code>VITE_SUPABASE_ANON_KEY</code></td><td>Clé <i>anon public</i> (Project Settings → API)</td><td><code>ANON_KEY</code> de <code>/opt/supabase/.env</code></td></tr>
+    <tr><td>Erreur 500 sur l'API</td><td><code>.env</code> incomplet, clé absente, droits des dossiers</td><td>Lire le dernier fichier de <code>storage/logs/</code> ; vérifier <code>key:generate</code> et <code>chmod</code> (chapitre 6)</td></tr>
+    <tr><td>« Failed to fetch » ou erreur réseau à la connexion</td><td>Archive construite pour une autre adresse, ou certificat SSL absent</td><td>Refabriquer l'archive avec <code>https://stockpro.mmconsultingtg.com</code> ; activer le SSL (4.4)</td></tr>
+    <tr><td>Bandeau « Mode démo » en production</td><td>Archive construite sans adresse du site</td><td>Refabriquer <code>mm-stockpro.zip</code> (chapitre 3)</td></tr>
+    <tr><td>Erreur 404 en actualisant une page</td><td><code>.htaccess</code> absent de <code>mm-stockpro/public/</code></td><td>Afficher les fichiers cachés et réextraire l'archive</td></tr>
+    <tr><td><code>SQLSTATE[HY000] [1045]</code> ou <code>[1044]</code></td><td>Identifiants MySQL faux ou utilisateur non rattaché à la base</td><td>Vérifier le <code>.env</code> et l'étape 4.2</td></tr>
+    <tr><td>Le site liste des fichiers (« Index of ») ou affiche du code</td><td>Racine du sous-domaine mal réglée</td><td>Racine = <code>mm-stockpro/public</code> (4.3)</td></tr>
+    <tr><td>Images produits non affichées</td><td>Droits d'écriture ou <code>APP_URL</code> erroné</td><td><code>chmod -R 775 public/uploads</code> ; vérifier <code>APP_URL</code></td></tr>
+    <tr><td>Emails non reçus</td><td>Identifiants SMTP, port, spam</td><td>Tester la boîte dans le Webmail ; vérifier <code>MAIL_*</code> puis <code>php artisan optimize</code></td></tr>
+    <tr><td>« Session expirée » fréquente</td><td>Durée de connexion courte</td><td>Augmenter <code>TOKEN_DAYS</code></td></tr>
+    <tr><td>Modification du <code>.env</code> sans effet</td><td>Configuration en cache</td><td><code>php artisan optimize</code></td></tr>
   </tbody>
 </table>
 
-<h2>C. Aide-mémoire</h2>
+<h2>Aide-mémoire</h2>
 <table>
-  <thead><tr><th style="width:36%">Action</th><th>Commande</th></tr></thead>
+  <thead><tr><th style="width:40%">Élément</th><th>Valeur</th></tr></thead>
   <tbody>
-    <tr><td>Construire le site</td><td><code>cd frontend &amp;&amp; npm ci &amp;&amp; npm run build</code></td></tr>
-    <tr><td>Appliquer les migrations (A)</td><td><code>cd backend &amp;&amp; supabase db push --remote</code></td></tr>
-    <tr><td>Déployer une fonction (A)</td><td><code>supabase functions deploy &lt;nom&gt;</code></td></tr>
-    <tr><td>Sauvegarder (A)</td><td><code>supabase db dump --remote [--role-only | --data-only --use-copy] -f &lt;fichier&gt;</code></td></tr>
-    <tr><td>État / journaux (B)</td><td><code>sh run.sh status</code> · <code>sh run.sh logs &lt;service&gt;</code></td></tr>
-    <tr><td>Appliquer une migration (B)</td><td><code>docker exec -i supabase-db psql -h localhost -v ON_ERROR_STOP=1 -U postgres -d postgres &lt; &lt;fichier&gt;</code></td></tr>
-    <tr><td>Sauvegarder (B)</td><td><code>docker exec supabase-db pg_dump -h localhost -U supabase_admin -d postgres -Fc &gt; &lt;fichier&gt;.dump</code></td></tr>
-    <tr><td>Publier le site (B)</td><td><code>rsync -av --delete dist/ root@&lt;ip-du-vps&gt;:/var/www/mm-stock/</code></td></tr>
+    <tr><td>Application</td><td><code>https://stockpro.mmconsultingtg.com</code></td></tr>
+    <tr><td>API</td><td><code>https://stockpro.mmconsultingtg.com/api</code></td></tr>
+    <tr><td>Dossier sur le serveur</td><td><code>~/mm-stockpro</code> (racine du sous-domaine : <code>~/mm-stockpro/public</code>)</td></tr>
+    <tr><td>Test de l'API</td><td><code>/api/health</code></td></tr>
+    <tr><td>Base</td><td><code>cpaneluser_mmstock</code> sur <code>localhost</code></td></tr>
+    <tr><td>Configuration</td><td><code>~/mm-stockpro/.env</code></td></tr>
+    <tr><td>Journaux</td><td><code>~/mm-stockpro/storage/logs/</code></td></tr>
+    <tr><td>Images produits</td><td><code>~/mm-stockpro/public/uploads/products/</code></td></tr>
+    <tr><td>Boutiques créées à l'installation</td><td>MM Cosmétiques Agbalépédo (<code>BTQ-AGB</code>) et MM Cosmétiques Cacaveli (<code>BTQ-CAC</code>), Lomé, (+228) 93 65 53 41</td></tr>
   </tbody>
 </table>
 
-<h2>D. Références</h2>
-<ul class="small">
-  <li>README du dépôt, section « Déploiement sur un serveur LWS » (même contenu, tenu à jour avec le code).</li>
-  <li>Supabase — auto-hébergement avec Docker : github.com/supabase/supabase/tree/master/docker et supabase.com/docs/guides/self-hosting/docker</li>
-  <li>Aide LWS — bases PostgreSQL sur l'hébergement cPanel : help.lwshosting.com/a/1798 ; modèle VPS Docker CE : aide.lwshosting.com/a/1932</li>
-</ul>
+<h2>Rôles disponibles</h2>
+<table>
+  <thead><tr><th style="width:28%">Rôle</th><th>Périmètre</th></tr></thead>
+  <tbody>
+    <tr><td>Super Admin</td><td>Tout le réseau ; seul à gérer boutiques, comptes et rôles</td></tr>
+    <tr><td>Admin Boutique</td><td>Ses boutiques : caisse, catalogue, stocks et transferts, validation des déclarations, rapports</td></tr>
+    <tr><td>Responsable Boutique</td><td>Sa boutique : caisse, stock, réception des transferts, validation des remises</td></tr>
+    <tr><td>Chef de Pôle</td><td>Ses boutiques : saisie des déclarations journalières, consultation des ventes, stocks et rapports</td></tr>
+    <tr><td>Caissier</td><td>Sa boutique : caisse et historique de ses ventes</td></tr>
+    <tr><td>Gestionnaire Stock</td><td>Tout le réseau : entrées, ajustements, transferts (pas de caisse)</td></tr>
+  </tbody>
+</table>
+
+<p class="small" style="margin-top:8mm">Le détail du code, des tests et de l'API figure dans <code>README.md</code> et <code>backend/README.md</code> du dépôt. Une variante du backend sur Supabase reste disponible dans <code>backend-supabase/</code>.</p>
 
 </body>
 </html>

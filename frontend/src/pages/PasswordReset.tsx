@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, MailCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
@@ -61,6 +61,10 @@ export function ForgotPasswordPage() {
 
 export function ResetPasswordPage() {
   const navigate = useNavigate()
+  // Lien Laravel : /reset-password?token=…&email=… ; lien Supabase : session de récupération
+  const [params] = useSearchParams()
+  const token = params.get('token')
+  const email = params.get('email')
   const [pw, setPw] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
@@ -76,9 +80,15 @@ export function ResetPasswordPage() {
           if (error || !pw) return
           setLoading(true)
           try {
-            await api.updatePassword(pw)
-            toast.success('Mot de passe mis à jour')
-            navigate('/')
+            if (token && email) {
+              await api.resetPasswordWithToken(token, email, pw)
+              toast.success('Mot de passe mis à jour : connectez-vous avec le nouveau mot de passe')
+              navigate('/login')
+            } else {
+              await api.updatePassword(pw)
+              toast.success('Mot de passe mis à jour')
+              navigate('/')
+            }
           } catch (err) {
             toast.error(errorMessage(err))
           } finally {
