@@ -1,0 +1,15 @@
+# MM Cosmétiques Stock Pro — hébergements où la racine du sous-domaine est ce dossier
+# (et non public/), par exemple LWS Panel : htdocs/stockpro.mmconsultingtg.com/.
+# Toutes les requêtes sont servies depuis public/ ; le reste (.env, code, vendor/)
+# n'est jamais accessible depuis le web. Inutile si la racine est déjà public/.
+
+Options -Indexes
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>

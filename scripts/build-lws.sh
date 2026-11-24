@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prépare l'archive à téléverser sur l'hébergement cPanel LWS :
+# Prépare l'archive à téléverser sur l'hébergement LWS (dossier htdocs/<sous-domaine>/) :
 #   deploy/mm-stockpro.zip  API Laravel (dépendances vendor/ incluses) + application React
 #                           compilée dans public/ : un seul sous-domaine sert les deux.
 #

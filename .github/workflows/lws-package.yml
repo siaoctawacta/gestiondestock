@@ -43,7 +43,7 @@ jobs:
         run: |
           unzip -q deploy/mm-stockpro.zip -d deploy/artifact
           cd deploy/artifact/mm-stockpro
-          for f in .env.example artisan vendor/autoload.php public/index.php public/index.html public/.htaccess resources/views/.gitkeep; do
+          for f in .htaccess .env.example artisan vendor/autoload.php public/index.php public/index.html public/.htaccess resources/views/.gitkeep; do
             test -e "$f" || { echo "::error::Fichier manquant dans l'archive : $f"; exit 1; }
           done
           grep -rqF "${SITE_URL%/}" public/assets || { echo "::error::Adresse $SITE_URL absente de l'application"; exit 1; }
