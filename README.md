@@ -9,11 +9,11 @@ ERP SaaS de gestion de stock, caisse POS multi-boutiques et business intelligenc
 | Dossier | Contenu | Détails |
 |---|---|---|
 | [`frontend/`](frontend/) | Application React (interface, mode démo, exports) | [frontend/README.md](frontend/README.md) |
-| [`backend/`](backend/) | **API Laravel + MySQL** : backend de production (hébergement cPanel LWS) | [backend/README.md](backend/README.md) |
+| [`backend/`](backend/) | **API Laravel + MySQL** : backend de production (hébergement LWS) | [backend/README.md](backend/README.md) |
 | [`backend-supabase/`](backend-supabase/) | Variante Supabase du backend (PostgreSQL, RLS), conservée comme alternative | [backend-supabase/README.md](backend-supabase/README.md) |
-| [`scripts/build-lws.sh`](scripts/build-lws.sh) | Fabrique l'archive à téléverser sur LWS | voir le guide ci-dessous |
+| [`scripts/build-lws.sh`](scripts/build-lws.sh) | Fabrique `mm-stockpro.zip`, l'archive à téléverser sur LWS | voir le guide ci-dessous |
 
-Mise en ligne : [Déploiement sur LWS (cPanel + Laravel + MySQL)](#déploiement-sur-lws-cpanel--laravel--mysql).
+Mise en ligne : [Déploiement sur LWS (Laravel + MySQL)](#déploiement-sur-lws-laravel--mysql).
 
 Documentation PDF à partager : [documentation technique d'hébergement sur LWS](docs/MM-Cosmetiques-Stock-Pro_Documentation-technique-LWS.pdf) et [guide d'utilisation pour la formation](docs/MM-Cosmetiques-Stock-Pro_Guide-utilisateur.pdf) (sources dans [`docs/`](docs/)).
 
@@ -42,74 +42,81 @@ Sans variable de backend, l'application démarre en **mode démo** : les donnée
 
 Les données démo se réinitialisent depuis **Paramètres → Données de démonstration**.
 
-## Déploiement sur LWS (cPanel + Laravel + MySQL)
+## Déploiement sur LWS (Laravel + MySQL)
 
-Tout s'installe sur l'hébergement web **cPanel** de LWS, sur **un seul sous-domaine** :
+L'application s'installe sur l'hébergement mutualisé LWS (**LWS Panel**), dans le dossier du sous-domaine `stockpro.mmconsultingtg.com` :
 
 | Adresse | Ce qui répond |
 |---|---|
 | `https://stockpro.mmconsultingtg.com` | l'application (écran de connexion, caisse, stocks…) |
 | `https://stockpro.mmconsultingtg.com/api/…` | l'API Laravel, qui lit et écrit dans la base MySQL |
 
-Sur le serveur, un seul dossier `~/mm-stockpro` (hors de `public_html`) contient l'API ; l'application compilée est dans son sous-dossier `public/`, qui est la racine du sous-domaine. Le fichier `public/.htaccess` envoie `/api/…` à Laravel et toutes les autres adresses à l'application.
+### Structure sur le serveur
 
-Remplacez `cpaneluser` par votre identifiant cPanel partout dans ce guide.
+Sur LWS, chaque domaine et sous-domaine a son dossier dans `htdocs/`, qui en est la racine web. L'application occupe tout le dossier du sous-domaine :
 
-> **Le Laravel installé avec l'installateur automatique de LWS** confirme que PHP fonctionne, mais ce n'est qu'un projet vide : il est remplacé par celui de ce dépôt. S'il a créé une base de données, vous pouvez la réutiliser (ses identifiants sont dans son fichier `.env`) ; sinon supprimez cette installation depuis l'installateur pour éviter la confusion. Si cette installation occupe déjà le sous-domaine `stockpro`, supprimez-la avant l'étape 5.
+```
+/home/                                   (« ~ » dans le terminal SSH)
+└── htdocs/
+    ├── index.php, wp-admin/, …          site WordPress de mmconsultingtg.com : ne pas toucher
+    ├── mmcosmetiques.com/, …            autres sites : ne pas toucher
+    └── stockpro.mmconsultingtg.com/     ← contenu de mm-stockpro.zip
+        ├── .htaccess                    renvoie toutes les requêtes vers public/
+        ├── .env                         configuration et mots de passe (créé à l'étape 5)
+        ├── app/ bootstrap/ config/ database/ resources/ routes/ storage/ vendor/
+        └── public/                      seul dossier servi sur le web
+            ├── index.html, assets/      application React
+            ├── index.php                entrée de l'API Laravel (/api/…)
+            ├── .htaccess                /api → Laravel, le reste → application
+            └── uploads/products/        images des produits
+```
 
-### 1. Préparer l'archive
+Le `.htaccess` à la racine fait passer chaque adresse par `public/` : `.env`, `vendor/`, `storage/` et le code ne sont **jamais** accessibles depuis Internet (vérifié : `/.env` → 403, `/composer.json` → application).
 
-Un seul fichier ZIP est à téléverser : `mm-stockpro.zip` (API avec ses dépendances `vendor/`, donc **pas besoin de Composer sur le serveur**, et application compilée pour `stockpro.mmconsultingtg.com`).
+> **Ne déposez pas le code source GitHub** (`gestiondestock-main`) sur le serveur : il ne fonctionne pas tel quel (rien n'est compilé ni installé) et serait lisible par tout le monde. Seule l'archive `mm-stockpro.zip` est à téléverser.
 
-- **Depuis GitHub, sans rien installer** : onglet **Actions** → **Archives LWS** → **Run workflow** ; l'adresse proposée est déjà `https://stockpro.mmconsultingtg.com`. À la fin, téléchargez `mm-stockpro` en bas de la page de l'exécution (GitHub le livre dans un ZIP : décompressez-le une fois pour obtenir `mm-stockpro.zip`).
-- **Depuis un ordinateur** avec PHP 8.2, Composer, Node 20+ et `zip` :
-  ```bash
-  scripts/build-lws.sh https://stockpro.mmconsultingtg.com
-  ```
-  L'archive est créée dans `deploy/`.
+### 1. Récupérer l'archive
 
-### 2. Régler PHP
+GitHub → onglet **Actions** → **Archive LWS** → **Run workflow** (l'adresse proposée est déjà `https://stockpro.mmconsultingtg.com`). Après 2 à 3 minutes, en bas de la page de l'exécution (*Artifacts*), cliquez sur **mm-stockpro** : vous obtenez `mm-stockpro.zip`, à garder tel quel.
 
-cPanel → **Sélectionner une version de PHP** (*Select PHP Version*) :
+Elle contient l'API avec ses dépendances (`vendor/`, donc **pas de Composer sur le serveur**) et l'application déjà compilée pour `stockpro.mmconsultingtg.com`. Depuis un ordinateur avec PHP 8.2, Composer, Node 20+ et `zip`, `scripts/build-lws.sh https://stockpro.mmconsultingtg.com` produit la même archive dans `deploy/`.
 
-1. Version **8.2 ou plus récente** (8.3 conseillé).
-2. Extensions cochées : `pdo_mysql`, `mbstring`, `openssl`, `tokenizer`, `xml`, `ctype`, `fileinfo`, `bcmath`, `intl`, `zip` (la plupart le sont déjà).
-3. Onglet **Options** : `upload_max_filesize` et `post_max_size` à **8M** au moins (images produits jusqu'à 2 Mo), `memory_limit` à **256M**.
+### 2. Régler PHP et la base de données (LWS Panel)
 
-### 3. Créer la base de données
+1. **Version PHP** du site : **8.2 ou plus récente** (8.3 conseillé), avec les extensions `pdo_mysql`, `mbstring`, `openssl`, `xml`, `ctype`, `fileinfo`, `bcmath`, `intl`, `zip`. Taille d'envoi maximale (`upload_max_filesize`, `post_max_size`) : 8 Mo au moins.
+2. **Version PHP du terminal** : en haut du **Terminal SSH**, lien « *Si vous souhaitez changer la version PHP du terminal par défaut, cliquez ici* » → choisissez la même version. Vérifiez ensuite avec `php -v`.
+3. **Base MySQL** : la base créée par l'installateur automatique de Laravel peut être réutilisée. Ses identifiants (`DB_HOST`, `DB_DATABASE`, `DB_USERNAME`, `DB_PASSWORD`) sont dans `htdocs/stockpro.mmconsultingtg.com/.env` : **notez-les avant l'étape 3**. Sinon, créez une base dans la rubrique MySQL de LWS Panel et notez le serveur, le nom, l'utilisateur et le mot de passe indiqués.
 
-cPanel → **Bases de données MySQL** :
+### 3. Remplacer le Laravel d'exemple
 
-1. **Créer une base** : `mmstock` → cPanel la nomme `cpaneluser_mmstock`.
-2. **Ajouter un utilisateur** : `mmstock` avec un mot de passe fort (générateur cPanel) → `cpaneluser_mmstock`. **Notez le mot de passe.**
-3. **Ajouter l'utilisateur à la base** → cochez **TOUS LES PRIVILÈGES**.
+Le Laravel installé automatiquement par LWS n'est qu'un projet vide : il est remplacé par l'archive. Dans le **Terminal SSH** :
 
-Les tables sont créées à l'étape 7 par Laravel : n'importez rien dans phpMyAdmin.
+```bash
+cd ~/htdocs
+mv stockpro.mmconsultingtg.com stockpro-ancien    # mise de côté (à supprimer à la fin)
+```
 
-### 4. Créer le sous-domaine
+Puis dans le **Gestionnaire de fichiers** :
 
-cPanel → **Domaines** (ou **Sous-domaines**) → `stockpro.mmconsultingtg.com` avec la **racine du document** (*Document Root*) : **`mm-stockpro/public`**.
+1. Ouvrez `htdocs`, cliquez sur **Charger** et envoyez `mm-stockpro.zip`.
+2. Sélectionnez-le → **Extraire** : un dossier `mm-stockpro` apparaît dans `htdocs`.
+3. Renommez `mm-stockpro` en **`stockpro.mmconsultingtg.com`** (ou dans le terminal : `cd ~/htdocs && mv mm-stockpro stockpro.mmconsultingtg.com`).
+4. Supprimez `mm-stockpro.zip`.
 
-La racine doit être le dossier **`public`** : le reste (`.env` avec les mots de passe, code, `vendor/`) reste ainsi inaccessible depuis le web. Si le sous-domaine existe déjà avec une autre racine, modifiez-la (icône crayon dans *Domaines*).
+Vérifiez que `htdocs/stockpro.mmconsultingtg.com/` contient bien `.htaccess`, `.env.example`, `app/`, `public/`, `vendor/`, et que `public/` contient `index.html`, `index.php` et `.htaccess` (affichez les fichiers cachés si besoin).
 
-> Si cPanel refuse une racine hors de `public_html`, gardez la racine qu'il propose (par exemple `public_html/stockpro`), puis, après l'étape 5, remplacez ce dossier par un lien vers `mm-stockpro/public` depuis le terminal SSH :
-> ```bash
-> rm -rf ~/public_html/stockpro && ln -s ~/mm-stockpro/public ~/public_html/stockpro
-> ```
+### 4. Certificat SSL
 
-Puis cPanel → **SSL/TLS Status** (ou **Let's Encrypt**) : générez un certificat pour `stockpro.mmconsultingtg.com`.
+Dans LWS Panel, rubrique SSL : activez le certificat (Let's Encrypt) pour `stockpro.mmconsultingtg.com`. Le site redirige ensuite automatiquement vers HTTPS.
 
-### 5. Téléverser les fichiers
+### 5. Configurer l'application (`.env`)
 
-cPanel → **Gestionnaire de fichiers** (*Paramètres* → cochez **Afficher les fichiers cachés**) :
+```bash
+cd ~/htdocs/stockpro.mmconsultingtg.com
+cp .env.example .env
+```
 
-1. Dans votre dossier personnel (`/home/cpaneluser`, au-dessus de `public_html`), **Téléverser** `mm-stockpro.zip`.
-2. Clic droit → **Extract** : vous obtenez `~/mm-stockpro/` (avec `app/`, `public/`, `vendor/`…). Supprimez le ZIP.
-3. Vérifiez que `~/mm-stockpro/public/` contient `index.html`, `index.php`, `assets/` et `.htaccess`.
-
-### 6. Configurer l'API (`.env`)
-
-Dans `~/mm-stockpro/`, copiez `.env.example` en `.env` (clic droit → *Copy*), puis **Edit** :
+Ouvrez `.env` (Gestionnaire de fichiers → **Modifier**) et renseignez :
 
 ```dotenv
 APP_ENV=production
@@ -117,73 +124,79 @@ APP_DEBUG=false
 APP_URL=https://stockpro.mmconsultingtg.com
 FRONTEND_URL=https://stockpro.mmconsultingtg.com
 
-DB_DATABASE=cpaneluser_mmstock
-DB_USERNAME=cpaneluser_mmstock
-DB_PASSWORD=le-mot-de-passe-de-l-etape-3
+DB_HOST=valeur-notée-à-l-étape-2
+DB_DATABASE=valeur-notée-à-l-étape-2
+DB_USERNAME=valeur-notée-à-l-étape-2
+DB_PASSWORD=valeur-notée-à-l-étape-2
 
 MAIL_HOST=mail.mmconsultingtg.com
 MAIL_USERNAME=stockpro@mmconsultingtg.com
-MAIL_PASSWORD=le-mot-de-passe-de-la-boite-email
+MAIL_PASSWORD=mot-de-passe-de-la-boîte
 MAIL_FROM_ADDRESS=stockpro@mmconsultingtg.com
 ```
 
-- `APP_URL` et `FRONTEND_URL` sont la même adresse, sans `/` à la fin.
-- La boîte email d'envoi (« mot de passe oublié ») se crée dans cPanel → **Comptes de messagerie** ; `stockpro@mmconsultingtg.com` est un exemple, utilisez la boîte de votre choix. Paramètres SMTP exacts dans *Connect Devices* (port 465, SSL).
+- `APP_URL` et `FRONTEND_URL` : même adresse, sans `/` à la fin.
+- La boîte email sert aux liens « mot de passe oublié » : créez-la dans la rubrique Emails de LWS Panel (`stockpro@mmconsultingtg.com` est un exemple) et reprenez son serveur SMTP (port 465, SSL).
 - `APP_DEBUG` doit rester à `false` : sinon une erreur afficherait vos mots de passe à l'écran.
 
-### 7. Installer la base et le premier compte
+### 6. Installer la base et le premier compte
 
-Ouvrez un terminal : dans l'espace client LWS, **Gestion du service** de votre hébergement → **Terminal SSH** (ou cPanel → **Terminal**). Puis :
+Dans le **Terminal SSH** :
 
 ```bash
-cd ~/mm-stockpro
-php -v                               # doit afficher 8.2 ou plus
+cd ~/htdocs/stockpro.mmconsultingtg.com
+php -v                               # 8.2 ou plus, sinon voir l'étape 2
 php artisan key:generate --force     # clé de chiffrement (une seule fois)
-php artisan migrate --force          # crée toutes les tables
+php artisan migrate:fresh --force    # PREMIÈRE INSTALLATION SEULEMENT : vide la base et crée toutes les tables
 php artisan db:seed --force          # rôles + boutiques Agbalépédo et Cacaveli + catégories
 php artisan mm:create-admin votre.email@mmconsultingtg.com --first=Prénom --last=Nom
-php artisan optimize                 # met la configuration en cache (à relancer après chaque modification du .env)
+php artisan optimize                 # à relancer après chaque modification du .env
 chmod -R 775 storage bootstrap/cache public/uploads
 ```
 
 `mm:create-admin` demande le mot de passe du premier **Super Admin** (8 caractères minimum). Les autres comptes se créent ensuite depuis l'écran **Utilisateurs** de l'application.
 
-> Si `php -v` affiche une version trop ancienne alors que cPanel indique 8.2+, utilisez le binaire complet, par exemple `/opt/alt/php83/usr/bin/php artisan …` (ou `/opt/cpanel/ea-php83/root/usr/bin/php`, selon le serveur).
+`migrate:fresh` supprime d'abord les tables d'exemple laissées par l'installateur LWS : certaines portent le même nom que celles de l'application (`users`…), et un simple `migrate` les garderait. Cette commande **efface toute la base** : ne la relancez jamais une fois l'application en service. Pour les mises à jour, c'est `php artisan migrate --force`.
 
 Catalogue de formation (facultatif, à **ne pas** lancer sur une base réelle déjà remplie) : `php artisan db:seed --class=DemoCatalogSeeder --force` ajoute 30 produits et 50 unités de stock par boutique.
 
-### 8. Vérifier
+### 7. Vérifier, puis nettoyer
 
 1. `https://stockpro.mmconsultingtg.com/api/health` → `{"status":"ok",…}`.
-2. `https://stockpro.mmconsultingtg.com/.env` → refusé (erreur 403 ou 404).
-3. `https://stockpro.mmconsultingtg.com` → écran de connexion **sans** bandeau « Mode démo ». Connectez-vous avec le Super Admin.
-4. **Boutiques** : vérifiez adresses et téléphones ; **Catalogue** : créez un produit avec image ; **Utilisateurs** : créez les comptes du personnel.
-5. **Mot de passe oublié** depuis l'écran de connexion : l'email doit arriver avec un lien vers `stockpro.mmconsultingtg.com/reset-password`.
+2. `https://stockpro.mmconsultingtg.com/.env` → refusé (403).
+3. `https://stockpro.mmconsultingtg.com` → écran de connexion **sans** bandeau « Mode démo » ; connexion avec le Super Admin.
+4. **Boutiques** : adresses et téléphones ; **Catalogue** : un produit avec image ; **Utilisateurs** : comptes du personnel.
+5. **Mot de passe oublié** depuis l'écran de connexion : l'email arrive avec un lien vers `stockpro.mmconsultingtg.com/reset-password`.
+6. Tout fonctionne : supprimez l'ancienne installation.
+   ```bash
+   cd ~/htdocs && rm -rf stockpro-ancien
+   ```
 
 | Symptôme | Cause probable |
 |---|---|
-| Erreur 500 | `.env` incomplet ou clé manquante : lire `~/mm-stockpro/storage/logs/laravel-<date>.log` |
-| La page liste des fichiers, ou affiche « Index of » | racine du sous-domaine différente de `mm-stockpro/public` |
+| Erreur 500 | `.env` incomplet ou clé manquante : lire `storage/logs/laravel-<date>.log` |
+| Page d'accueil Laravel ou liste de fichiers | ancienne installation encore en place, ou `.htaccess` racine absent (fichier caché non extrait) |
 | « Failed to fetch » à la connexion | archive construite pour une autre adresse, ou certificat SSL absent |
 | Bandeau « Mode démo » | archive construite sans adresse : refaire l'étape 1 |
-| Page blanche ou 404 sur `/pos` après actualisation | `public/.htaccess` absent (fichier caché non extrait) |
-| `SQLSTATE[HY000] [1045]` ou `[1044]` | identifiants MySQL faux, ou utilisateur non ajouté à la base (étape 3) |
+| `SQLSTATE[HY000] [1045]`, `[1044]` ou `[2002]` | identifiants ou serveur MySQL faux dans `.env` (`DB_HOST` compris) |
+| `php artisan` : erreur de syntaxe ou version | PHP du terminal trop ancien : étape 2, point 2 |
 | Images produits non affichées | droits d'écriture sur `public/uploads` (`chmod -R 775`) |
-| Emails non reçus | identifiants SMTP, ou dossier spam ; tester la boîte dans *Webmail* |
+| Emails non reçus | identifiants SMTP ou dossier spam ; tester la boîte dans le Webmail |
 | Modification du `.env` sans effet | relancer `php artisan optimize` |
 
 ### Mises à jour, sauvegardes, maintenance
 
 | Opération | Comment |
 |---|---|
-| Mettre à jour l'application | Refaire l'étape 1 ; renommer `~/mm-stockpro` en `~/mm-stockpro-ancien`, extraire le nouveau `mm-stockpro.zip`, y recopier l'ancien `.env` et le dossier `public/uploads`, puis `php artisan migrate --force && php artisan optimize && chmod -R 775 storage bootstrap/cache public/uploads`. Supprimer `~/mm-stockpro-ancien` une fois vérifié. |
-| Sauvegarde de la base | cPanel → **Sauvegarde** → *Télécharger une sauvegarde de base de données MySQL* (ou phpMyAdmin → Exporter). Au moins une fois par semaine, à conserver **hors** de l'hébergement. |
-| Sauvegarde automatique | cPanel → **Tâches Cron**, chaque nuit : `mysqldump --no-tablespaces -u cpaneluser_mmstock -p'MOTDEPASSE' cpaneluser_mmstock \| gzip > ~/sauvegardes/mm-$(date +\%F).sql.gz` (créer `~/sauvegardes` avant). |
-| Sauvegarde des images | dossier `~/mm-stockpro/public/uploads` (Gestionnaire de fichiers → *Compress*). |
-| Restaurer | phpMyAdmin → base `cpaneluser_mmstock` → **Importer** le fichier `.sql`. |
-| Journaux d'erreurs | `~/mm-stockpro/storage/logs/` (un fichier par jour, 14 jours conservés). |
+| Mettre à jour l'application | Refaire l'étape 1. Dans `htdocs`, renommer `stockpro.mmconsultingtg.com` en `stockpro-ancien`, extraire le nouveau `mm-stockpro.zip` et renommer `mm-stockpro` en `stockpro.mmconsultingtg.com`. Y recopier depuis `stockpro-ancien` le fichier `.env` et le dossier `public/uploads`, puis `php artisan migrate --force && php artisan optimize && chmod -R 775 storage bootstrap/cache public/uploads`. Supprimer `stockpro-ancien` une fois vérifié. |
+| Sauvegarde de la base | phpMyAdmin (rubrique MySQL de LWS Panel) → **Exporter**. Au moins une fois par semaine, à conserver **hors** de l'hébergement. |
+| Sauvegarde des images | dossier `public/uploads` (Gestionnaire de fichiers → **Archiver**, puis **Télécharger**). |
+| Restaurer | phpMyAdmin → **Importer** le fichier `.sql`. |
+| Journaux d'erreurs | `storage/logs/` (un fichier par jour, 14 jours conservés). |
 | Mettre l'API en maintenance | `php artisan down` puis `php artisan up`. |
 | Compte Super Admin perdu | `php artisan mm:create-admin email@… --first=… --last=…` (crée ou réinitialise le compte). |
+
+> **Autre hébergeur (cPanel, VPS)** : si la racine du sous-domaine peut pointer directement sur le dossier `public/`, faites-le ; le `.htaccess` racine est alors simplement ignoré. Les étapes 5 et 6 sont identiques.
 
 ## Architecture
 

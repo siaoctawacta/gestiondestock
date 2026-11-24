@@ -1,11 +1,13 @@
-# Fabrique l'archive à téléverser sur LWS (onglet Actions → « Archives LWS » → Run workflow).
-# Le fichier ZIP se télécharge ensuite en bas de la page de l'exécution (« Artifacts »).
-name: Archives LWS
+# Fabrique mm-stockpro.zip, l'archive à téléverser sur LWS
+# (onglet Actions → « Archive LWS » → Run workflow).
+# Le fichier se télécharge en bas de la page de l'exécution (« Artifacts » → mm-stockpro) :
+# c'est directement mm-stockpro.zip, à téléverser tel quel dans cPanel.
+name: Archive LWS
 
 on:
   workflow_dispatch:
     inputs:
-      api_url:
+      site_url:
         description: Adresse du sous-domaine (application + API)
         default: https://stockpro.mmconsultingtg.com
         required: true
@@ -28,12 +30,28 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Construire les archives
+      - name: Construire mm-stockpro.zip
         env:
-          SITE_URL: ${{ inputs.api_url }}
+          SITE_URL: ${{ inputs.site_url }}
         run: scripts/build-lws.sh "$SITE_URL"
+      # GitHub compresse lui-même chaque « artifact » en ZIP : on lui confie le dossier
+      # mm-stockpro/ décompressé, pour que le fichier téléchargé soit mm-stockpro.zip
+      # (et non un ZIP contenant un autre ZIP).
+      - name: Préparer et vérifier le contenu
+        env:
+          SITE_URL: ${{ inputs.site_url }}
+        run: |
+          unzip -q deploy/mm-stockpro.zip -d deploy/artifact
+          cd deploy/artifact/mm-stockpro
+          for f in .htaccess .env.example artisan vendor/autoload.php public/index.php public/index.html public/.htaccess resources/views/.gitkeep; do
+            test -e "$f" || { echo "::error::Fichier manquant dans l'archive : $f"; exit 1; }
+          done
+          grep -rqF "${SITE_URL%/}" public/assets || { echo "::error::Adresse $SITE_URL absente de l'application"; exit 1; }
+          echo "Contenu vérifié pour $SITE_URL"
       - uses: actions/upload-artifact@v4
         with:
           name: mm-stockpro
-          path: deploy/mm-stockpro.zip
+          path: deploy/artifact/
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 30

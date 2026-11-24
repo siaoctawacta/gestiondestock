@@ -1,7 +1,7 @@
 # Backend Laravel — MM Cosmétiques Stock Pro
 
 API REST (Laravel 12, PHP 8.2+, MySQL/MariaDB) utilisée par le frontend en production quand `VITE_API_URL` est renseignée.
-Pour la mise en ligne sur l'hébergement cPanel LWS, suivre le [guide de déploiement](../README.md#déploiement-sur-lws-cpanel--laravel--mysql).
+Pour la mise en ligne sur l'hébergement LWS, suivre le [guide de déploiement](../README.md#déploiement-sur-lws-laravel--mysql).
 
 ## Développement local
 
