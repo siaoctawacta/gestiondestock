@@ -11,9 +11,9 @@
   <img class="logo" src="../../frontend/public/logo-white.png" alt="MM Cosmétiques" />
   <div class="kicker">Documentation technique</div>
   <h1>Hébergement de MM Cosmétiques Stock Pro sur LWS</h1>
-  <div class="subtitle">Installation de l'API Laravel et de la base MySQL sur l'hébergement cPanel LWS, mise en ligne de l'application, exploitation quotidienne, sauvegardes et dépannage.</div>
+  <div class="subtitle">Installation de l'API Laravel et de la base MySQL sur l'hébergement mutualisé LWS (LWS Panel), mise en ligne de l'application, exploitation quotidienne, sauvegardes et dépannage.</div>
   <div class="meta">
-    <div><b>Version</b>2.0 — novembre 2026</div>
+    <div><b>Version</b>2.1 — novembre 2026</div>
     <div><b>Public</b>Responsable technique, prestataire</div>
     <div><b>Dépôt</b>github.com/siaoctawacta/gestiondestock</div>
   </div>
@@ -25,8 +25,8 @@
     <li><span class="n">1</span>Objet du document et architecture<span class="d">ce qu'il faut héberger</span></li>
     <li><span class="n">2</span>Prérequis<span class="d">offre LWS, domaine, accès</span></li>
     <li><span class="n">3</span>Préparer l'archive<span class="d">API et application prêtes à téléverser</span></li>
-    <li><span class="n">4</span>Configurer cPanel<span class="d">PHP, base MySQL, sous-domaine, SSL, email</span></li>
-    <li><span class="n">5</span>Téléverser et configurer l'API<span class="d">fichiers et fichier .env</span></li>
+    <li><span class="n">4</span>Configurer LWS Panel<span class="d">PHP, base MySQL, SSL, email</span></li>
+    <li><span class="n">5</span>Installer les fichiers<span class="d">remplacer le Laravel d'exemple, fichier .env</span></li>
     <li><span class="n">6</span>Installer la base et le premier compte<span class="d">commandes artisan</span></li>
     <li><span class="n">7</span>Mise en service<span class="d">liste de contrôle</span></li>
     <li><span class="n">8</span>Exploitation courante<span class="d">mises à jour, sauvegardes, journaux</span></li>
@@ -34,14 +34,14 @@
     <li><span class="n">10</span>Dépannage et annexes<span class="d">symptôme → solution, aide-mémoire</span></li>
   </ol>
   <div class="box info" style="margin-top:8mm"><span class="t">Conventions</span>
-    L'application est installée sur le sous-domaine <code>stockpro.mmconsultingtg.com</code> : l'application s'ouvre à sa racine et l'API répond sous <code>/api</code>. Remplacez <code>cpaneluser</code> par votre identifiant cPanel. Les lignes commençant par <code>#</code> dans les blocs de commandes sont des commentaires.
+    L'application est installée sur le sous-domaine <code>stockpro.mmconsultingtg.com</code> : l'application s'ouvre à sa racine et l'API répond sous <code>/api</code>. Dans le terminal SSH de LWS, <code>~</code> désigne votre dossier d'hébergement (<code>/home</code>), qui contient <code>htdocs/</code>. Les lignes commençant par <code>#</code> dans les blocs de commandes sont des commentaires.
   </div>
 </section>
 
 <!-- ===================================================== 1 -->
 <span class="chapter-no">Chapitre 1</span>
 <h1 class="chapter">Objet du document et architecture</h1>
-<p class="lead">Ce document décrit pas à pas la mise en ligne de l'application de gestion de stock MM Cosmétiques sur l'hébergement web cPanel de LWS, puis son exploitation au quotidien.</p>
+<p class="lead">Ce document décrit pas à pas la mise en ligne de l'application de gestion de stock MM Cosmétiques sur l'hébergement mutualisé LWS, puis son exploitation au quotidien.</p>
 
 <h2>Les deux parties de l'application</h2>
 <table>
@@ -49,10 +49,10 @@
   <tbody>
     <tr><td><b>Application</b><br><code>frontend/</code></td><td>L'interface que les utilisateurs ouvrent dans leur navigateur (React). Une fois construite, ce n'est qu'un ensemble de fichiers statiques.</td><td><code>https://stockpro.mmconsultingtg.com</code></td></tr>
     <tr><td><b>API</b><br><code>backend/</code></td><td>Le serveur de l'application, écrit avec <b>Laravel</b> (PHP). Il gère la connexion des utilisateurs, vérifie les droits de chacun, enregistre ventes, stocks, transferts et déclarations dans la base <b>MySQL</b>, envoie les emails.</td><td><code>https://stockpro.mmconsultingtg.com/api</code></td></tr>
-    <tr><td><b>Base de données</b></td><td>Tables des boutiques, utilisateurs, produits, stocks, ventes, déclarations, journal d'audit.</td><td>MySQL / MariaDB de cPanel (<code>localhost</code>)</td></tr>
+    <tr><td><b>Base de données</b></td><td>Tables des boutiques, utilisateurs, produits, stocks, ventes, déclarations, journal d'audit.</td><td>Base MySQL de l'hébergement LWS</td></tr>
   </tbody>
 </table>
-<p>Les deux parties sont livrées dans <b>une seule archive</b> et installées dans <b>un seul dossier</b>, servi par <b>un seul sous-domaine</b> : l'application compilée est placée dans le dossier <code>public/</code> de Laravel, et le fichier <code>public/.htaccess</code> envoie les adresses <code>/api/…</code> à Laravel et toutes les autres à l'application. Tout tient dans une offre d'<b>hébergement web cPanel</b>, sans serveur dédié ni VPS.</p>
+<p>Les deux parties sont livrées dans <b>une seule archive</b> et installées dans <b>un seul dossier</b>, servi par <b>un seul sous-domaine</b> : l'application compilée est placée dans le dossier <code>public/</code> de Laravel, et le fichier <code>public/.htaccess</code> envoie les adresses <code>/api/…</code> à Laravel et toutes les autres à l'application. Tout tient dans l'offre d'<b>hébergement mutualisé LWS</b>, sans serveur dédié ni VPS.</p>
 
 <h2>Schéma de fonctionnement</h2>
 <figure>
@@ -71,8 +71,8 @@
   <text x="340" y="226" text-anchor="middle" font-size="10.5" fill="#2c6b36">stockpro.mmconsultingtg.com/api</text>
   <rect x="520" y="160" width="172" height="90" rx="10" fill="#184620"/>
   <text x="606" y="190" text-anchor="middle" font-size="13" font-weight="600" fill="#fff">MySQL / MariaDB</text>
-  <text x="606" y="210" text-anchor="middle" font-size="10.5" fill="#dfe9d3">base de cPanel,</text>
-  <text x="606" y="227" text-anchor="middle" font-size="10.5" fill="#dfe9d3">accessible en local</text>
+  <text x="606" y="210" text-anchor="middle" font-size="10.5" fill="#dfe9d3">base de l'hébergement</text>
+  <text x="606" y="227" text-anchor="middle" font-size="10.5" fill="#dfe9d3">LWS</text>
   <path d="M158,118 C185,110 190,62 213,60" fill="none" stroke="#2c6b36" stroke-width="1.7" marker-end="url(#a)"/>
   <path d="M158,150 C185,158 190,203 213,205" fill="none" stroke="#2c6b36" stroke-width="1.7" marker-end="url(#a)"/>
   <path d="M465,205 L518,205" fill="none" stroke="#2c6b36" stroke-width="1.7" marker-end="url(#a)"/>
@@ -89,17 +89,24 @@
 </figure>
 
 <h2>Organisation sur le serveur</h2>
-<pre><code>/home/cpaneluser/
-├── mm-stockpro/            <span class="c"># application complète (hors de public_html)</span>
-│   ├── .env                <span class="c"># configuration et mots de passe : jamais accessible depuis le web</span>
-│   ├── app/  config/  database/  routes/  vendor/
-│   ├── storage/logs/       <span class="c"># journaux d'erreurs</span>
-│   └── public/             <span class="c"># SEUL dossier exposé : racine de stockpro.mmconsultingtg.com</span>
-│       ├── index.html  assets/       <span class="c"># application React</span>
-│       ├── index.php               <span class="c"># entrée de l'API Laravel</span>
-│       ├── .htaccess               <span class="c"># /api → Laravel, le reste → application</span>
-│       └── uploads/products/       <span class="c"># images des produits</span>
-└── public_html/            <span class="c"># site principal, non concerné</span></code></pre>
+<p>Sur LWS, chaque domaine et sous-domaine a son dossier dans <code>htdocs/</code>, qui en est la racine web. L'application occupe tout le dossier du sous-domaine :</p>
+<pre><code>/home/                                <span class="c"># « ~ » dans le terminal SSH</span>
+└── htdocs/
+    ├── index.php  wp-admin/  …       <span class="c"># site WordPress de mmconsultingtg.com : ne pas toucher</span>
+    ├── mmcosmetiques.com/  …         <span class="c"># autres sites : ne pas toucher</span>
+    └── stockpro.mmconsultingtg.com/  <span class="c"># contenu de mm-stockpro.zip</span>
+        ├── .htaccess                 <span class="c"># renvoie toutes les requêtes vers public/</span>
+        ├── .env                      <span class="c"># configuration et mots de passe</span>
+        ├── app/  config/  database/  routes/  storage/  vendor/
+        └── public/                   <span class="c"># seul dossier servi sur le web</span>
+            ├── index.html  assets/   <span class="c"># application React</span>
+            ├── index.php             <span class="c"># entrée de l'API Laravel (/api/…)</span>
+            ├── .htaccess             <span class="c"># /api → Laravel, le reste → application</span>
+            └── uploads/products/     <span class="c"># images des produits</span></code></pre>
+<p>Le <code>.htaccess</code> placé à la racine fait passer chaque adresse par <code>public/</code> : le fichier <code>.env</code>, le code, <code>vendor/</code> et <code>storage/</code> ne sont <b>jamais</b> accessibles depuis Internet.</p>
+<div class="box danger"><span class="t">Pas de code source sur le serveur</span>
+Ne déposez pas le code source GitHub (<code>gestiondestock-main</code>) sur l'hébergement : il ne fonctionne pas tel quel (rien n'y est compilé ni installé) et serait lisible par tout le monde. Seule l'archive <code>mm-stockpro.zip</code> (chapitre 3) est à téléverser.
+</div>
 
 <h2>Mode démo et mode production</h2>
 <p>L'application choisit son mode <b>au moment de sa construction</b> :</p>
@@ -112,7 +119,7 @@ Si le site de production affiche le bandeau <b>« Mode démo »</b>, il a été 
 </div>
 
 <div class="box info"><span class="t">Le Laravel installé par l'installateur automatique LWS</span>
-Il prouve que PHP fonctionne sur votre hébergement, mais ce n'est qu'un projet Laravel vide : il est <b>remplacé</b> par l'API de ce dépôt. S'il a créé une base de données, vous pouvez la réutiliser (ses identifiants figurent dans son fichier <code>.env</code>). Sinon, supprimez cette installation depuis l'installateur pour éviter toute confusion — en particulier si elle occupe déjà le sous-domaine <code>stockpro</code>.
+Il prouve que PHP fonctionne sur votre hébergement, mais ce n'est qu'un projet Laravel vide : il est <b>remplacé</b> par l'application. Sa base de données peut être réutilisée : ses identifiants figurent dans son fichier <code>.env</code> (chapitre 4). Elle occupe le dossier <code>htdocs/stockpro.mmconsultingtg.com/</code> : le chapitre 5 explique comment la remplacer.
 </div>
 
 <!-- ===================================================== 2 -->
@@ -121,9 +128,9 @@ Il prouve que PHP fonctionne sur votre hébergement, mais ce n'est qu'un projet 
 <p class="lead">À réunir avant de commencer.</p>
 
 <ul class="check">
-  <li>Une offre d'<b>hébergement web LWS avec cPanel</b> (PHP 8.2 ou plus récent disponible, bases MySQL, accès SSH ou Terminal).</li>
-  <li>Le domaine <code>mmconsultingtg.com</code> rattaché à cet hébergement, pour créer le sous-domaine <code>stockpro</code>.</li>
-  <li>Les accès à l'<b>espace client LWS</b> et à <b>cPanel</b>.</li>
+  <li>Une offre d'<b>hébergement mutualisé LWS</b> gérée avec <b>LWS Panel</b> (PHP 8.2 ou plus récent, base MySQL, Terminal SSH, Gestionnaire de fichiers).</li>
+  <li>Le sous-domaine <code>stockpro.mmconsultingtg.com</code> créé sur cet hébergement (son dossier <code>htdocs/stockpro.mmconsultingtg.com/</code> existe).</li>
+  <li>Les accès à l'<b>espace client LWS</b> et à <b>LWS Panel</b>.</li>
   <li>Un accès au dépôt GitHub <code>siaoctawacta/gestiondestock</code> (pour fabriquer les archives).</li>
   <li>Une adresse email de l'hébergement pour l'envoi des emails, par exemple <code>stockpro@mmconsultingtg.com</code>.</li>
   <li>Un <b>gestionnaire de mots de passe</b> pour conserver les mots de passe créés (base, email, Super Admin).</li>
@@ -161,7 +168,7 @@ Il prouve que PHP fonctionne sur votre hébergement, mais ce n'est qu'un projet 
   <li>Dans la liste de gauche, choisissez <b>Archive LWS</b>, puis <b>Run workflow</b>.</li>
   <li>L'adresse proposée est déjà <code>https://stockpro.mmconsultingtg.com</code> : lancez.</li>
   <li>Après 2 à 3 minutes, ouvrez l'exécution terminée : en bas de page, section <b>Artifacts</b>, cliquez sur <b>mm-stockpro</b>.</li>
-  <li>Le fichier téléchargé est <code>mm-stockpro.zip</code> : gardez-le tel quel, sans le décompresser sur votre ordinateur. C'est lui qui se téléverse au chapitre 5.</li>
+  <li>Le fichier téléchargé est <code>mm-stockpro.zip</code> : gardez-le tel quel, sans le décompresser sur votre ordinateur. C'est lui qui se charge sur le serveur au chapitre 5.</li>
 </ol>
 
 <h2>3.2 Depuis un ordinateur de développement</h2>
@@ -176,79 +183,67 @@ L'adresse est inscrite dans l'application au moment de la construction. Si vous 
 
 <!-- ===================================================== 4 -->
 <span class="chapter-no">Chapitre 4</span>
-<h1 class="chapter">Configurer cPanel</h1>
-<p class="lead">Cinq réglages, tous depuis cPanel : version de PHP, base de données, sous-domaine, certificat SSL et boîte email.</p>
+<h1 class="chapter">Configurer LWS Panel</h1>
+<p class="lead">Quatre réglages depuis LWS Panel : version de PHP, base de données, certificat SSL et boîte email. Les intitulés des rubriques peuvent varier légèrement selon la version du panneau.</p>
 
 <h2>4.1 Version de PHP</h2>
 <ol class="steps">
-  <li>cPanel → <b>Sélectionner une version de PHP</b> (<i>Select PHP Version</i>).</li>
-  <li>Choisissez <b>8.2 ou plus récente</b> (8.3 conseillé) puis <b>Définir comme actuelle</b>.</li>
-  <li>Vérifiez que les extensions du chapitre 2 sont cochées (la plupart le sont déjà).</li>
-  <li>Onglet <b>Options</b> : <code>upload_max_filesize</code> et <code>post_max_size</code> à <b>8M</b> au moins, <code>memory_limit</code> à <b>256M</b>.</li>
+  <li>Rubrique de configuration PHP du site : choisissez <b>PHP 8.2 ou plus récent</b> (8.3 conseillé) et vérifiez les extensions <code>pdo_mysql</code>, <code>mbstring</code>, <code>openssl</code>, <code>xml</code>, <code>ctype</code>, <code>fileinfo</code>, <code>bcmath</code>, <code>intl</code>, <code>zip</code>. Taille d'envoi maximale (<code>upload_max_filesize</code>, <code>post_max_size</code>) : 8 Mo au moins.</li>
+  <li><b>Terminal SSH</b> : le terminal a sa propre version de PHP. En haut de la page du terminal, cliquez sur le lien « <i>Si vous souhaitez changer la version PHP du terminal par défaut, cliquez ici</i> » et choisissez la même version.</li>
+  <li>Dans le terminal, <code>php -v</code> doit afficher 8.2 ou plus.</li>
 </ol>
 
 <h2>4.2 Base de données MySQL</h2>
-<ol class="steps">
-  <li>cPanel → <b>Bases de données MySQL</b>.</li>
-  <li><b>Créer une base</b> : saisissez <code>mmstock</code>. cPanel ajoute votre identifiant devant : <code>cpaneluser_mmstock</code>.</li>
-  <li><b>Ajouter un utilisateur</b> : <code>mmstock</code>, avec un mot de passe fort (bouton <i>Générateur de mot de passe</i>). Nom final : <code>cpaneluser_mmstock</code>. <b>Notez le mot de passe.</b></li>
-  <li><b>Ajouter l'utilisateur à la base</b> : choisissez l'utilisateur et la base, puis cochez <b>TOUS LES PRIVILÈGES</b>.</li>
-</ol>
-<div class="box tip"><span class="t">Rien à importer</span>
-Les tables sont créées automatiquement par Laravel au chapitre 6. N'importez aucun fichier dans phpMyAdmin.
+<p><b>Réutiliser la base de l'installateur Laravel (le plus simple).</b> Avant toute autre manipulation, ouvrez dans le Gestionnaire de fichiers <code>htdocs/stockpro.mmconsultingtg.com/.env</code> (le Laravel d'exemple) et <b>notez</b> ces quatre valeurs :</p>
+<pre><code>DB_HOST=…
+DB_DATABASE=…
+DB_USERNAME=…
+DB_PASSWORD=…</code></pre>
+<p><b>Ou créer une nouvelle base</b> dans la rubrique MySQL de LWS Panel, et noter le serveur MySQL, le nom de la base, l'utilisateur et le mot de passe indiqués.</p>
+<div class="box warn"><span class="t">Serveur MySQL</span>
+Sur l'hébergement mutualisé, le serveur MySQL n'est pas forcément <code>localhost</code> : reprenez exactement la valeur <code>DB_HOST</code> indiquée par LWS.
 </div>
 
-<h2>4.3 Sous-domaine</h2>
-<p>cPanel → <b>Domaines</b> (ou <b>Sous-domaines</b> selon la version) → <b>Créer un nouveau domaine</b> :</p>
-<table>
-  <thead><tr><th>Sous-domaine</th><th>Racine du document (<i>Document Root</i>)</th></tr></thead>
-  <tbody>
-    <tr><td><code>stockpro.mmconsultingtg.com</code></td><td><code>mm-stockpro/public</code></td></tr>
-  </tbody>
-</table>
-<p>Si le sous-domaine existe déjà (par exemple créé par l'installateur Laravel), modifiez sa racine dans <b>Domaines</b> (icône crayon).</p>
-<div class="box danger"><span class="t">Racine du sous-domaine</span>
-La racine doit être le dossier <b><code>public</code></b>, et non <code>mm-stockpro</code> lui-même : sinon le fichier <code>.env</code>, qui contient les mots de passe, serait téléchargeable depuis Internet.
-</div>
-<p>Si cPanel refuse une racine située hors de <code>public_html</code>, gardez la racine qu'il propose (par exemple <code>public_html/stockpro</code>), puis, une fois les fichiers en place (chapitre 5), remplacez ce dossier par un lien vers <code>mm-stockpro/public</code> depuis le terminal :</p>
-<pre><code>rm -rf ~/public_html/stockpro &amp;&amp; ln -s ~/mm-stockpro/public ~/public_html/stockpro</code></pre>
+<h2>4.3 Certificat SSL (HTTPS)</h2>
+<p>Rubrique SSL de LWS Panel : activez le certificat (Let's Encrypt) pour <code>stockpro.mmconsultingtg.com</code>. Le site redirige ensuite automatiquement vers HTTPS.</p>
 
-<h2>4.4 Certificat SSL (HTTPS)</h2>
-<p>cPanel → <b>SSL/TLS Status</b> (ou <b>Let's Encrypt SSL</b>) : sélectionnez <code>stockpro.mmconsultingtg.com</code> et lancez l'émission du certificat. Comptez quelques minutes après la création du sous-domaine, le temps que le DNS se propage. Le site redirige ensuite automatiquement vers HTTPS.</p>
-
-<h2>4.5 Boîte email d'envoi</h2>
-<ol class="steps">
-  <li>cPanel → <b>Comptes de messagerie</b> → créez par exemple <code>stockpro@mmconsultingtg.com</code> (ou utilisez une boîte existante).</li>
-  <li>Sur la ligne de la boîte, <b>Connect Devices</b> : relevez le <b>serveur sortant (SMTP)</b>, en général <code>mail.mmconsultingtg.com</code>, port <b>465</b> (SSL).</li>
-</ol>
-<p>Cette boîte envoie les emails « mot de passe oublié ».</p>
+<h2>4.4 Boîte email d'envoi</h2>
+<p>Rubrique Emails de LWS Panel : créez une boîte, par exemple <code>stockpro@mmconsultingtg.com</code> (ou utilisez une boîte existante), et relevez son <b>serveur SMTP</b> (en général <code>mail.mmconsultingtg.com</code>, port <b>465</b>, SSL). Elle envoie les emails « mot de passe oublié ».</p>
 
 <!-- ===================================================== 5 -->
 <span class="chapter-no">Chapitre 5</span>
-<h1 class="chapter">Téléverser et configurer l'API</h1>
-<p class="lead">Dépôt de l'archive avec le Gestionnaire de fichiers, puis création du fichier de configuration <code>.env</code>.</p>
+<h1 class="chapter">Installer les fichiers</h1>
+<p class="lead">Le Laravel d'exemple de LWS est mis de côté et remplacé par l'archive, puis le fichier de configuration <code>.env</code> est créé.</p>
 
-<h2>5.1 Téléverser les fichiers</h2>
+<h2>5.1 Remplacer le Laravel d'exemple</h2>
+<p>Vérifiez d'abord que les identifiants de la base sont notés (4.2). Puis, dans le <b>Terminal SSH</b> :</p>
+<pre><code>cd ~/htdocs
+mv stockpro.mmconsultingtg.com stockpro-ancien   <span class="c"># mise de côté, supprimée au chapitre 7</span></code></pre>
+<p>Dans le <b>Gestionnaire de fichiers</b> :</p>
 <ol class="steps">
-  <li>cPanel → <b>Gestionnaire de fichiers</b>. En haut à droite, <b>Paramètres</b> → cochez <b>Afficher les fichiers cachés</b> (pour voir <code>.env</code> et <code>.htaccess</code>).</li>
-  <li>Placez-vous dans votre dossier personnel (<code>/home/cpaneluser</code>, au-dessus de <code>public_html</code>). <b>Téléverser</b> → <code>mm-stockpro.zip</code>.</li>
-  <li>Clic droit sur <code>mm-stockpro.zip</code> → <b>Extract</b> → dossier <code>/home/cpaneluser</code>. Vous obtenez <code>mm-stockpro/</code> avec <code>app/</code>, <code>public/</code>, <code>vendor/</code>… Supprimez ensuite le ZIP.</li>
-  <li>Vérifiez que <code>mm-stockpro/public/</code> contient <code>index.html</code>, <code>index.php</code>, <code>assets/</code> et <code>.htaccess</code>.</li>
+  <li>Ouvrez <code>htdocs</code>, cliquez sur <b>Charger</b> et envoyez <code>mm-stockpro.zip</code>.</li>
+  <li>Sélectionnez le fichier → <b>Extraire</b> : un dossier <code>mm-stockpro</code> apparaît dans <code>htdocs</code>.</li>
+  <li>Renommez <code>mm-stockpro</code> en <b><code>stockpro.mmconsultingtg.com</code></b> (ou dans le terminal : <code>cd ~/htdocs &amp;&amp; mv mm-stockpro stockpro.mmconsultingtg.com</code>).</li>
+  <li>Supprimez <code>mm-stockpro.zip</code>.</li>
+  <li>Vérifiez que <code>htdocs/stockpro.mmconsultingtg.com/</code> contient <code>.htaccess</code>, <code>.env.example</code>, <code>app/</code>, <code>public/</code>, <code>vendor/</code>, et que <code>public/</code> contient <code>index.html</code>, <code>index.php</code> et <code>.htaccess</code>.</li>
 </ol>
 
 <h2>5.2 Fichier de configuration <code>.env</code></h2>
-<p>Dans <code>mm-stockpro/</code>, clic droit sur <code>.env.example</code> → <b>Copy</b> → nommez la copie <code>.env</code>. Puis clic droit sur <code>.env</code> → <b>Edit</b>, et renseignez :</p>
+<p>Dans le terminal :</p>
+<pre><code>cd ~/htdocs/stockpro.mmconsultingtg.com
+cp .env.example .env</code></pre>
+<p>Ouvrez <code>.env</code> dans le Gestionnaire de fichiers (<b>Modifier</b>) et renseignez :</p>
 <pre><code>APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://stockpro.mmconsultingtg.com
 FRONTEND_URL=https://stockpro.mmconsultingtg.com
 
 DB_CONNECTION=mysql
-DB_HOST=localhost
+DB_HOST=<span class="c">valeur notée en 4.2</span>
 DB_PORT=3306
-DB_DATABASE=cpaneluser_mmstock
-DB_USERNAME=cpaneluser_mmstock
-DB_PASSWORD=<span class="c">le mot de passe de l'étape 4.2</span>
+DB_DATABASE=<span class="c">valeur notée en 4.2</span>
+DB_USERNAME=<span class="c">valeur notée en 4.2</span>
+DB_PASSWORD=<span class="c">valeur notée en 4.2</span>
 
 MAIL_MAILER=smtp
 MAIL_SCHEME=smtps
@@ -278,20 +273,23 @@ L'API fonctionne en temps universel (UTC), identique à l'heure de Lomé toute l
 <p class="lead">Quelques commandes Laravel (<i>artisan</i>) créent les tables, les boutiques et le compte Super Admin.</p>
 
 <h2>6.1 Ouvrir un terminal</h2>
-<p>Dans l'<b>espace client LWS</b>, ouvrez la <b>gestion du service</b> de votre hébergement puis <b>Terminal SSH</b>. À défaut : cPanel → <b>Terminal</b>, ou un client SSH (PuTTY, Terminal) avec les identifiants SSH fournis par LWS.</p>
+<p>Dans l'<b>espace client LWS</b>, ouvrez la <b>gestion du service</b> de votre hébergement puis <b>Terminal SSH</b>. Vérifiez la version de PHP du terminal (4.1).</p>
 
 <h2>6.2 Commandes d'installation</h2>
-<pre><code>cd ~/mm-stockpro
+<pre><code>cd ~/htdocs/stockpro.mmconsultingtg.com
 php -v                               <span class="c"># doit afficher 8.2 ou plus</span>
 php artisan key:generate --force     <span class="c"># clé de chiffrement, UNE SEULE FOIS</span>
-php artisan migrate --force          <span class="c"># crée toutes les tables</span>
+php artisan migrate:fresh --force    <span class="c"># PREMIÈRE INSTALLATION SEULEMENT : vide la base, crée les tables</span>
 php artisan db:seed --force          <span class="c"># rôles, boutiques Agbalépédo et Cacaveli, catégories</span>
 php artisan mm:create-admin votre.email@mmconsultingtg.com --first=Prénom --last=Nom
 php artisan optimize                 <span class="c"># met la configuration en cache</span>
 chmod -R 775 storage bootstrap/cache public/uploads</code></pre>
 <p><code>mm:create-admin</code> demande le mot de passe du premier <b>Super Admin</b> (8 caractères minimum, non affiché à la saisie). Tous les autres comptes se créent ensuite depuis l'écran <b>Utilisateurs</b> de l'application.</p>
+<div class="box danger"><span class="t">migrate:fresh : uniquement à l'installation</span>
+<code>migrate:fresh</code> supprime d'abord les tables d'exemple laissées par l'installateur LWS : certaines portent le même nom que celles de l'application (<code>users</code>…), et un simple <code>migrate</code> les garderait telles quelles. Cette commande <b>efface toute la base</b> : ne la relancez jamais une fois l'application en service. Pour les mises à jour, c'est <code>php artisan migrate --force</code>.
+</div>
 <div class="box warn"><span class="t">Version de PHP dans le terminal</span>
-Le terminal peut utiliser une autre version de PHP que celle choisie dans cPanel. Si <code>php -v</code> affiche une version inférieure à 8.2, utilisez le chemin complet, par exemple <code>/opt/alt/php83/usr/bin/php artisan …</code> (ou <code>/opt/cpanel/ea-php83/root/usr/bin/php</code> selon le serveur).
+Si <code>php -v</code> affiche une version inférieure à 8.2, changez la version du terminal avec le lien en haut de la page du Terminal SSH (4.1), puis rouvrez le terminal.
 </div>
 <div class="box danger"><span class="t">La clé APP_KEY</span>
 Ne relancez jamais <code>key:generate</code> sur une installation en service : toutes les connexions en cours seraient invalidées. Conservez une copie du fichier <code>.env</code> dans votre gestionnaire de mots de passe.
@@ -317,6 +315,7 @@ Ne relancez jamais <code>key:generate</code> sur une installation en service : t
   <li><b>Mot de passe oublié</b> testé depuis l'écran de connexion : l'email arrive, le lien ouvre <code>stockpro.mmconsultingtg.com/reset-password</code>.</li>
   <li>Une vente test encaissée en caisse, visible dans l'historique et dans le stock, puis une déclaration du jour envoyée et validée.</li>
   <li>Première sauvegarde de la base effectuée (chapitre 8).</li>
+  <li>Tout fonctionne : supprimez l'ancienne installation avec <code>cd ~/htdocs &amp;&amp; rm -rf stockpro-ancien</code>.</li>
 </ul>
 
 <!-- ===================================================== 8 -->
@@ -326,45 +325,41 @@ Ne relancez jamais <code>key:generate</code> sur une installation en service : t
 
 <h2>8.1 Mettre à jour l'application</h2>
 <ol class="steps">
-  <li>Fabriquez de nouvelles archives (chapitre 3).</li>
-  <li>Sauvegardez la base (8.2).</li>
-  <li>Dans le Gestionnaire de fichiers, renommez <code>mm-stockpro</code> en <code>mm-stockpro-ancien</code>, puis extrayez le nouveau <code>mm-stockpro.zip</code>.</li>
-  <li>Recopiez dans le nouveau <code>mm-stockpro/</code> le fichier <code>.env</code> et le dossier <code>public/uploads</code> de <code>mm-stockpro-ancien</code>.</li>
+  <li>Récupérez une nouvelle archive (chapitre 3) et sauvegardez la base (8.2).</li>
+  <li>Dans <code>htdocs</code>, renommez <code>stockpro.mmconsultingtg.com</code> en <code>stockpro-ancien</code>, chargez et extrayez le nouveau <code>mm-stockpro.zip</code>, puis renommez <code>mm-stockpro</code> en <code>stockpro.mmconsultingtg.com</code>.</li>
+  <li>Recopiez depuis <code>stockpro-ancien</code> le fichier <code>.env</code> et le dossier <code>public/uploads</code>.</li>
   <li>Dans le terminal :
-<pre><code>cd ~/mm-stockpro
-php artisan migrate --force
+<pre><code>cd ~/htdocs/stockpro.mmconsultingtg.com
+php artisan migrate --force          <span class="c"># jamais migrate:fresh ici</span>
 php artisan optimize
 chmod -R 775 storage bootstrap/cache public/uploads</code></pre></li>
-  <li>Vérifiez l'application, puis supprimez <code>mm-stockpro-ancien</code>.</li>
+  <li>Vérifiez l'application, puis supprimez <code>stockpro-ancien</code>.</li>
 </ol>
-<p>Pendant l'opération, <code>php artisan down</code> affiche un message de maintenance ; <code>php artisan up</code> rouvre l'accès.</p>
+<p>Pendant l'opération, <code>php artisan down</code> met l'API en maintenance ; <code>php artisan up</code> rouvre l'accès.</p>
 
 <h2>8.2 Sauvegardes</h2>
 <table>
   <thead><tr><th style="width:28%">Quoi</th><th>Comment</th></tr></thead>
   <tbody>
-    <tr><td>Base (manuel)</td><td>cPanel → <b>Sauvegarde</b> → <i>Télécharger une sauvegarde de base de données MySQL</i>, ou phpMyAdmin → <b>Exporter</b>.</td></tr>
-    <tr><td>Base (automatique)</td><td>Voir la tâche Cron ci-dessous.</td></tr>
-    <tr><td>Images produits</td><td>Dossier <code>mm-stockpro/public/uploads</code> : Gestionnaire de fichiers → <b>Compress</b>, puis téléchargement.</td></tr>
-    <tr><td>Configuration</td><td>Fichier <code>mm-stockpro/.env</code>, dans le gestionnaire de mots de passe.</td></tr>
+    <tr><td>Base de données</td><td>phpMyAdmin (rubrique MySQL de LWS Panel) → base de l'application → <b>Exporter</b>. Au moins une fois par semaine.</td></tr>
+    <tr><td>Images produits</td><td>Dossier <code>public/uploads</code> : Gestionnaire de fichiers → <b>Archiver</b>, puis <b>Télécharger</b>.</td></tr>
+    <tr><td>Configuration</td><td>Fichier <code>.env</code>, dans le gestionnaire de mots de passe.</td></tr>
   </tbody>
 </table>
-<p>Sauvegarde automatique chaque nuit : créez le dossier <code>~/sauvegardes</code>, puis cPanel → <b>Tâches Cron</b>, réglage « une fois par jour », commande :</p>
-<pre><code>mysqldump --no-tablespaces -u cpaneluser_mmstock -p'MOTDEPASSE' cpaneluser_mmstock | gzip &gt; ~/sauvegardes/mm-$(date +\%F).sql.gz &amp;&amp; find ~/sauvegardes -name 'mm-*.sql.gz' -mtime +14 -delete</code></pre>
 <div class="box warn"><span class="t">Copie hors de l'hébergement</span>
-Téléchargez régulièrement (au moins chaque semaine) une sauvegarde sur un autre support : une sauvegarde restée sur l'hébergement disparaît avec lui.
+Conservez les sauvegardes sur un autre support (ordinateur, stockage externe) : une sauvegarde restée sur l'hébergement disparaît avec lui. LWS propose aussi des sauvegardes de l'hébergement dans l'espace client : vérifiez leur fréquence.
 </div>
-<p><b>Restaurer</b> : phpMyAdmin → base <code>cpaneluser_mmstock</code> → <b>Importer</b> le fichier <code>.sql</code> (décompressé).</p>
+<p><b>Restaurer</b> : phpMyAdmin → base de l'application → <b>Importer</b> le fichier <code>.sql</code>.</p>
 
 <h2>8.3 Journaux</h2>
 <ul>
-  <li>Erreurs de l'API : <code>mm-stockpro/storage/logs/laravel-AAAA-MM-JJ.log</code> (un fichier par jour, 14 jours conservés).</li>
+  <li>Erreurs de l'API : <code>htdocs/stockpro.mmconsultingtg.com/storage/logs/laravel-AAAA-MM-JJ.log</code> (un fichier par jour, 14 jours conservés).</li>
   <li>Actions des utilisateurs (créations, modifications, remises, validations) : écran <b>Journal d'audit</b> de l'application, réservé au Super Admin.</li>
 </ul>
 
 <h2>8.4 Opérations courantes</h2>
 <table>
-  <thead><tr><th style="width:40%">Besoin</th><th>Commande (depuis <code>~/mm-stockpro</code>)</th></tr></thead>
+  <thead><tr><th style="width:40%">Besoin</th><th>Commande (depuis <code>~/htdocs/stockpro.mmconsultingtg.com</code>)</th></tr></thead>
   <tbody>
     <tr><td>Super Admin oublié ou bloqué</td><td><code>php artisan mm:create-admin email --first=… --last=…</code> (crée le compte ou redéfinit son mot de passe)</td></tr>
     <tr><td>Prise en compte d'une modification du <code>.env</code></td><td><code>php artisan optimize</code></td></tr>
@@ -390,9 +385,9 @@ Téléchargez régulièrement (au moins chaque semaine) une sauvegarde sur un au
 
 <h2>À votre charge</h2>
 <ul class="check">
-  <li><code>APP_DEBUG=false</code> et racine du sous-domaine sur <code>mm-stockpro/public</code>.</li>
+  <li><code>APP_DEBUG=false</code>, <code>.htaccess</code> présent à la racine du dossier du sous-domaine, aucun code source déposé sur le serveur.</li>
   <li>HTTPS actif sur <code>stockpro.mmconsultingtg.com</code>.</li>
-  <li>Mots de passe forts et différents pour cPanel, la base, l'email et le Super Admin ; double authentification activée sur l'espace client LWS et sur cPanel si proposée.</li>
+  <li>Mots de passe forts et différents pour l'espace client LWS, la base, l'email et le Super Admin ; double authentification activée sur l'espace client LWS.</li>
   <li>Un compte nominatif par personne : jamais de compte partagé en caisse.</li>
   <li>Désactivation immédiate du compte d'un employé qui quitte l'entreprise (écran <b>Utilisateurs</b>).</li>
   <li>Sauvegardes testées : restaurez une sauvegarde sur une base de test au moins une fois.</li>
@@ -410,9 +405,9 @@ Téléchargez régulièrement (au moins chaque semaine) une sauvegarde sur un au
     <tr><td>Erreur 500 sur l'API</td><td><code>.env</code> incomplet, clé absente, droits des dossiers</td><td>Lire le dernier fichier de <code>storage/logs/</code> ; vérifier <code>key:generate</code> et <code>chmod</code> (chapitre 6)</td></tr>
     <tr><td>« Failed to fetch » ou erreur réseau à la connexion</td><td>Archive construite pour une autre adresse, ou certificat SSL absent</td><td>Refabriquer l'archive avec <code>https://stockpro.mmconsultingtg.com</code> ; activer le SSL (4.4)</td></tr>
     <tr><td>Bandeau « Mode démo » en production</td><td>Archive construite sans adresse du site</td><td>Refabriquer <code>mm-stockpro.zip</code> (chapitre 3)</td></tr>
-    <tr><td>Erreur 404 en actualisant une page</td><td><code>.htaccess</code> absent de <code>mm-stockpro/public/</code></td><td>Afficher les fichiers cachés et réextraire l'archive</td></tr>
-    <tr><td><code>SQLSTATE[HY000] [1045]</code> ou <code>[1044]</code></td><td>Identifiants MySQL faux ou utilisateur non rattaché à la base</td><td>Vérifier le <code>.env</code> et l'étape 4.2</td></tr>
-    <tr><td>Le site liste des fichiers (« Index of ») ou affiche du code</td><td>Racine du sous-domaine mal réglée</td><td>Racine = <code>mm-stockpro/public</code> (4.3)</td></tr>
+    <tr><td>Erreur 404 en actualisant une page</td><td><code>public/.htaccess</code> absent</td><td>Afficher les fichiers cachés et réextraire l'archive</td></tr>
+    <tr><td><code>SQLSTATE[HY000] [1045]</code>, <code>[1044]</code> ou <code>[2002]</code></td><td>Identifiants ou serveur MySQL (<code>DB_HOST</code>) faux</td><td>Vérifier le <code>.env</code> et l'étape 4.2</td></tr>
+    <tr><td>Page d'accueil Laravel, liste de fichiers ou code affiché</td><td>Ancienne installation encore en place, ou <code>.htaccess</code> racine absent</td><td>Refaire 5.1 ; vérifier les fichiers cachés extraits</td></tr>
     <tr><td>Images produits non affichées</td><td>Droits d'écriture ou <code>APP_URL</code> erroné</td><td><code>chmod -R 775 public/uploads</code> ; vérifier <code>APP_URL</code></td></tr>
     <tr><td>Emails non reçus</td><td>Identifiants SMTP, port, spam</td><td>Tester la boîte dans le Webmail ; vérifier <code>MAIL_*</code> puis <code>php artisan optimize</code></td></tr>
     <tr><td>« Session expirée » fréquente</td><td>Durée de connexion courte</td><td>Augmenter <code>TOKEN_DAYS</code></td></tr>
@@ -426,12 +421,12 @@ Téléchargez régulièrement (au moins chaque semaine) une sauvegarde sur un au
   <tbody>
     <tr><td>Application</td><td><code>https://stockpro.mmconsultingtg.com</code></td></tr>
     <tr><td>API</td><td><code>https://stockpro.mmconsultingtg.com/api</code></td></tr>
-    <tr><td>Dossier sur le serveur</td><td><code>~/mm-stockpro</code> (racine du sous-domaine : <code>~/mm-stockpro/public</code>)</td></tr>
+    <tr><td>Dossier sur le serveur</td><td><code>~/htdocs/stockpro.mmconsultingtg.com</code></td></tr>
     <tr><td>Test de l'API</td><td><code>/api/health</code></td></tr>
-    <tr><td>Base</td><td><code>cpaneluser_mmstock</code> sur <code>localhost</code></td></tr>
-    <tr><td>Configuration</td><td><code>~/mm-stockpro/.env</code></td></tr>
-    <tr><td>Journaux</td><td><code>~/mm-stockpro/storage/logs/</code></td></tr>
-    <tr><td>Images produits</td><td><code>~/mm-stockpro/public/uploads/products/</code></td></tr>
+    <tr><td>Base</td><td>valeurs <code>DB_*</code> du fichier <code>.env</code></td></tr>
+    <tr><td>Configuration</td><td><code>.env</code> (dans le dossier du sous-domaine)</td></tr>
+    <tr><td>Journaux</td><td><code>storage/logs/</code></td></tr>
+    <tr><td>Images produits</td><td><code>public/uploads/products/</code></td></tr>
     <tr><td>Boutiques créées à l'installation</td><td>MM Cosmétiques Agbalépédo (<code>BTQ-AGB</code>) et MM Cosmétiques Cacaveli (<code>BTQ-CAC</code>), Lomé, (+228) 93 65 53 41</td></tr>
   </tbody>
 </table>
